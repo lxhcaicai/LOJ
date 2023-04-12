@@ -18,6 +18,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.github</groupId>
+            <artifactId>loj-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
             <!-- 默认导入的1.1.4版本不支持鉴权-->
