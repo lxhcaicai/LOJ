@@ -35,6 +35,7 @@
     </build>
     <modules>
         <module>loj-judge</module>
+        <module>loj-api</module>
     </modules>
 
     <!--版本控制-->
