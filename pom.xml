@@ -6,6 +6,7 @@
 
     <groupId>com.github</groupId>
     <artifactId>loj-springboot</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
 
@@ -32,6 +33,9 @@
             </plugin>
         </plugins>
     </build>
+    <modules>
+        <module>loj-judge</module>
+    </modules>
 
     <!--版本控制-->
     <properties>
