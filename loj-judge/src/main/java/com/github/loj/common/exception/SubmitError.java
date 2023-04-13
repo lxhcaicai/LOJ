@@ -12,9 +12,9 @@ public class SubmitError extends Exception{
     private String stdout;
     private String stderr;
 
-    public SubmitError(String message, String message1, String stdout, String stderr) {
+    public SubmitError(String message, String stdout, String stderr) {
         super(message);
-        this.message = message1;
+        this.message = message;
         this.stdout = stdout;
         this.stderr = stderr;
     }
