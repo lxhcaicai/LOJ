@@ -25,3 +25,8 @@ chain 属性
 也就是加载顺序
 
 服务器加载Servlet -> servlet 构造函数的加载 -> postConstruct ->init（init是在service 中的初始化方法. 创建service 时发生的事件.） ->Service->destory->predestory->服务器卸载serlvet
+
+### @Resource
+@Resource有两个属性是比较重要的，分别是name和type；Spring将@Resource注解的name属性解析为bean的名字，而type属性则解析为bean的类型。所以如果使用name属性，则使用byName的自动注入策略，而使用type属性时则使用byType自动注入策略。默认按name进行注入。
+
+按type进行注入的自动注入策略，这个type指的就是类的类型，可以这样理解，比如Apple.class，类型就是Apple，Person.class，类型就是Person
