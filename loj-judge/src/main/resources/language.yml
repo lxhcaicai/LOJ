@@ -1,0 +1,27 @@
+---
+language: C
+src_path: main.c
+exe_path: main
+compile:
+  env: default
+  command: /usr/bin/gcc -DONLINE_JUDGE -w -fmax-errors=1 -std=c11 {src_path} -lm -o {exe_path}
+  maxCpuTime: 3s
+  maxRealTime: 10s
+  maxMemory: 256mb
+run:
+  env: default
+  command: /w/{exe_path}
+
+---
+language: C++
+src_path: main.cpp
+exe_path: main
+compile:
+  command: /usr/bin/g++ -DONLINE_JUDGE -w -fmax-errors=1 -std=c++14 {src_path} -lm -o {exe_path}
+  env: default
+  maxCpuTime: 10s
+  maxRealTime: 20s
+  maxMemory: 512mb
+run:
+  env: default
+  command: /w/{exe_path}
