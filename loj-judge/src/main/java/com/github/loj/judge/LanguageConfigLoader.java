@@ -62,6 +62,10 @@ public class LanguageConfigLoader {
         }
     }
 
+    public LanguageConfig getLanguageConfigByName(String langName) {
+        return languageConfigMap.get(langName);
+    }
+
     private LanguageConfig buildLanguageConfig(JSONObject configJson) {
         LanguageConfig languageConfig = new LanguageConfig();
         languageConfig.setLanguage(configJson.getStr("language"));
