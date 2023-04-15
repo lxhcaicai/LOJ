@@ -49,6 +49,7 @@ public class LanguageConfigLoader {
                 LanguageConfig languageConfig = buildLanguageConfig(configJson);
                 languageConfigMap.put(languageConfig.getLanguage(),languageConfig);
             }
+            log.info("load language config: {}", languageConfigMap);
         }
     }
 
@@ -90,8 +91,8 @@ public class LanguageConfigLoader {
                     languageConfig.setRunEnvs(defaultEnv);
             }
             languageConfig.setMaxCpuTime(parseTimeStr(compileJson.getStr("maxCpuTime")));
-            languageConfig.setMaxCpuTime(parseTimeStr(compileJson.getStr("maxRealTime")));
-            languageConfig.setMaxCpuTime(parseMemoryStr(compileJson.getStr("maxMemory")));
+            languageConfig.setMaxRealTime(parseTimeStr(compileJson.getStr("maxRealTime")));
+            languageConfig.setMaxMemory(parseMemoryStr(compileJson.getStr("maxMemory")));
         }
 
         JSONObject runJson = configJson.getJSONObject("run");
