@@ -85,10 +85,10 @@ public class LanguageConfigLoader {
             env = env.toLowerCase();
             switch (env) {
                 case "python3":
-                    languageConfig.setRunEnvs(python3Env);
+                    languageConfig.setCompileEnvs(python3Env);
                     break;
                 default:
-                    languageConfig.setRunEnvs(defaultEnv);
+                    languageConfig.setCompileEnvs(defaultEnv);
             }
             languageConfig.setMaxCpuTime(parseTimeStr(compileJson.getStr("maxCpuTime")));
             languageConfig.setMaxRealTime(parseTimeStr(compileJson.getStr("maxRealTime")));
