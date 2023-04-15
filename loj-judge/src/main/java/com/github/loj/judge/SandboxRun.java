@@ -280,7 +280,7 @@ public class SandboxRun {
                                      String fileId,
                                      String fileContent) throws SystemError {
         JSONObject cmd = new JSONObject();
-        cmd.set("agrs", args);
+        cmd.set("args", args);
         cmd.set("env", envs);
 
         JSONArray files = new JSONArray();
