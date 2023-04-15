@@ -42,7 +42,7 @@ public class TestJudgeReq implements Serializable {
     /**
      * 评测时允许调用的额外文件
      */
-    private HashMap<String,Object> extraFile;
+    private HashMap<String,String> extraFile;
 
     /**
      * 评测的最大时间限制 ms
