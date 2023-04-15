@@ -1,6 +1,5 @@
 package com.github.loj.judge.tesk;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.exception.SystemError;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * @author lxhcaicai
