@@ -79,4 +79,22 @@ public class Constants {
             return null;
         }
     }
+
+    public enum JudgeDir {
+        RUN_WORKPLACE_DIR("/judge/run"),
+        TEST_CASE_DIR("/judge/test_case"),
+        SPJ_WORKPLACE_DIR("/judge/spj"),
+        INTERACTIVE_WORKPLACE_DIR("/judge/interactive"),
+        TMPFS_DIR("/w");
+
+        private final String content;
+
+        JudgeDir(String content) {
+            this.content = content;
+        }
+
+        public String getContent() {
+            return content;
+        }
+    }
 }
