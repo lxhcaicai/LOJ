@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 /**
  * @author lxhcaicai
  * @date 2023/4/15 18:27
+ * @Description: 单个测评结果实体类
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
