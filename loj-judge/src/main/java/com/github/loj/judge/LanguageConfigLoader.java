@@ -47,6 +47,7 @@ public class LanguageConfigLoader {
             for(Object configObj: languageConfigIter) {
                 JSONObject configJson = JSONUtil.parseObj(configObj);
                 LanguageConfig languageConfig = buildLanguageConfig(configJson);
+                languageConfigMap.put(languageConfig.getLanguage(),languageConfig);
             }
         }
     }
