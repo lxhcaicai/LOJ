@@ -1,5 +1,6 @@
 package com.github.loj.judge.tesk;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.exception.SystemError;
@@ -11,12 +12,18 @@ import com.github.loj.util.JudgeUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author lxhcaicai
  * @date 2023/4/15 18:18
  */
 public abstract class AbstractJudge {
+
+
+    private final static Pattern EOL_PATTERN = Pattern.compile("[^\\s\\n]+(?==\\n)");
+
+
     public JSONObject judge(JudgeDTO judgeDTO, JudgeGlobalDTO judgeGlobalDTO) throws SystemError {
         JSONArray judgeResultList = judgeCase(judgeDTO, judgeGlobalDTO);
 
@@ -68,5 +75,12 @@ public abstract class AbstractJudge {
         }
 
         return JudgeUtils.translateCommandline(command);
+    }
+
+
+    // 去除行末尾空白符
+    protected String rtrim(String str) {
+        if(str == null) return null;
+        return EOL_PATTERN.matcher(StrUtil.trimEnd(str)).replaceAll("");
     }
 }
