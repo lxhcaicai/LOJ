@@ -30,3 +30,12 @@ chain 属性
 @Resource有两个属性是比较重要的，分别是name和type；Spring将@Resource注解的name属性解析为bean的名字，而type属性则解析为bean的类型。所以如果使用name属性，则使用byName的自动注入策略，而使用type属性时则使用byType自动注入策略。默认按name进行注入。
 
 按type进行注入的自动注入策略，这个type指的就是类的类型，可以这样理解，比如Apple.class，类型就是Apple，Person.class，类型就是Person
+
+### @Builder
+@Builder 注解为类生成相对略微复杂的构建器 API
+
+它作用于类，将其变成建造者模式
+可以以链的形式调用
+初始化实例对象生成的对象是不可以变的，可以在创建对象的时候进行赋值
+如果需要在原来的基础上修改可以加 set 方法，final 字段可以不需要初始化
+它会生成一个全参的构造函数
