@@ -38,7 +38,7 @@ public class JudgeRun {
 
         JudgeGlobalDTO judgeGlobalDTO = JudgeGlobalDTO.builder()
                 .judgeMode(Constants.JudgeMode.TEST)
-                .userFileContent(userFileId)
+                .userFileId(userFileId)
                 .userFileContent(testJudgeReq.getCode())
                 .testTime(testTime)
                 .maxMemory((long)testJudgeReq.getMemoryLimit())
