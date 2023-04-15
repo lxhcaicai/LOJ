@@ -110,6 +110,16 @@ public class SandboxRun {
             "Bad system call" // 31
     );
 
+    public static void delFile(String fileId) {
+        try {
+            restTemplate.delete(SANDBOX_BASE_URL + "/file/{0}", fileId);
+        } catch (RestClientResponseException exception) {
+            if(exception.getRawStatusCode() != 200) {
+                log.error("安全沙箱判题的删除内存中的文件缓存操作异常----------------->{}", exception.getResponseBodyAsString());
+            }
+        }
+    }
+
     public JSONArray run(String uri, JSONObject param) throws SystemError {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
