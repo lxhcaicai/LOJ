@@ -54,4 +54,29 @@ public class Constants {
     }
 
 
+    public enum JudgeMode {
+        TEST("test"),
+        DEFAULT("default"),
+        SPJ("spj"),
+        INTERACTIVE("interactive");
+
+        private final String mode;
+
+        JudgeMode(String mode) {
+            this.mode = mode;
+        }
+
+        public String getMode() {
+            return mode;
+        }
+
+        public static JudgeMode getJudgeMode(String mode) {
+            for(JudgeMode judgeMode: JudgeMode.values()) {
+                if(judgeMode.getMode().equals(mode)) {
+                    return judgeMode;
+                }
+            }
+            return null;
+        }
+    }
 }
