@@ -1,5 +1,6 @@
 package com.github.loj.judge.tesk;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.exception.SystemError;
@@ -11,6 +12,9 @@ import com.github.loj.judge.entity.SandBoxRes;
 import com.github.loj.util.Constants;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * @author lxhcaicai
@@ -51,7 +55,26 @@ public class TestJudge extends AbstractJudge{
             } else if(sandBoxRes.getMemory() > judgeGlobalDTO.getMaxMemory() * 1024) {
                 result.set("status", Constants.Judge.STATUS_MEMORY_LIMIT_EXCEEDED.getStatus());
             } else {
+                if(judgeDTO.getTestCaseInputContent() != null) {
+                    if(judgeGlobalDTO.getRemoveEOLBlank() != null && judgeGlobalDTO.getRemoveEOLBlank()) {
+                        String stdOut = rtrim(sandBoxRes.getStdout());
+                        String testCaseOutput = rtrim(judgeDTO.getTestCaseOutputContent());
 
+                        if(Objects.equals(stdOut, testCaseOutput)) {
+                            result.set("status",Constants.Judge.STATUS_ACCEPTED.getStatus());
+                        } else {
+                            result.set("status",Constants.Judge.STATUS_WRONG_ANSWER.getStatus());
+                        }
+                    } else {
+                        if(Objects.equals(sandBoxRes.getStdout(),judgeDTO.getTestCaseOutputContent())){
+                            result.set("status", Constants.Judge.STATUS_ACCEPTED.getStatus());
+                        } else {
+                            result.set("status",Constants.Judge.STATUS_WRONG_ANSWER.getStatus());
+                        }
+                    }
+                } else {
+                    result.set("status", Constants.Judge.STATUS_ACCEPTED.getStatus());
+                }
             }
         } else if(sandBoxRes.getExitCode() != 0) {
             result.set("status",Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
