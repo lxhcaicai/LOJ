@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 public class JudgeUtils {
 
     public static List<String> translateCommandline(String toProcess) {
-        if(toProcess != null && !toProcess.isEmpty()) {
+        if (toProcess != null && !toProcess.isEmpty()) {
             int state = 0;
             StringTokenizer tok = new StringTokenizer(toProcess, "\"' ", true);
             List<String> result = new ArrayList<>();
@@ -23,7 +23,7 @@ public class JudgeUtils {
                     String nextTok = tok.nextToken();
                     switch (state) {
                         case 1:
-                            if("'".equals(nextTok)) {
+                            if ("'".equals(nextTok)) {
                                 lastTokenHasBeenQuoted = true;
                                 state = 0;
                             } else {
@@ -40,12 +40,12 @@ public class JudgeUtils {
                             continue;
                     }
 
-                    if("'".equals(nextTok)) {
+                    if ("'".equals(nextTok)) {
                         state = 1;
-                    } else if("\"".equals(nextTok)) {
+                    } else if ("\"".equals(nextTok)) {
                         state = 2;
-                    } else if(" ".equals(nextTok)) {
-                        if(lastTokenHasBeenQuoted || current.length() > 0) {
+                    } else if (" ".equals(nextTok)) {
+                        if (lastTokenHasBeenQuoted || current.length() > 0) {
                             result.add(current.toString());
                             current.setLength(0);
                         }
@@ -60,13 +60,12 @@ public class JudgeUtils {
                     result.add(current.toString());
                 }
 
-                if(state != 1 && state != 2) {
+                if (state != 1 && state != 2) {
                     return result;
                 }
 
-                throw  new RuntimeException("unbalanced quotes in " + toProcess);
+                throw new RuntimeException("unbalanced quotes in " + toProcess);
             }
-
         } else {
             return new ArrayList<>();
         }
