@@ -204,4 +204,93 @@ public class SandboxRun {
         COMPILE_FILES.put(stdout);
         COMPILE_FILES.put(stderr);
     }
+
+    /**
+     *
+     * @param args            普通评测运行cmd的命令参数
+     * @param envs            普通评测运行的环境变量
+     * @param testCasePath    题目数据的输入文件路径
+     * @param testCaseContent 题目数据的输入数据（与testCasePath二者选一）
+     * @param maxTime         评测的最大限制时间 ms
+     * @param maxOutputSize   评测的最大输出大小 kb
+     * @param maxStack        评测的最大限制栈空间 mb
+     * @param exeName         评测的用户程序名称
+     * @param fileId          评测的用户程序文件id
+     * @param fileContent     评测的用户程序文件内容，如果userFileId存在则为null
+     *
+     * @Description 普通评测
+     * @return
+     * @throws SystemError
+     */
+    public static JSONArray testCase(List<String> args,
+                                     List<String> envs,
+                                     String testCasePath,
+                                     String testCaseContent,
+                                     Long maxTime,
+                                     Long maxMemory,
+                                     Long maxOutputSize,
+                                     Integer maxStack,
+                                     String exeName,
+                                     String fileId,
+                                     String fileContent) throws SystemError {
+        JSONObject cmd = new JSONObject();
+        cmd.set("agrs", args);
+        cmd.set("env", envs);
+
+        JSONArray files = new JSONArray();
+        JSONObject content = new JSONObject();
+
+        if(StringUtils.isEmpty(testCasePath)) {
+            content.set("content", testCaseContent);
+        } else {
+            content.set("src", testCasePath);
+        }
+
+        JSONObject stdout = new JSONObject();
+        stdout.set("name", "stdout");
+        stdout.set("max", maxOutputSize);
+
+        JSONObject stderr = new JSONObject();
+        stderr.set("name", "stderr");
+        stderr.set("max", 1024 * 1024 * 16);
+
+        files.put(content);
+        files.put(stdout);
+        files.put(stderr);
+
+        cmd.set("files", files);
+
+        // ms -> ns
+        cmd.set("cpuLimit", maxTime * 1000 * 1000L);
+        cmd.set("clockLimit", maxTime * 1000 * 1000L * 3);
+        // byte
+        cmd.set("memoryLimit", (maxMemory + 100) * 1024 * 1024L);
+        cmd.set("procLimit", maxProcessNumber);
+        cmd.set("stackLimit", maxStack * 1024 * 1024L);
+
+        JSONObject exeFile = new JSONObject();
+        if(!StringUtils.isEmpty(fileId)) {
+            exeFile.set("fileId", fileId);
+        } else {
+            exeFile.set("content", fileContent);
+        }
+
+        JSONObject copyIn = new JSONObject();
+        copyIn.set(exeName, exeFile);
+
+        cmd.set("copyIn", copyIn);
+        cmd.set("copyOut", new JSONArray().put("stdout").put("stderr"));
+
+        JSONObject param = new JSONObject();
+        param.set("cmd", new JSONArray().put(cmd));
+
+        // 调用判题安全沙箱
+        JSONArray result = instance.run("/run", param);
+
+        JSONObject testcaseRes = (JSONObject) result.get(0);
+        testcaseRes.set("originalStatus", testcaseRes.getStr("status"));
+        testcaseRes.set("status",  RESULT_MAP_STATUS.get(testcaseRes.getStr("status")));
+
+        return result;
+    }
 }
