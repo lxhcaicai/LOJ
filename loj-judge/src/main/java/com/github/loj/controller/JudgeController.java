@@ -3,12 +3,16 @@ package com.github.loj.controller;
 import com.github.loj.common.CommonResult;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
+import com.github.loj.service.JudgeServerEntityService;
 import com.github.loj.service.JudgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
 
 /**
  * @author lxhcaicai
@@ -19,6 +23,14 @@ public class JudgeController {
 
     @Autowired
     private JudgeService judgeService;
+
+    @Autowired
+    private JudgeServerEntityService judgeServerEntityService;
+
+    @RequestMapping("/version")
+    public CommonResult<HashMap<String,Object>> getVersion() {
+        return CommonResult.successResponse(judgeServerEntityService.getJudgeServerInfo(), "运行正常");
+    }
 
     @PostMapping(value = "/test-judge")
     public CommonResult<TestJudgeRes> submitProblemTestJudge(@RequestBody TestJudgeReq testJudgeReq) {
