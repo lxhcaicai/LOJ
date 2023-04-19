@@ -14,4 +14,9 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "loj.redis")
 @Data
 public class JedisPoolConfigure {
+    private String host;
+
+    private Integer port;
+
+    private String password;
 }
