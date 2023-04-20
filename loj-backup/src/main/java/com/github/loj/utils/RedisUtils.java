@@ -44,6 +44,10 @@ public class RedisUtils {
         return result;
     }
 
+    public boolean releaseLock(String lockName) {
+        return expire(lockName, 10);
+    }
+
     /**
      *指定缓存失效时间
      *
