@@ -79,7 +79,7 @@ public class JwtUtils {
      *
      * @return true：过期
      */
-    public boolean isTokenExpire(Date expiration) {
+    public boolean isTokenExpired(Date expiration) {
         return expiration.before(new Date());
     }
 }
