@@ -8,6 +8,7 @@ import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.util.Constants;
 import com.github.loj.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @author lxhcaicai
  * @date 2023/4/22 18:52
  */
+@Service
 public class UserInfoEntityServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements UserInfoEntityService {
 
     @Autowired
