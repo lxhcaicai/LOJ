@@ -5,7 +5,7 @@ import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.mapper.UserInfoMapper;
 import com.github.loj.pojo.dto.RegisterDTO;
 import com.github.loj.pojo.entity.user.UserInfo;
-import com.github.loj.util.Constants;
+import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
