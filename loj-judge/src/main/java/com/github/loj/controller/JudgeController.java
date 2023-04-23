@@ -3,9 +3,10 @@ package com.github.loj.controller;
 import com.github.loj.common.CommonResult;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
-import com.github.loj.service.JudgeServerEntityService;
+import com.github.loj.dao.JudgeServerEntityService;
 import com.github.loj.service.JudgeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import java.util.HashMap;
  * @date 2023/4/13 1:19
  */
 @RestController
+@RefreshScope
 public class JudgeController {
 
     @Autowired

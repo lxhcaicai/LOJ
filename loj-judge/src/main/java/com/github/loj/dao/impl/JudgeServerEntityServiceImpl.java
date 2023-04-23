@@ -9,6 +9,7 @@ import com.github.loj.pojo.judge.JudgeServer;
 import com.github.loj.mapper.JudgeServerMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import java.util.HashMap;
  */
 @Service
 @Slf4j(topic = "loj")
+@RefreshScope
 public class JudgeServerEntityServiceImpl extends ServiceImpl<JudgeServerMapper, JudgeServer> implements JudgeServerEntityService {
 
     @Value("${loj-judge-server.max-task-num}")
