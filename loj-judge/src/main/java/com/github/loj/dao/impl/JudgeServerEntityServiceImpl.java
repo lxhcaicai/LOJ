@@ -1,9 +1,12 @@
-package com.github.loj.service.impl;
+package com.github.loj.dao.impl;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.loj.dao.JudgeServerEntityService;
 import com.github.loj.judge.SandboxRun;
-import com.github.loj.service.JudgeServerEntityService;
+import com.github.loj.pojo.judge.JudgeServer;
+import com.github.loj.mapper.JudgeServerMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,7 +21,7 @@ import java.util.HashMap;
  */
 @Service
 @Slf4j(topic = "loj")
-public class JudgeServerEntityServiceImpl implements JudgeServerEntityService {
+public class JudgeServerEntityServiceImpl extends ServiceImpl<JudgeServerMapper, JudgeServer> implements JudgeServerEntityService {
 
     @Value("${loj-judge-server.max-task-num}")
     private Integer maxTaskNum;
