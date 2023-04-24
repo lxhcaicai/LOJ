@@ -1,5 +1,5 @@
 mybatis-plus:
-  mapper-locations: classpath*:com/githib/loj/mapper/xml/**Mapper.xml
+  mapper-locations: classpath*:com/github/loj/mapper/xml/**Mapper.xml
   type-aliases-package: com.github.loj.pojo.entity
   configuration:
     cache-enabled: true
