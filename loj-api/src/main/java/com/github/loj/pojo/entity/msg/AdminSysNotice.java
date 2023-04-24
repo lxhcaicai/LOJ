@@ -28,6 +28,9 @@ public class AdminSysNotice {
     @ApiModelProperty(value = "通知标题")
     private String title;
 
+    @ApiModelProperty(value = "通知内容")
+    private String content;
+
     @ApiModelProperty(value = "发给哪些用户类型,例如全部用户All，指定单个用户Single，管理员Admin")
     private String type;
 
