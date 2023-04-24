@@ -24,7 +24,7 @@ public class AdminAccountController {
     @Autowired
     private AdminAccountService adminAccountService;
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public CommonResult<UserInfoVO> login(@Validated @RequestBody LoginDTO loginDTO) {
         return adminAccountService.login(loginDTO);
     }
