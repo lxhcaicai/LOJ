@@ -77,7 +77,7 @@ public class UserRolesVO implements Serializable {
     private Date gmtCreate;
 
     @ApiModelProperty(value = "修改时间")
-    private Date getModified;
+    private Date gmtModified;
 
     @ApiModelProperty(value = "角色列表")
     private List<Role> roles;
