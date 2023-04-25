@@ -645,4 +645,12 @@ public class RedisUtils {
         return redisTemplate.keys(key +"*");
     }
 
+    /**
+     * 删除所有缓存 key 测试用
+     */
+    public void delAllkeys() {
+        Set<String> keys = redisTemplate.keys("*");
+        redisTemplate.delete(keys);
+    }
+
 }
