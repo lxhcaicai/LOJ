@@ -21,6 +21,6 @@ public class RedisController {
     @GetMapping("/clean/redis")
     public CommonResult<Void> cleanRedis() {
         redisUtils.delAllkeys();
-        return CommonResult.successResponse("退出登录成功!");
+        return CommonResult.successResponse("清除redis缓存成功!");
     }
 }
