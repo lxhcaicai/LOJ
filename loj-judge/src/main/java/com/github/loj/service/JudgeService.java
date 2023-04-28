@@ -1,10 +1,15 @@
 package com.github.loj.service;
 
+import com.github.loj.common.exception.SystemError;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
+
+import java.util.HashMap;
 
 public interface JudgeService {
 
     public TestJudgeRes testJudge(TestJudgeReq testJudgeReq);
+
+    public Boolean compileSpj(String code, Long pid, String spjLanguage, HashMap<String,String> extraFiles) throws SystemError;
 
 }

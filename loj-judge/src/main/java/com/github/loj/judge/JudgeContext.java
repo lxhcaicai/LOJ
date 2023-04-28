@@ -1,5 +1,6 @@
 package com.github.loj.judge;
 
+import com.github.loj.common.exception.SystemError;
 import com.github.loj.judge.entity.LanguageConfig;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 
 /**
  * @author lxhcaicai
@@ -31,5 +33,9 @@ public class JudgeContext {
             testJudgeReq.setMemoryLimit(testJudgeReq.getMemoryLimit() * 2);
         }
         return  judgeStrategy.testJudge(testJudgeReq);
+    }
+
+    public Boolean compileSpj(String code, Long pid, String sojLanguage, HashMap<String,String> extraFiles) throws SystemError {
+        return Compiler.compileSpj(code, pid, sojLanguage, extraFiles);
     }
 }

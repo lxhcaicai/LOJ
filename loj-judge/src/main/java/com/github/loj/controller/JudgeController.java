@@ -1,6 +1,9 @@
 package com.github.loj.controller;
 
 import com.github.loj.common.CommonResult;
+import com.github.loj.common.ResultStatus;
+import com.github.loj.common.exception.SystemError;
+import com.github.loj.pojo.dto.CompileDTO;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.dao.JudgeServerEntityService;
@@ -47,5 +50,15 @@ public class JudgeController {
             return CommonResult.errorResponse("调用参数错误!请检查你的调用参数!");
         }
         return CommonResult.successResponse(judgeService.testJudge(testJudgeReq));
+    }
+
+    @PostMapping(value = "/compile-spj")
+    public CommonResult<Void> compileSpj(@RequestBody CompileDTO compileDTO) {
+        try {
+            judgeService.compileSpj(compileDTO.getCode(), compileDTO.getPid(), compileDTO.getLanguage(), compileDTO.getExtraFiles());
+            return CommonResult.successResponse(null, "编译成功!");
+        } catch (SystemError systemError) {
+            return CommonResult.errorResponse(systemError.getStderr(), ResultStatus.SYSTEM_ERROR);
+        }
     }
 }
