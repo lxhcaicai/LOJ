@@ -12,4 +12,5 @@ public interface JudgeService {
 
     public Boolean compileSpj(String code, Long pid, String spjLanguage, HashMap<String,String> extraFiles) throws SystemError;
 
+    public Boolean compileInteractive(String code, Long pid, String interactiveLanguage, HashMap<String,String> extraFiles) throws SystemError;
 }

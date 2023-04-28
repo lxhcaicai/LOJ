@@ -61,4 +61,14 @@ public class JudgeController {
             return CommonResult.errorResponse(systemError.getStderr(), ResultStatus.SYSTEM_ERROR);
         }
     }
+
+    @PostMapping(value = "/compile-interactive")
+    public CommonResult<Void> compileInteractive(@RequestBody CompileDTO compileDTO) {
+        try {
+            judgeService.compileInteractive(compileDTO.getCode(), compileDTO.getPid(), compileDTO.getLanguage(), compileDTO.getExtraFiles());
+            return CommonResult.successResponse(null, "编译成功!");
+        } catch (SystemError systemError) {
+            return CommonResult.errorResponse(systemError.getStderr(), ResultStatus.SYSTEM_ERROR);
+        }
+    }
 }

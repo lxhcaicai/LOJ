@@ -29,4 +29,9 @@ public class JudgeServiceImpl implements JudgeService {
     public Boolean compileSpj(String code, Long pid, String spjLanguage, HashMap<String, String> extraFiles) throws SystemError {
         return judgeContext.compileSpj(code, pid, spjLanguage, extraFiles);
     }
+
+    @Override
+    public Boolean compileInteractive(String code, Long pid, String interactiveLanguage, HashMap<String, String> extraFiles) throws SystemError {
+        return judgeContext.compileInteractive(code, pid, interactiveLanguage, extraFiles);
+    }
 }

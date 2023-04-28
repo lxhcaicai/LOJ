@@ -54,3 +54,31 @@ compile:
 run:
   env: default
   command: /w/{exe_path} {std_input} {user_output} {std_output}
+
+---
+language: INTERACTIVE-C
+src_path: interactive.c
+exe_path: interactive
+compile:
+  env: default
+  command: /usr/bin/gcc -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c11 {src_path} -lm -o {exe_path}
+  maxCpuTime: 3s
+  maxRealTime: 10s
+  maxMemory: 512mb
+run:
+  env: default
+  command: /w/{exe_path} {std_input} {user_output} {std_output}
+
+---
+language: INTERACTIVE-C++
+src_path: interactive.cpp
+exe_path: interactive
+compile:
+  env: default
+  command: /usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}
+  maxCpuTime: 10s
+  maxRealTime: 20s
+  maxMemory: 512mb
+run:
+  env: default
+  command: /w/{exe_path} {std_input} {user_output} {std_output}

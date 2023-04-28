@@ -38,4 +38,8 @@ public class JudgeContext {
     public Boolean compileSpj(String code, Long pid, String sojLanguage, HashMap<String,String> extraFiles) throws SystemError {
         return Compiler.compileSpj(code, pid, sojLanguage, extraFiles);
     }
+
+    public Boolean compileInteractive(String code, Long pid, String interactiveLanguage, HashMap<String, String> extraFiles) throws SystemError{
+        return Compiler.compileInteractive(code, pid, interactiveLanguage, extraFiles);
+    }
 }
