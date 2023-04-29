@@ -33,10 +33,16 @@ public class JudgeServer {
     @ApiModelProperty(value = "判题机ip")
     private String ip;
 
+    @ApiModelProperty(value = "判题机端口号")
+    private Integer port;
+
     @ApiModelProperty(value = "ip:port")
     private String url;
 
     @ApiModelProperty(value = "判题机所在服务器cpu核心数")
+    private Integer cpuCore;
+
+    @ApiModelProperty(value = "当前判题数")
     private Integer taskNumber;
 
     @ApiModelProperty(value = "判题并发最大数")
