@@ -17,6 +17,7 @@ public class Constants {
         STATUS_MEMORY_LIMIT_EXCEEDED(2, "Memory Limit Exceeded"),
         STATUS_RUNTIME_ERROR(3, "Runtime Error"),
         STATUS_SYSTEM_ERROR(4, "System Error"),
+        STATUS_PENDING(5, "Pending"),
         STATUS_COMPILING(6,"Compiling"),
 
         // 正在等待结果
