@@ -38,6 +38,15 @@ public class CommonResult<T> {
 
     /**
      * 成功的结果
+     *
+     * @param msg 返回信息
+     */
+    public static <T> CommonResult<T> successResponse(String msg) {
+        return new CommonResult<T>(ResultStatus.SUCCESS.getStatus(), null, msg);
+    }
+
+    /**
+     * 成功的结果
      */
     public static <T> CommonResult<T> successResponse() {
         return new CommonResult<T>(ResultStatus.SUCCESS.getStatus(), null, "success");
