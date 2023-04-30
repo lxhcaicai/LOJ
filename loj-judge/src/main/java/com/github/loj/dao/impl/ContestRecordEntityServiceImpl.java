@@ -9,6 +9,7 @@ import com.github.loj.util.Constants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import java.util.List;
  * @author lxhcaicai
  * @date 2023/4/30 8:48
  */
+@Service
 public class ContestRecordEntityServiceImpl extends ServiceImpl<ContestRecordMapper, ContestRecord> implements ContestRecordEntityService {
 
     @Resource
