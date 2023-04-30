@@ -123,6 +123,10 @@ public class Constants {
         private final Integer code;
         private final String name;
 
+        public Integer getCode() {
+            return code;
+        }
+
         Contest(Integer code, String name) {
             this.code = code;
             this.name = name;
