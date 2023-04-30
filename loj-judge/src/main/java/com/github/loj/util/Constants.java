@@ -133,4 +133,56 @@ public class Constants {
         }
     }
 
+    public enum RemoteJudge{
+
+        HDU_JUDGE("HDU"),
+
+        CF_JUDGE("CF"),
+
+        GYM_JUDGE("GYM"),
+
+        POJ_JUDGE("POJ"),
+
+        SPOJ_JUDGE("SPOJ"),
+
+        ATCODER_JUDGE("AC"),
+
+        HDU_REMOTE_JUDGE_ACCOUNT("Hdu Remote Judge Account"),
+
+        CF_REMOTE_JUDGE_ACCOUNT("Codeforces Remote Judge Account");
+
+        private final String name;
+
+        RemoteJudge(String name) {
+            this.name = name;
+        }
+
+        public static RemoteJudge getTypeByName(String judgeName)  {
+
+            if(judgeName == null) return null;
+            for(RemoteJudge remoteJudge: RemoteJudge.values()) {
+                if(remoteJudge.getName().equals(judgeName)) {
+                    return remoteJudge;
+                }
+            }
+
+            return null;
+        }
+
+        public static String getListNameByOJName(String judgeName) {
+            if(judgeName == null) return null;
+            switch (judgeName) {
+                case "HDU":
+                    return RemoteJudge.HDU_REMOTE_JUDGE_ACCOUNT.getName();
+                case "CF":
+                    return RemoteJudge.CF_REMOTE_JUDGE_ACCOUNT.getName();
+            }
+            return null;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
 }
