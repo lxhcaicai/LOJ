@@ -6,3 +6,14 @@ spring:
     url: jdbc:mysql://${loj.db.public-host:127.0.0.1}:${loj.db.public-port:3306}/${loj.db.name:loj}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true&rewriteBatchedStatements=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
+
+logging:
+  level:
+    com:
+      alibaba:
+        nacos: error
+      gargoylesoftware: off
+    root: info
+  config: classpath:logback-spring.xml
+  file:
+    path: /judge/log/judgeserver
