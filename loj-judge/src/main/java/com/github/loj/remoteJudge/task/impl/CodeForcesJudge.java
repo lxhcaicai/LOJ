@@ -96,6 +96,7 @@ public class CodeForcesJudge extends RemoteJudgeStrategy {
             remoteJudgeDTO.setCookies(httpResponse.getCookies());
         }
 
+        submitCode(remoteJudgeDTO);
         if(remoteJudgeDTO.getSubmitStatus() == 403) {
             // 如果提交出现403可能是cookie失效了，再执行登录，重新提交
             remoteJudgeDTO.setCookies(null);
