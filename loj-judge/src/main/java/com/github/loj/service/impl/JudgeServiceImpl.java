@@ -30,7 +30,7 @@ public class JudgeServiceImpl implements JudgeService {
     private String name;
 
     @Resource
-    JudgeEntityService judgeEntityService;
+    private JudgeEntityService judgeEntityService;
 
     @Resource
     private JudgeContext judgeContext;
