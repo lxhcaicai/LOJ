@@ -7,8 +7,10 @@ import com.github.loj.pojo.dto.CompileDTO;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.dao.JudgeServerEntityService;
+import com.github.loj.pojo.dto.ToJudgeDTO;
 import com.github.loj.service.JudgeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +30,9 @@ public class JudgeController {
 
     @Autowired
     private JudgeService judgeService;
+
+    @Value("${loj-judge-server.remote-judge.open}")
+    private Boolean openRemoteJudge;
 
     @Autowired
     private JudgeServerEntityService judgeServerEntityService;
@@ -70,5 +75,21 @@ public class JudgeController {
         } catch (SystemError systemError) {
             return CommonResult.errorResponse(systemError.getStderr(), ResultStatus.SYSTEM_ERROR);
         }
+    }
+
+    @PostMapping(value = "/remote-judge")
+    public CommonResult<Void> remoteJudge(@RequestBody ToJudgeDTO toJudgeDTO) {
+        if(!openRemoteJudge) {
+            return CommonResult.errorResponse("对不起！该判题服务器未开启远程虚拟判题功能！", ResultStatus.ACCESS_DENIED);
+        }
+
+        if(toJudgeDTO.getJudge() == null) {
+            return CommonResult.errorResponse("请求参数不能为空");
+        }
+
+        judgeService.remoteJudge(toJudgeDTO);
+
+        return CommonResult.successResponse("提交成功");
+
     }
 }
