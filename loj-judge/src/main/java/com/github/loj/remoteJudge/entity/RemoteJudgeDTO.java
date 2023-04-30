@@ -1,5 +1,7 @@
 package com.github.loj.remoteJudge.entity;
 
+import com.github.loj.util.CodeForcesUtils;
+import com.github.loj.util.Constants;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -43,8 +45,15 @@ public class RemoteJudgeDTO implements Serializable {
      */
     private List<HttpCookie> cookies;
 
-    // 待完善
     public RemoteJudgeDTO setCookies(List<HttpCookie> cookies) {
+        if(cookies != null
+                && (Constants.RemoteJudge.CF_JUDGE.getName().equals(this.oj)
+                || Constants.RemoteJudge.GYM_JUDGE.getName().equals(this.oj))) {
+            HttpCookie rcpc = new HttpCookie("RCPC", CodeForcesUtils.getRCPC());
+            rcpc.setVersion(0);
+            cookies.add(rcpc);
+        }
+        this.cookies = cookies;
         return this;
     }
 
