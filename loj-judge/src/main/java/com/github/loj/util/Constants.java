@@ -54,6 +54,23 @@ public class Constants {
         }
     }
 
+    public enum JudgeCaseMode {
+        DEFAULT("default"),
+        SUBTASK_LOWEST("subtask_lowest"),
+        SUBTASK_AVERAGE("subtask_average"),
+        ERGODIC_WITHOUT_ERROR("ergodic_without_error");
+
+        private final String mode;
+
+
+        JudgeCaseMode(String mode) {
+            this.mode = mode;
+        }
+
+        public String getMode() {
+            return mode;
+        }
+    }
 
     public enum JudgeMode {
         TEST("test"),
