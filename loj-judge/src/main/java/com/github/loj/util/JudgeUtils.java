@@ -1,14 +1,29 @@
 package com.github.loj.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import cn.hutool.json.JSONUtil;
+import com.github.loj.pojo.entity.problem.Problem;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
 
 /**
  * @author lxhcaicai
  * @date 2023/4/15 15:50
  */
 public class JudgeUtils {
+
+    public static HashMap<String,String> getProblemExtraFileMap(Problem problem, String type) {
+        if("user".equals(type)) {
+            if(!StringUtils.isEmpty(problem.getUserExtraFile())) {
+                return (HashMap<String, String>) JSONUtil.toBean(problem.getUserExtraFile(), Map.class);
+            }
+        } else if("judge".equals(type)) {
+            if(!StringUtils.isEmpty(problem.getJudgeExtraFile())) {
+                return (HashMap<String, String>) JSONUtil.toBean(problem.getJudgeExtraFile(), Map.class);
+            }
+        }
+        return null;
+    }
 
     public static List<String> translateCommandline(String toProcess) {
         if (toProcess != null && !toProcess.isEmpty()) {
