@@ -49,6 +49,9 @@ public class Problem implements Serializable {
     @ApiModelProperty(value = "单位mb")
     private Integer memoryLimit;
 
+    @ApiModelProperty(value = "单位mb")
+    private Integer stackLimit;
+
     @ApiModelProperty(value = "描述")
     private String description;
 
