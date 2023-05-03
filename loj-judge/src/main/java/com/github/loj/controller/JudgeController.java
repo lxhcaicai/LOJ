@@ -8,6 +8,7 @@ import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.dao.JudgeServerEntityService;
 import com.github.loj.pojo.dto.ToJudgeDTO;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.service.JudgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,6 +76,17 @@ public class JudgeController {
         } catch (SystemError systemError) {
             return CommonResult.errorResponse(systemError.getStderr(), ResultStatus.SYSTEM_ERROR);
         }
+    }
+
+    @PostMapping(value = "/judge")
+    public CommonResult<Void> submitProblemJudge(@RequestBody ToJudgeDTO toJudgeDTO) {
+
+        Judge judge = toJudgeDTO.getJudge();
+        if(judge == null || judge.getSubmitId() == null || judge.getUid() == null || judge.getPid() == null) {
+            return CommonResult.errorResponse("调用参数错误！请检查您的调用参数！");
+        }
+        judgeService.judge(judge);
+        return CommonResult.successResponse("判题机评测完成！");
     }
 
     @PostMapping(value = "/remote-judge")
