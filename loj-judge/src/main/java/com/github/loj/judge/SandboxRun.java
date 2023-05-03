@@ -339,4 +339,77 @@ public class SandboxRun {
 
         return result;
     }
+
+    public static JSONArray spjCheckResult(List<String> args,
+                                           List<String> envs,
+                                           String userOutputFilePath,
+                                           String userOutputFileName,
+                                           String testCaseInputFilePath,
+                                           String testCaseInputFileName,
+                                           String testCaseOutputFilePath,
+                                           String testCaseOutputFileName,
+                                           String spjExeSrc,
+                                           String spjExeName) throws SystemError {
+
+        JSONObject cmd = new JSONObject();
+        cmd.set("args", args);
+        cmd.set("env", envs);
+
+        JSONArray outFiles = new JSONArray();
+
+        JSONObject content  = new JSONObject();
+        content.set("content","");
+
+        JSONObject outStdout = new JSONObject();
+        outStdout.set("name", "stdout");
+        outStdout.set("max", 1024 * 1024 * 16);
+
+        JSONObject outStderr = new JSONObject();
+        outStderr.set("name", "stderr");
+        outStderr.set("max", 1024 * 1024 * 16);
+
+        outFiles.put(content);
+        outFiles.put(outStdout);
+        outFiles.put(outStderr);
+
+        // ms-->ns
+        cmd.set("cpuLimit", TIME_LIMIT_MS * 1000 * 1000L);
+        cmd.set("clockLimit", TIME_LIMIT_MS * 1000 * 1000L * 3);
+        // byte
+        cmd.set("memoryLimit", MEMORY_LIMIT_MB * 1024 * 1024L);
+        cmd.set("procLimit", maxProcessNumber);
+        cmd.set("stackLimit", STACK_LIMIT_MB * 1024 * 1024L);
+
+        JSONObject spjExeFile = new JSONObject();
+        spjExeFile.set("src", spjExeSrc);
+
+        JSONObject userOutputFileSrc = new JSONObject();
+        userOutputFileSrc.set("src", userOutputFilePath);
+
+        JSONObject stdInputFileSrc = new JSONObject();
+        stdInputFileSrc.set("src", testCaseInputFilePath);
+
+        JSONObject stdOutFileSrc = new JSONObject();
+        stdOutFileSrc.set("src", testCaseOutputFilePath);
+
+        JSONObject spjCopyIn = new JSONObject();
+
+        spjCopyIn.set(spjExeName, spjExeFile);
+        spjCopyIn.set(userOutputFileName, userOutputFileSrc);
+        spjCopyIn.set(testCaseInputFileName, stdInputFileSrc);
+        spjCopyIn.set(testCaseOutputFileName, stdOutFileSrc);
+
+        cmd.set("copyIn", spjCopyIn);
+        cmd.set("copyOut", new JSONArray().put("stdout").put("stderr"));
+
+        JSONObject param = new JSONObject();
+        param.set("cmd", new JSONArray().put(cmd));
+
+        // 调用判题安全沙箱
+        JSONArray result = instance.run("run", param);
+        JSONObject spjRes = (JSONObject) result.get(0);
+        spjRes.set("originalStatus", spjRes.getStr("status"));
+        spjRes.set("status", RESULT_MAP_STATUS.get(spjRes.getStr("status")));
+        return  result;
+    }
 }
