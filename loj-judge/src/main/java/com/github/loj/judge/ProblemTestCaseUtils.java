@@ -5,7 +5,6 @@ import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -47,7 +46,7 @@ public class ProblemTestCaseUtils {
             JSONObject testcaseInfo = JSONUtil.parseObj(infoStr);
 
             // 测试样例被改动需要重新生成
-            if(testcaseInfo.getStr("version", null).equals(version)) {
+            if(!testcaseInfo.getStr("version", null).equals(version)) {
                 return tryInitTestCaseInfo(testCasesDir,problemId, version, judgeMode, judgeCaseMode);
             }
             return testcaseInfo;
