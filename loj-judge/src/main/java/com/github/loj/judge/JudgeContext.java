@@ -6,8 +6,11 @@ import com.github.loj.dao.UserAcproblemEntityService;
 import com.github.loj.judge.entity.LanguageConfig;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
+import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.user.UserAcproblem;
 import com.github.loj.util.Constants;
+import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +35,47 @@ public class JudgeContext {
 
     @Resource
     private ContestRecordEntityService contestRecordEntityService;
+
+    public Judge Judge(Problem problem, Judge judge) {
+
+        // c和c++为一倍时间和空间，其它语言为2倍时间和空间
+        LanguageConfig languageConfig = languageConfigLoader.getLanguageConfigByName(judge.getLanguage());
+        if(languageConfig.getSrcName() == null
+                || (!languageConfig.getSrcName().endsWith(".c")
+                && !languageConfig.getSrcName().endsWith(".cpp"))) {
+            problem.setTimeLimit(problem.getTimeLimit() * 2);
+            problem.setMemoryLimit(problem.getMemoryLimit() * 2);
+        }
+
+        HashMap<String,Object> judgeResult = judgeStrategy.judge(problem, judge);
+
+        Judge finalJudgeRes = new Judge();
+        finalJudgeRes.setSubmitId(judge.getSubmitId());
+        // 如果是编译失败、提交错误或者系统错误就有错误提醒
+        if(judgeResult.get("code") == Constants.Judge.STATUS_COMPILE_ERROR.getStatus() ||
+                judgeResult.get("code") == Constants.Judge.STATUS_SYSTEM_ERROR.getStatus() ||
+                judgeResult.get("code") == Constants.Judge.STATUS_RUNTIME_ERROR.getStatus() ||
+                judgeResult.get("code") == Constants.Judge.STATUS_SUBMITTED_FAILED.getStatus()) {
+            finalJudgeRes.setErrorMessage((String) judgeResult.getOrDefault("errMsg",""));
+        }
+
+        // 设置最终结果状态码
+        finalJudgeRes.setStatus((Integer) judgeResult.get("code"));
+        // 设置最大时间和最大空间不超过题目限制时间和空间
+        // kb
+        Integer memory = (Integer) judgeResult.get("memory");
+        finalJudgeRes.setMemory(Math.min(memory, problem.getMemoryLimit() * 1024));
+
+        // ms
+        Integer time = (Integer) judgeResult.get("time");
+        finalJudgeRes.setTime(Math.min(time, problem.getTimeLimit()));
+        // score
+        finalJudgeRes.setScore((Integer) judgeResult.getOrDefault("score", null));
+        // oi_rank_score
+        finalJudgeRes.setOiRankScore((Integer) judgeResult.getOrDefault("oiRankScore", null));
+
+        return finalJudgeRes;
+    }
 
     public TestJudgeRes testJudgeRes(TestJudgeReq testJudgeReq) {
         // c和c++为一倍时间和空间，其它语言为2倍时间和空间
