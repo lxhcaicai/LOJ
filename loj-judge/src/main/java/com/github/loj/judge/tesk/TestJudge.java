@@ -112,4 +112,9 @@ public class TestJudge extends AbstractJudge{
         }
         return result;
     }
+
+    @Override
+    public JSONObject checkMultipleResult(SandBoxRes userSandBoxRes, SandBoxRes interactiveSandBoxRes, JudgeDTO judgeDTO, JudgeGlobalDTO judgeGlobalDTO) {
+        return null;
+    }
 }
