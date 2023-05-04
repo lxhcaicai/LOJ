@@ -133,6 +133,11 @@ public class SpecialJudge extends AbstractJudge{
         return result;
     }
 
+    @Override
+    public JSONObject checkMultipleResult(SandBoxRes userSandBoxRes, SandBoxRes interactiveSandBoxRes, JudgeDTO judgeDTO, JudgeGlobalDTO judgeGlobalDTO) {
+        return null;
+    }
+
     private JSONObject spjRunAndCheckResult(String userOutputFilePath,
                                             String userOutputFileName,
                                             String testCaseInputFilePath,

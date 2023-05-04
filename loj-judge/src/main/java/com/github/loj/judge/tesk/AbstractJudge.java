@@ -130,6 +130,8 @@ public abstract class AbstractJudge {
         return res;
     }
 
+    public abstract JSONObject checkMultipleResult(SandBoxRes userSandBoxRes, SandBoxRes interactiveSandBoxRes, JudgeDTO judgeDTO, JudgeGlobalDTO judgeGlobalDTO);
+
     // 去除行末尾空白符
     protected String rtrim(String str) {
         if(str == null) return null;
