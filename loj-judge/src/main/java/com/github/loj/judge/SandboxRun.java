@@ -412,4 +412,163 @@ public class SandboxRun {
         spjRes.set("status", RESULT_MAP_STATUS.get(spjRes.getStr("status")));
         return  result;
     }
+
+    public static JSONArray interactiveTestCase(List<String> args,
+                                                List<String> envs,
+                                                String userExeName,
+                                                String userFileId,
+                                                String userFileContent,
+                                                Long userMaxTime,
+                                                Long userMaxMemory,
+                                                Integer userMaxStack,
+                                                String testCaseInputPath,
+                                                String testCaseInputFileName,
+                                                String testCaseOutputFilePath,
+                                                String testCaseOutputFileName,
+                                                String userOutputFileName,
+                                                List<String> interactArgs,
+                                                List<String> interactEnvs,
+                                                String interactExeSrc,
+                                                String interactExeName) throws SystemError {
+        /**
+         *  注意：用户源代码需要先编译，若是通过编译需要先将文件存入内存，再利用管道判题，同时特殊判题程序必须已编译且存在（否则判题失败，系统错误）！
+         */
+
+        JSONObject pipeInputCmd = new JSONObject();
+        pipeInputCmd.set("args", args);
+        pipeInputCmd.set("env", envs);
+
+        JSONArray files = new JSONArray();
+        JSONObject stderr = new JSONObject();
+        stderr.set("name", "stderr");
+        stderr.set("max", 1024 * 1024 * STDIO_SIZE_MB);
+
+        files.put(new JSONObject());
+        files.put(new JSONObject());
+        files.put(stderr);
+
+        String inTmp = files.toString().replace("{}", "null");
+        pipeInputCmd.set("files", JSONUtil.parseArray(inTmp, false));
+
+        // ms-->ns
+        pipeInputCmd.set("cpuLimit", userMaxTime * 1000 * 1000L);
+        pipeInputCmd.set("clockLimit", userMaxTime * 1000 * 1000L * 3);
+
+        // byte
+        pipeInputCmd.set("memoryLimit", (userMaxMemory + 100) * 1024 * 1024L);
+        pipeInputCmd.set("procLimit", maxProcessNumber);
+        pipeInputCmd.set("stackLimit", userMaxStack * 1024 * 1024L);
+
+        JSONObject exeFile = new JSONObject();
+        if(!StringUtils.isEmpty(userFileId)) {
+            exeFile.set("fileId", userFileId);
+        } else {
+            exeFile.set("content", userFileContent);
+        }
+        JSONObject copyIn = new JSONObject();
+        copyIn.set(userExeName, exeFile);
+
+        pipeInputCmd.set("copyIn", copyIn);
+        pipeInputCmd.set("copyOut", new JSONObject());
+
+        // 管道输出，用户程序输出数据经过特殊判题程序后，得到的最终输出结果。
+        JSONObject pipeOutputCmd = new JSONObject();
+        pipeOutputCmd.set("args", interactArgs);
+        pipeOutputCmd.set("env", interactEnvs);
+
+        JSONArray outFiles = new JSONArray();
+
+        JSONObject outStderr = new JSONObject();
+        outStderr.set("name", "stderr");
+        outStderr.set("max", 1024 * 1024 * STDIO_SIZE_MB);
+        outFiles.put(new JSONObject());
+        outFiles.put(new JSONObject());
+        outFiles.put(outStderr);
+        String outTmp = outFiles.toString().replace("{}", "null");
+        pipeOutputCmd.set("files", JSONUtil.parseArray(outTmp, false));
+
+        // ms-->ns
+        pipeOutputCmd.set("cpuLimit", userMaxTime * 1000 * 1000L * 2);
+        pipeOutputCmd.set("clockLimit", userMaxTime * 1000 * 1000L * 3 * 2);
+        // byte
+        pipeOutputCmd.set("memoryLimit", (userMaxMemory + 100) * 1024 * 1024L * 2);
+        pipeOutputCmd.set("procLimit", maxProcessNumber);
+        pipeOutputCmd.set("stackLimit", STACK_LIMIT_MB * 1024 * 1024L);
+
+        JSONObject spjExeFile = new JSONObject();
+        spjExeFile.set("src", interactExeSrc);
+
+        JSONObject stdInputFileSrc = new JSONObject();
+        stdInputFileSrc.set("src", testCaseInputPath);
+
+        JSONObject stdOutFileSrc = new JSONObject();
+        stdOutFileSrc.set("src", testCaseOutputFilePath);
+
+        JSONObject interactiveCopyIn = new JSONObject();
+        interactiveCopyIn.set(interactExeName, spjExeFile);
+        interactiveCopyIn.set(testCaseInputFileName, stdInputFileSrc);
+        interactiveCopyIn.set(testCaseOutputFileName, stdOutFileSrc);
+
+        pipeInputCmd.set("copyIn", interactiveCopyIn);
+        pipeInputCmd.set("copyOut", new JSONArray().put(userOutputFileName));
+
+        JSONArray cmdList = new JSONArray();
+        cmdList.put(pipeInputCmd);
+        cmdList.put(pipeOutputCmd);
+
+        JSONObject param = new JSONObject();
+        // 添加cmd指令
+        param.set("cmd", cmdList);
+
+        JSONArray pipeMapping = new JSONArray();
+        // 用户程序
+        JSONObject user = new JSONObject();
+
+        JSONObject userIn = new JSONObject();
+        userIn.set("index", 0);
+        userIn.set("fd", 1);
+
+        JSONObject userOut = new JSONObject();
+        userOut.set("index", 1);
+        userOut.set("fd", 0);
+
+        user.set("in", userIn);
+        user.set("out", userOut);
+        user.set("max", STDIO_SIZE_MB * 1024 * 1024L);
+        user.set("proxy", true);
+        user.set("name", "stdout");
+
+        // 评测程序
+        JSONObject judge = new JSONObject();
+
+        JSONObject judgeIn = new JSONObject();
+        judgeIn.set("index", 1);
+        judgeIn.set("fd", 1);
+
+        JSONObject judgeOut = new JSONObject();
+        judgeOut.set("index", 0);
+        judgeOut.set("fd", 0);
+
+        judge.set("in", judgeIn);
+        judge.set("out", judgeOut);
+        judge.set("max", STDIO_SIZE_MB * 1024 * 1024);
+        judge.set("proxy", true);
+        judge.set("name", "stdout");
+
+        // 添加到管道映射列表
+        pipeMapping.add(user);
+        pipeMapping.add(judge);
+
+        param.set("pipeMapping", pipeMapping);
+
+        // 调用判题安全沙箱
+        JSONArray result = instance.run("/run", param);
+        JSONObject userRes = (JSONObject) result.get(0);
+        JSONObject interactiveRes = (JSONObject) result.get(1);
+        userRes.set("originalStatus", userRes.getStr("status"));
+        userRes.set("status", RESULT_MAP_STATUS.get(userRes.getStr("status")));
+        interactiveRes.set("originalStatus", interactiveRes.getStr("status"));
+        interactiveRes.set("status", RESULT_MAP_STATUS.get(interactiveRes.getStr("status")));
+        return result;
+    }
 }
