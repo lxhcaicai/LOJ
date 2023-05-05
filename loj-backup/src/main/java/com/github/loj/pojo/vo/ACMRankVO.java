@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 @ApiModel(value="ACM排行榜数据类ACMRankVO", description="")
 @Data
-public class ACMRankVo implements Serializable {
+public class ACMRankVO implements Serializable {
 
     @ApiModelProperty(value = "用户id")
     private String uid;
