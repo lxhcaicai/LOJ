@@ -5,7 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.loj.dao.JudgeServerEntityService;
 import com.github.loj.judge.SandboxRun;
-import com.github.loj.pojo.judge.JudgeServer;
+import com.github.loj.pojo.entity.judge.JudgeServer;
 import com.github.loj.mapper.JudgeServerMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

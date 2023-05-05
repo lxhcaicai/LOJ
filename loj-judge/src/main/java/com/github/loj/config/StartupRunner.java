@@ -2,7 +2,7 @@ package com.github.loj.config;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.loj.dao.JudgeServerEntityService;
-import com.github.loj.pojo.judge.JudgeServer;
+import com.github.loj.pojo.entity.judge.JudgeServer;
 import com.github.loj.util.IpUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.github.loj.dao;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.github.loj.pojo.user.UserAcproblem;
+import com.github.loj.pojo.entity.user.UserAcproblem;
 
 /**
  * @author lxhcaicai

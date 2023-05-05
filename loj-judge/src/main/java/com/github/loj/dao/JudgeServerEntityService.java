@@ -1,7 +1,7 @@
 package com.github.loj.dao;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.github.loj.pojo.judge.JudgeServer;
+import com.github.loj.pojo.entity.judge.JudgeServer;
 
 import java.util.HashMap;
 

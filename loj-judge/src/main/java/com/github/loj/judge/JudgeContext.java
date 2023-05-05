@@ -8,9 +8,8 @@ import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
-import com.github.loj.pojo.user.UserAcproblem;
+import com.github.loj.pojo.entity.user.UserAcproblem;
 import com.github.loj.util.Constants;
-import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

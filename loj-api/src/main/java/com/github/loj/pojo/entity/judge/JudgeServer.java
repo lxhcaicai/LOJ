@@ -1,4 +1,4 @@
-package com.github.loj.pojo.judge;
+package com.github.loj.pojo.entity.judge;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
