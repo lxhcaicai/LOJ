@@ -7,10 +7,9 @@ import com.github.loj.service.admin.user.AdminUserService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * @author lxhcaicai
@@ -31,5 +30,13 @@ public class AdminUserController {
                                                         @RequestParam(value = "onlyAdmin", defaultValue = "false") Boolean onlyAdmin,
                                                         @RequestParam(value = "keyword", required = false) String keyword) {
         return adminUserService.getUserList(limit,currentPage, onlyAdmin,keyword);
+    }
+
+
+    @PostMapping("/generate-user")
+    @RequiresPermissions("user_admin")
+    @RequiresAuthentication
+    public CommonResult<Map<Object,Object>> generateUser(@RequestBody Map<String,Object> params) {
+        return adminUserService.generateUser(params);
     }
 }
