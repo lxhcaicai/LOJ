@@ -1,4 +1,4 @@
-package com.github.loj.pojo.user;
+package com.github.loj.pojo.entity.user;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
