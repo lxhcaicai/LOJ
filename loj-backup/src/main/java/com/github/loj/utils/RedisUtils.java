@@ -567,6 +567,23 @@ public class RedisUtils {
     }
 
     /**
+     * 将list左边放入缓存
+     *
+     * @param key   键
+     * @param value 值
+     */
+    public boolean llPush(String key, Object value) {
+        try {
+            redisTemplate.opsForList().leftPush(key,value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /**
      * 将list放入缓存
      *
      * @param key   键
