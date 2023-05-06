@@ -31,7 +31,11 @@ public class ProblemCountVO implements Serializable {
     private Integer re;
 
     @ApiModelProperty(value = "格式错误")
+    private Integer pe;
+
+    @ApiModelProperty(value = "编译错误")
     private Integer ce;
+
 
     @ApiModelProperty(value = "答案错误")
     private Integer wa;
