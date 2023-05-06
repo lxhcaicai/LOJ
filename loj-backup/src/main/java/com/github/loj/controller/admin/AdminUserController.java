@@ -55,4 +55,11 @@ public class AdminUserController {
     public CommonResult<Void> deleteUser(@RequestBody Map<String,Object> params) {
         return adminUserService.deleteUser((List<String>) params.get("ids"));
     }
+
+    @PostMapping("/insert-batch-user")
+    @RequiresPermissions("user_admin")
+    @RequiresAuthentication
+    public CommonResult<Void> insertBatchUser(@RequestBody Map<String,Object> params) {
+        return adminUserService.insertBatchUser((List<List<String>>) params.get("users"));
+    }
 }

@@ -56,4 +56,14 @@ public class AdminUserServiceImpl implements AdminUserService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> insertBatchUser(List<List<String>> users) {
+        try {
+            adminUserManager.insertBatchUser(users);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

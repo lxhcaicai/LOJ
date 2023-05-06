@@ -20,4 +20,6 @@ public interface AdminUserService {
     public CommonResult<Void> editUser(AdminEditUserDTO adminEditUserDTO);
 
     public CommonResult<Void> deleteUser(List<String> deleteUserIdList);
+
+    public CommonResult<Void> insertBatchUser(List<List<String>> users);
 }

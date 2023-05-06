@@ -206,4 +206,88 @@ public class AdminUserManager {
         log.info("[{}],[{}],uidList:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_User", "Delete", deleteUserIdList, userRolesVo.getUid(), userRolesVo.getUsername());
     }
+
+    public void insertBatchUser(List<List<String>> users) throws StatusFailException {
+        List<String> successUidList = new LinkedList<>();
+        if(users != null) {
+            HashSet<String> failedUserNameSet = new HashSet<>();
+            for(List<String> user: users) {
+                try {
+                    String uuid = addNewUser(user);
+                    if(uuid != null) {
+                        successUidList.add(uuid);
+                    } else {
+                        failedUserNameSet.add(user.get(0));
+                    }
+                } catch (Exception e) {
+                    failedUserNameSet.add(user.get(0));
+                }
+            }
+            // 异步同步系统通知
+            if(successUidList.size() > 0) {
+                adminNoticeManager.syncNoticeToNewRegisterBatchUser(successUidList);
+            }
+            if(failedUserNameSet.size() > 0) {
+                int failedCount = failedUserNameSet.size();
+                int successCount = users.size() - failedCount;
+                String errMsg = "[导入结果] 成功数：" + successCount + ",  失败数：" + failedCount +
+                        ",  失败的用户名：" + failedUserNameSet;
+                throw  new StatusFailException(errMsg);
+            }
+        } else {
+            throw new StatusFailException("插入的用户数据不能为空！");
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public String addNewUser(List<String> user) throws StatusFailException {
+        String uuid = IdUtil.simpleUUID();
+        UserInfo userInfo = new UserInfo()
+                .setUuid(uuid)
+                .setUsername(user.get(0))
+                .setPassword(SecureUtil.md5(user.get(1)))
+                .setEmail(user.size() <= 2 || StringUtils.isEmpty(user.get(2)) ? null: user.get(2));
+
+        if(user.size() >= 4) {
+            String realname = user.get(3);
+            if(!StringUtils.isEmpty(realname)) {
+                userInfo.setRealname(user.get(3));
+            }
+        }
+
+        if(user.size() >= 5) {
+            String gender = user.get(4);
+            if("male".equals(gender.toLowerCase()) || "0".equals(gender)) {
+                userInfo.setGender("male");
+            } else if("female".equals(gender.toLowerCase()) || "1".equals(gender)) {
+                userInfo.setGender("female");
+            }
+        }
+
+        if(user.size() >= 6) {
+            String nickname = user.get(5);
+            if (!StringUtils.isEmpty(nickname)) {
+                userInfo.setNickname(nickname);
+            }
+        }
+
+        if (user.size() >= 7) {
+            String school = user.get(6);
+            if (!StringUtils.isEmpty(school)) {
+                userInfo.setSchool(school);
+            }
+        }
+
+        boolean result1 = userInfoEntityService.save(userInfo);
+        UserRole userRole = new UserRole()
+                .setRoleId(1002L)
+                .setUid(uuid);
+        boolean result2 = userRoleEntityService.save(userRole);
+        UserRecord userRecord = new UserRecord().setUid(uuid);
+        boolean result3 = userRecordEntityService.save(userRecord);
+        if(!result1 || !result2 || !result3) {
+            throw new StatusFailException("生成用户失败");
+        }
+        return uuid;
+    }
 }
