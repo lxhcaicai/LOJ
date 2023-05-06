@@ -10,6 +10,7 @@ import com.github.loj.service.admin.user.AdminUserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,6 +41,16 @@ public class AdminUserServiceImpl implements AdminUserService {
     public CommonResult<Void> editUser(AdminEditUserDTO adminEditUserDTO) {
         try {
             adminUserManager.editUser(adminEditUserDTO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> deleteUser(List<String> deleteUserIdList) {
+        try {
+            adminUserManager.deleteUser(deleteUserIdList);
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());

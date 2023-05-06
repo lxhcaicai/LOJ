@@ -1,5 +1,6 @@
 package com.github.loj.controller.admin;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.AdminEditUserDTO;
@@ -10,6 +11,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,5 +47,12 @@ public class AdminUserController {
     @RequiresPermissions("user_admin")
     public CommonResult<Void> editUser(@RequestBody AdminEditUserDTO adminEditUserDTO) {
         return adminUserService.editUser(adminEditUserDTO);
+    }
+
+    @DeleteMapping("/delete-user")
+    @RequiresPermissions("user_admin")
+    @RequiresAuthentication
+    public CommonResult<Void> deleteUser(@RequestBody Map<String,Object> params) {
+        return adminUserService.deleteUser((List<String>) params.get("ids"));
     }
 }

@@ -196,4 +196,14 @@ public class AdminUserManager {
             adminNoticeManager.addSingleNoticeToUser(userRolesVo.getUid(), uid, title, content, "Sys");
         }
     }
+
+    public void deleteUser(List<String> deleteUserIdList) throws StatusFailException {
+        boolean isOk = userInfoEntityService.removeByIds(deleteUserIdList);
+        if(!isOk) {
+            throw  new StatusFailException("删除失败!");
+        }
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],uidList:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_User", "Delete", deleteUserIdList, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
 }

@@ -5,6 +5,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.AdminEditUserDTO;
 import com.github.loj.pojo.vo.UserRolesVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,4 +18,6 @@ public interface AdminUserService {
     public CommonResult<Map<Object,Object>> generateUser(Map<String,Object> params);
 
     public CommonResult<Void> editUser(AdminEditUserDTO adminEditUserDTO);
+
+    public CommonResult<Void> deleteUser(List<String> deleteUserIdList);
 }
