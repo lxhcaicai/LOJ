@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.AdminEditUserDTO;
 import com.github.loj.pojo.vo.UserRolesVO;
 import com.github.loj.service.admin.user.AdminUserService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -38,5 +39,11 @@ public class AdminUserController {
     @RequiresAuthentication
     public CommonResult<Map<Object,Object>> generateUser(@RequestBody Map<String,Object> params) {
         return adminUserService.generateUser(params);
+    }
+
+    @PutMapping("/edit-user")
+    @RequiresPermissions("user_admin")
+    public CommonResult<Void> editUser(@RequestBody AdminEditUserDTO adminEditUserDTO) {
+        return adminUserService.editUser(adminEditUserDTO);
     }
 }

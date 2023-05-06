@@ -3,27 +3,32 @@ package com.github.loj.manager.admin.user;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.dao.user.UserRoleEntityService;
 import com.github.loj.manager.msg.AdminNoticeManager;
+import com.github.loj.pojo.dto.AdminEditUserDTO;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.entity.user.UserRecord;
 import com.github.loj.pojo.entity.user.UserRole;
 import com.github.loj.pojo.vo.UserRolesVO;
+import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -102,6 +107,93 @@ public class AdminUserManager {
             return MapUtil.builder().put("key", key).map();
         } else {
             throw new StatusFailException("生成指定用户失败！注意查看组合生成的用户名是否已有存在的！");
+        }
+    }
+
+    public void editUser(AdminEditUserDTO adminEditUserDTO) throws StatusFailException {
+
+        String username = adminEditUserDTO.getUsername();
+        String uid = adminEditUserDTO.getUid();
+        String realname = adminEditUserDTO.getRealname();
+        String email = adminEditUserDTO.getEmail();
+        String password = adminEditUserDTO.getPassword();
+        int type = adminEditUserDTO.getType();
+        int status = adminEditUserDTO.getStatus();
+        boolean setNewPwd = adminEditUserDTO.getSetNewPwd();
+
+        String titleName = adminEditUserDTO.getTitleName();
+        String titleColor = adminEditUserDTO.getTitleColor();
+
+        if(!StringUtils.isEmpty(realname) && realname.length() > 50) {
+            throw new StatusFailException("真实姓名的长度不能超过50位");
+        }
+
+        if (!StringUtils.isEmpty(titleName) && titleName.length() > 20) {
+            throw new StatusFailException("头衔的长度建议不要超过20位");
+        }
+
+
+        if(!StringUtils.isEmpty(password) && (password.length() < 6) || password.length() > 20) {
+            throw new StatusFailException("密码长度建议为6~20位！");
+        }
+
+        if (username.length() > 20) {
+            throw new StatusFailException("用户名长度建议不能超过20位!");
+        }
+
+
+        if(StrUtil.isBlank(email)) {
+            email = null;
+        } else {
+            QueryWrapper<UserInfo> emailUserInfoQueryWrapper = new QueryWrapper<>();
+            emailUserInfoQueryWrapper.select("uuid", "email")
+                    .eq("email", email);
+            UserInfo userInfo = userInfoEntityService.getOne(emailUserInfoQueryWrapper,false);
+
+            if(userInfo != null && !Objects.equals(userInfo.getUuid(), adminEditUserDTO.getUid())) {
+                throw new StatusFailException("修改失败，邮箱已被使用，请重新设置其他邮箱！");
+            }
+        }
+
+        UpdateWrapper<UserInfo> userInfoUpdateWrapper = new UpdateWrapper<>();
+        userInfoUpdateWrapper.eq("uuid", uid)
+                .set("username", username)
+                .set("realname", realname)
+                .set("email", email)
+                .set(setNewPwd, "password", SecureUtil.md5(password))
+                .set("title_name", titleName)
+                .set("title_color", titleColor)
+                .set("status", status);
+        boolean updateUserInfo = userInfoEntityService.update(userInfoUpdateWrapper);
+
+        QueryWrapper<UserRole> userRoleQueryWrapper = new QueryWrapper<>();
+        userRoleQueryWrapper.eq("uid", uid);
+        UserRole userRole = userRoleEntityService.getOne(userRoleQueryWrapper, false);
+        boolean changeUserRole = false;
+        int oldType = userRole.getRoleId().intValue();
+        if(userRole.getRoleId().intValue() != type) {
+            userRole.setRoleId((long) type);
+            changeUserRole = userRoleEntityService.updateById(userRole);
+            if(type == 1000 || oldType == 1000) {
+                // 新增或者去除超级管理员需要删除缓存
+                String cacheKey  = Constants.Account.SUPER_ADMIN_UID_LIST_CACHE.getCode();;
+                redisUtils.del(cacheKey);
+            }
+        }
+        if(updateUserInfo && setNewPwd) {
+            // 需要重新登录
+            userRoleEntityService.deleteCache(uid,true);
+        } else if(changeUserRole) {
+            // 需要重新授权
+            userRoleEntityService.deleteCache(uid, false);
+        }
+
+        if(changeUserRole) {
+            // 获取当前登录的用户
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+            String title = "权限变更通知(Authority Change Notice)";
+            String content = userRoleEntityService.getAuthChangeContent(oldType, type);
+            adminNoticeManager.addSingleNoticeToUser(userRolesVo.getUid(), uid, title, content, "Sys");
         }
     }
 }
