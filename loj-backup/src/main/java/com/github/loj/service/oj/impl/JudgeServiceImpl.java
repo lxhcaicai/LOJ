@@ -7,6 +7,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.JudgeManager;
 import com.github.loj.pojo.dto.TestJudgeDTO;
+import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.service.oj.JudgeService;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,15 @@ public class JudgeServiceImpl implements JudgeService {
             return CommonResult.errorResponse(e.getMessage());
         } catch (StatusSystemErrorException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
+        }
+    }
+
+    @Override
+    public CommonResult<TestJudgeVO> getTestJudgeResult(String testJudgeKey) {
+        try {
+            return CommonResult.successResponse(judgeManager.getTestJudgeResult(testJudgeKey));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }

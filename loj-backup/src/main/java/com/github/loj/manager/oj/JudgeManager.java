@@ -11,6 +11,7 @@ import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
@@ -86,5 +87,26 @@ public class JudgeManager {
                 .status(Constants.Judge.STATUS_PENDING.getStatus())
                 .build(),10*60);
         return uniqueKey;
+    }
+
+    public TestJudgeVO getTestJudgeResult(String testJudgeKey) throws StatusFailException {
+        TestJudgeRes testJudgeRes = (TestJudgeRes) redisUtils.get(testJudgeKey);
+        if(testJudgeRes == null) {
+            throw new StatusFailException("查询错误！当前在线调试任务不存在！");
+        }
+        TestJudgeVO testJudgeVO = new TestJudgeVO();
+        testJudgeVO.setStatus(testJudgeRes.getStatus());
+        if(Constants.Judge.STATUS_PENDING.getStatus().equals(testJudgeRes.getStatus())) {
+            return testJudgeVO;
+        }
+        testJudgeVO.setUserInput(testJudgeRes.getInput());
+        testJudgeVO.setUserOutput(testJudgeRes.getStdout());
+        testJudgeVO.setExpectedOutput(testJudgeRes.getExpectedOutput());
+        testJudgeVO.setMemory(testJudgeRes.getMemory());
+        testJudgeVO.setTime(testJudgeRes.getTime());
+        testJudgeVO.setStderr(testJudgeRes.getStderr());
+        testJudgeVO.setProblemJudgeMode(testJudgeRes.getProblemJudgeMode());
+        redisUtils.del(testJudgeKey);
+        return testJudgeVO;
     }
 }
