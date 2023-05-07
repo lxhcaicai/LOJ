@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Accessors
+@Accessors(chain = true)
 public class ToJudgeDTO {
 
     private static final long serialVersion = 888L;

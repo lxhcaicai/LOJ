@@ -8,4 +8,6 @@ import com.github.loj.pojo.entity.judge.Judge;
  * @date 2023/5/7 22:12
  */
 public interface JudgeEntityService extends IService<Judge> {
+
+    void failToUseRedisPublishJudge(Long submitId, Long pid, Boolean isContest);
 }

@@ -1,7 +1,9 @@
 package com.github.loj.controller.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.service.oj.JudgeService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -31,5 +33,12 @@ public class JudgeController {
     @GetMapping("/get-test-judge-result")
     public CommonResult<TestJudgeVO> getTestJudgeResult(@RequestParam("testJudgeKey") String testJudgeKey) {
         return judgeService.getTestJudgeResult(testJudgeKey);
+    }
+
+    @RequiresAuthentication
+    @RequiresPermissions("submit")
+    @RequestMapping(value = "/submit-problem-judge", method = RequestMethod.POST)
+    public CommonResult<Judge> submitProblemJudge(@RequestBody SubmitJudgeDTO judgeDTO) {
+        return judgeService.submitProblemJudge(judgeDTO);
     }
 }

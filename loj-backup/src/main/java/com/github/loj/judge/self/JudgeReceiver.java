@@ -1,15 +1,24 @@
 package com.github.loj.judge.self;
 
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.github.loj.dao.contest.ContestRecordEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.judge.AbstractReceiver;
 import com.github.loj.judge.Dispatcher;
 import com.github.loj.pojo.dto.TestJudgeReq;
+import com.github.loj.pojo.dto.ToJudgeDTO;
+import com.github.loj.pojo.entity.contest.ContestRecord;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 /**
  * @author lxhcaicai
@@ -24,6 +33,12 @@ public class JudgeReceiver extends AbstractReceiver {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
+
+    @Autowired
+    private ContestRecordEntityService contestRecordEntityService;
 
     @Async("judgeTaskAsyncPool")
     public void processWaitingTask() {
@@ -52,6 +67,30 @@ public class JudgeReceiver extends AbstractReceiver {
             dispatcher.dispatch(Constants.TaskType.TEST_JUDGE, testJudgeReq);
         } else {
             // TODO 判题测
+            JSONObject task = JSONUtil.parseObj(taskStr);
+            Long judgeId = task.getLong("judgeId");
+            Judge judge = judgeEntityService.getById(judgeId);
+            if(judge != null) {
+                // 调度评测时发现该评测任务被取消，则结束评测
+                if(Objects.equals(judge.getStatus(), Constants.Judge.STATUS_CANCELLED.getStatus())) {
+                    if(judge.getCid() != 0) {
+                        UpdateWrapper<ContestRecord> updateWrapper = new UpdateWrapper<>();
+                        // 取消评测，不罚时也不算得分
+                        updateWrapper.set("status", Constants.Contest.RECORD_NOT_AC_NOT_PENALTY.getCode());
+                        updateWrapper.eq("submit_id", judge.getSubmitId());
+                        contestRecordEntityService.update(updateWrapper);
+                    }
+                } else {
+                    String token = task.getStr("token");
+                    // 调用判题服务
+                    dispatcher.dispatch(Constants.TaskType.JUDGE,new ToJudgeDTO()
+                            .setJudge(judge)
+                            .setToken(token)
+                            .setRemoteJudgeProblem(null));
+                }
+            }
         }
+        // 接着处理任务
+        processWaitingTask();
     }
 }

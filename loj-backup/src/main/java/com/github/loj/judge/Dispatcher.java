@@ -4,11 +4,13 @@ import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.judge.JudgeServerEntityService;
 import com.github.loj.pojo.dto.CompileDTO;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.pojo.dto.ToJudgeDTO;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.judge.JudgeServer;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,6 +37,9 @@ public class Dispatcher {
 
     @Autowired
     private JudgeServerEntityService judgeServerEntityService;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -74,7 +80,33 @@ public class Dispatcher {
      * @param path
      */
     public void defaultJudge(ToJudgeDTO data, String path) {
-        // TODO
+        Long submitId = data.getJudge().getSubmitId();
+        AtomicInteger count = new AtomicInteger(0);
+        String taskKey = UUID.randomUUID().toString() + submitId;
+
+        Runnable getResultTask = () -> {
+            if(count.get() > maxTryNum) {
+                checkResult(null, submitId);
+                releaseTaskThread(taskKey);
+                return;
+            }
+            count.getAndIncrement();
+            JudgeServer judgeServer = chooseUtils.chooseServer(false);
+            if(judgeServer != null) {
+                CommonResult result = null;
+                try {
+                    result = restTemplate.postForObject("http://" + judgeServer.getUrl() + path, data, CommonResult.class);
+                } catch (Exception e) {
+                    log.error("[Self Judge] Request the judge server [" + judgeServer.getUrl() + "] error -------------->", e);
+                } finally {
+                    checkResult(result, submitId);
+                    releaseJudgerServer(judgeServer.getId());
+                    releaseTaskThread(taskKey);
+                }
+            }
+        };
+        ScheduledFuture<?> scheduledFuture = scheduler.scheduleWithFixedDelay(getResultTask, 0, 2, TimeUnit.SECONDS);
+        futrueTaskMap.put(taskKey, scheduledFuture);
     }
 
     /**
@@ -197,6 +229,22 @@ public class Dispatcher {
                 }
             }
         } while (retryable);
+    }
+
+    private void checkResult(CommonResult<Void> result, Long submitId) {
+        Judge judge = new Judge();
+        if(result == null) { // 调用失败
+            judge.setSubmitId(submitId);
+            judge.setStatus(Constants.Judge.STATUS_SUBMITTED_FAILED.getStatus());
+            judge.setErrorMessage("Failed to connect the judgeServer. Please resubmit this submission again!");
+            judgeEntityService.updateById(judge);
+        } else {
+            if(result.getStatus() != ResultStatus.SUCCESS.getStatus()) {
+                judge.setStatus(Constants.Judge.STATUS_SYSTEM_ERROR.getStatus())
+                        .setErrorMessage(result.getMsg());
+                judgeEntityService.updateById(judge);
+            }
+        }
     }
 
 }
