@@ -3,6 +3,7 @@ package com.github.loj.validator;
 import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.rmi.AccessException;
@@ -14,6 +15,7 @@ import java.rmi.AccessException;
 @Component
 public class AccessValidator {
 
+    @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
 
     public void validateAccess(LOJAccessEnum lojAccessEnum) throws AccessException {

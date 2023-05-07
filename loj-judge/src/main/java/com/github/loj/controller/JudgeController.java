@@ -1,5 +1,6 @@
 package com.github.loj.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.github.loj.common.CommonResult;
 import com.github.loj.common.ResultStatus;
 import com.github.loj.common.exception.SystemError;
@@ -45,7 +46,7 @@ public class JudgeController {
 
     @PostMapping(value = "/test-judge")
     public CommonResult<TestJudgeRes> submitProblemTestJudge(@RequestBody TestJudgeReq testJudgeReq) {
-
+        System.out.println(JSONUtil.parseObj(testJudgeReq));
         if(testJudgeReq == null
                 || StringUtils.isEmpty(testJudgeReq.getCode())
                 || StringUtils.isEmpty(testJudgeReq.getLanguage())

@@ -20,7 +20,7 @@ import java.util.Date;
 @ApiModel(value = "Problem对象", description = "")
 public class Problem implements Serializable {
 
-    private static final Long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -62,7 +62,7 @@ public class Problem implements Serializable {
     private String output;
 
     @ApiModelProperty(value = "题面样例")
-    private String example;
+    private String examples;
 
     @ApiModelProperty(value = "是否为vj判题")
     private Boolean isRemote;
@@ -86,7 +86,7 @@ public class Problem implements Serializable {
     private Boolean codeShare;
 
     @ApiModelProperty(value = "特判程序或交互程序的代码")
-    @TableField(value = "spj_code", updateStrategy = FieldStrategy.IGNORED)
+    @TableField(value="spj_code",updateStrategy = FieldStrategy.IGNORED)
     private String spjCode;
 
     @ApiModelProperty(value = "特判程序或交互程序的语言")

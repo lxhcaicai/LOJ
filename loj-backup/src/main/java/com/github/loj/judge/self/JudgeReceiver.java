@@ -25,7 +25,7 @@ public class JudgeReceiver extends AbstractReceiver {
     @Autowired
     private RedisUtils redisUtils;
 
-    @Async()
+    @Async("judgeTaskAsyncPool")
     public void processWaitingTask() {
         // 优先处理比赛的提交任务
         // 其次处理普通提交的提交任务

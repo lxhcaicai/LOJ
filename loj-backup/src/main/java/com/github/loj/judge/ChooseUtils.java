@@ -49,7 +49,7 @@ public class ChooseUtils {
         // 过滤出小于或等于规定最大并发判题任务数的服务实例且健康的判题机
         QueryWrapper<JudgeServer> judgeServerQueryWrapper = new QueryWrapper<>();
         judgeServerQueryWrapper
-                .in("usl", keyList)
+                .in("url", keyList)
                 .eq("is_remote", isRemote)
                 .orderByAsc("task_number")
                 .last("for update"); // 开启悲观锁

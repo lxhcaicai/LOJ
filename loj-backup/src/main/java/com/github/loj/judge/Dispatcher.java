@@ -104,7 +104,7 @@ public class Dispatcher {
             if(judgeServer != null) {// 获取到判题机资源
                 try {
                     String url = "http://" + judgeServer.getUrl() + path;
-                    JSONObject resultJSON = restTemplate.patchForObject(url, testJudgeReq, JSONObject.class);
+                    JSONObject resultJSON = restTemplate.postForObject(url, testJudgeReq, JSONObject.class);
                     if(resultJSON != null) {
                         if(resultJSON.getInt("status") == ResultStatus.SUCCESS.getStatus()) {
                             TestJudgeRes testJudgeRes = resultJSON.getBean("data", TestJudgeRes.class);
