@@ -4,6 +4,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.vo.SubmissionInfoVO;
 import com.github.loj.pojo.vo.TestJudgeVO;
 
 /**
@@ -17,4 +18,6 @@ public interface JudgeService {
     public CommonResult<TestJudgeVO> getTestJudgeResult(String testJudgeKey);
 
     public CommonResult<Judge> submitProblemJudge(SubmitJudgeDTO judgeDTO);
+
+    public CommonResult<SubmissionInfoVO> getSubmission(Long submitId);
 }

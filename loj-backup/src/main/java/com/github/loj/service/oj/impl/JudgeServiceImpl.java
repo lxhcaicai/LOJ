@@ -1,14 +1,13 @@
 package com.github.loj.service.oj.impl;
 
-import com.github.loj.common.exception.StatusFailException;
-import com.github.loj.common.exception.StatusForbiddenException;
-import com.github.loj.common.exception.StatusSystemErrorException;
+import com.github.loj.common.exception.*;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.JudgeManager;
 import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.vo.SubmissionInfoVO;
 import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.service.oj.JudgeService;
 import org.springframework.stereotype.Service;
@@ -56,6 +55,17 @@ public class JudgeServiceImpl implements JudgeService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<SubmissionInfoVO> getSubmission(Long submitId) {
+        try {
+            return CommonResult.successResponse(judgeManager.getSubmission(submitId));
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.ACCESS_DENIED);
         }
     }
 }
