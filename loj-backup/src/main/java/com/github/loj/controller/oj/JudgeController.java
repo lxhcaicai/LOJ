@@ -5,6 +5,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.vo.JudgeCaseVO;
 import com.github.loj.pojo.vo.SubmissionInfoVO;
 import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.service.oj.JudgeService;
@@ -54,5 +55,11 @@ public class JudgeController {
     @AnonApi
     public CommonResult<SubmissionInfoVO> getSubmission(@RequestParam(value = "submitId", required = true) Long submitId) {
         return judgeService.getSubmission(submitId);
+    }
+
+    @GetMapping("/get-all-case-result")
+    @AnonApi
+    public CommonResult<JudgeCaseVO> getALLCaseResult(@RequestParam(value = "submitId", required = true) Long submitId) {
+        return judgeService.getALLCaseResult(submitId);
     }
 }

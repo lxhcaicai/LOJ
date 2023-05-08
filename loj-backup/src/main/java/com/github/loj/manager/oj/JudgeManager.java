@@ -2,11 +2,13 @@ package com.github.loj.manager.oj;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.exception.*;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.judge.JudgeCaseEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.judge.self.JudgeDispatcher;
@@ -16,7 +18,10 @@ import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.entity.judge.JudgeCase;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.vo.JudgeCaseVO;
+import com.github.loj.pojo.vo.SubTaskJudgeCaseVO;
 import com.github.loj.pojo.vo.SubmissionInfoVO;
 import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.shiro.AccountProfile;
@@ -30,15 +35,15 @@ import com.github.loj.validator.JudgeValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.rmi.AccessException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author lxhcaicai
@@ -47,6 +52,8 @@ import java.util.Map;
 @Component
 public class JudgeManager {
 
+    @Autowired
+    private JudgeCaseEntityService judgeCaseEntityService;
 
     @Autowired
     private JudgeEntityService judgeEntityService;
@@ -298,5 +305,166 @@ public class JudgeManager {
         submissionInfoVO.setSubmission(judge);
         submissionInfoVO.setCodeShare(problem.getCodeShare());
         return submissionInfoVO;
+    }
+
+    /**
+     * 获得指定提交id的测试样例结果，暂不支持查看测试数据，只可看测试点结果，时间，空间，或者IO得分
+     * @param submitId
+     * @return
+     */
+    public JudgeCaseVO getALLCaseResult(Long submitId) throws StatusNotFoundException, StatusForbiddenException {
+
+        Judge judge = judgeEntityService.getById(submitId);
+
+        if(judge == null) {
+            throw new StatusNotFoundException("此提交数据不存在！");
+        }
+
+        Problem problem = problemEntityService.getById(judge.getPid());
+
+        // 如果该题不支持开放测试点结果查看
+        if(!problem.getOpenCaseResult()) {
+            return null;
+        }
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<JudgeCase> wrapper = new QueryWrapper<>();
+        if(judge.getCid() == 0) { // 非比赛提交
+            if(userRolesVo == null) { // 没有登录
+                wrapper.select("time", "memory", "score", "status", "user_output","group_num", "seq", "mode");
+            } else {
+                boolean isRoot = SecurityUtils.getSubject().hasRole("root"); // 是否为超级管理员
+                if(!isRoot
+                        && !SecurityUtils.getSubject().hasRole("admin")
+                        && !SecurityUtils.getSubject().hasRole("problem_admin")) {
+                    wrapper.select("time", "memory", "score", "status", "user_output","group_num", "seq", "mode");
+                }
+            }
+        } else { // 比赛提交
+            if(userRolesVo == null) {
+                throw new StatusForbiddenException("您还未登录！不可查看比赛提交的测试点详情！");
+            }
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root");  // 是否为超级管理员
+            if(!isRoot) {
+                Contest contest = contestEntityService.getById(judge.getCid());
+                // 如果不是比赛管理员 需要受到规则限制
+                if(!contest.getUid().equals(userRolesVo.getUid()) ||
+                        (contest.getIsGroup() && !groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+                    // ACM比赛期间强制禁止查看,比赛管理员除外（赛后恢复正常）
+
+                    if(contest.getType().intValue() == Constants.Contest.TYPE_ACM.getCode()) {
+                        if(contest.getStatus().intValue() == Constants.Contest.STATUS_RUNNING.getCode()) {
+                            return null;
+                        }
+                    } else {
+                        // 当前是oi比赛期间 同时处于封榜时间
+                        if(contest.getSealRank() && contest.getStatus().intValue() == Constants.Contest.STATUS_RUNNING.getCode()
+                                && contest.getSealRankTime().before(new Date())) {
+                            return  null;
+                        }
+                    }
+                    wrapper.select("time", "memory", "score", "status", "user_output", "group_num", "seq", "mode");
+                }
+            }
+        }
+
+        wrapper.eq("submit_id", submitId);
+        if(!problem.getIsRemote()) {
+            wrapper.last("order by seq asc");
+        }
+        // 当前所有测试点只支持 空间 时间 状态码 IO得分 和错误信息提示查看而已
+        List<JudgeCase> judgeCaseList = judgeCaseEntityService.list(wrapper);
+        JudgeCaseVO judgeCaseVO = new JudgeCaseVO();
+        if(!CollectionUtils.isEmpty(judgeCaseList)) {
+            String mode = judgeCaseList.get(0).getMode();
+            Constants.JudgeCaseMode judgeCaseMode = Constants.JudgeCaseMode.getJudgeCaseMode(mode);
+            switch (judgeCaseMode) {
+                case DEFAULT:
+                case ERGODIC_WITHOUT_ERROR:
+                    judgeCaseVO.setJudgeCaseList(judgeCaseList);
+                    break;
+                case SUBTASK_AVERAGE:
+                case SUBTASK_LOWEST:
+                    judgeCaseVO.setSubTaskJudgeCaseVoList(buildSubTaskDetail(judgeCaseList, judgeCaseMode));
+                    break;
+            }
+            judgeCaseVO.setJudgeCaseMode(judgeCaseMode.getMode());
+        } else {
+            judgeCaseVO.setJudgeCaseList(judgeCaseList);
+            judgeCaseVO.setJudgeCaseMode(Constants.JudgeCaseMode.DEFAULT.getMode());
+        }
+        return judgeCaseVO;
+    }
+
+    private List<SubTaskJudgeCaseVO> buildSubTaskDetail(List<JudgeCase> judgeCaseList, Constants.JudgeCaseMode judgeCaseMode) {
+        List<SubTaskJudgeCaseVO> subTaskJudgeCaseVOS = new ArrayList<>();
+        LinkedHashMap<Integer,  List<JudgeCase>> groupJudgeCaseMap = judgeCaseList.stream()
+                .sorted(Comparator.comparingInt(JudgeCase::getGroupNum).thenComparingInt(JudgeCase::getSeq))
+                .collect(Collectors.groupingBy(JudgeCase::getGroupNum,LinkedHashMap::new, Collectors.toList()));
+
+        if(judgeCaseMode == Constants.JudgeCaseMode.SUBTASK_AVERAGE) {
+            for (Map.Entry<Integer, List<JudgeCase>> entry: groupJudgeCaseMap.entrySet()) {
+                int sumScore = 0;
+                boolean hasNotACJudgeCase = false;
+                int acCount = 0;
+                for(JudgeCase judgeCase: entry.getValue()) {
+                    sumScore += judgeCase.getScore();
+                    if(!Objects.equals(Constants.Judge.STATUS_ACCEPTED.getStatus(), judgeCase.getStatus())) {
+                        hasNotACJudgeCase = true;
+                    } else {
+                        acCount ++;
+                    }
+                }
+                SubTaskJudgeCaseVO subTaskJudgeCaseVO = new SubTaskJudgeCaseVO();
+                subTaskJudgeCaseVO.setGroupName(entry.getKey());
+                subTaskJudgeCaseVO.setSubtaskDetailList(entry.getValue());
+                subTaskJudgeCaseVO.setAc(acCount);
+                subTaskJudgeCaseVO.setTotal(entry.getValue().size());
+                int score = (int) Math.round(sumScore * 1.0 / entry.getValue().size());
+                subTaskJudgeCaseVO.setScore(score);
+                if(hasNotACJudgeCase) {
+                    if(score == 0) {
+                        subTaskJudgeCaseVO.setStatus(Constants.Judge.STATUS_WRONG_ANSWER.getStatus());
+                    } else {
+                        subTaskJudgeCaseVO.setStatus(Constants.Judge.STATUS_PARTIAL_ACCEPTED.getStatus());
+                    }
+                } else {
+                    subTaskJudgeCaseVO.setStatus(Constants.Judge.STATUS_ACCEPTED.getStatus());
+                }
+                subTaskJudgeCaseVOS.add(subTaskJudgeCaseVO);
+            }
+        } else {
+
+            for (Map.Entry<Integer, List<JudgeCase>> entry: groupJudgeCaseMap.entrySet()) {
+                int minScore = 2147483647;
+                JudgeCase finalResJudgeCase = null;
+                int acCount = 0;
+                for (JudgeCase judgeCase: entry.getValue()) {
+                    if(!Constants.Judge.STATUS_CANCELLED.getStatus().equals(judgeCase.getStatus())) {
+                        if(judgeCase.getScore() < minScore) {
+                            finalResJudgeCase = judgeCase;
+                            minScore = judgeCase.getScore();
+                        }
+                        if(Objects.equals(Constants.Judge.STATUS_ACCEPTED.getStatus(), judgeCase.getStatus())) {
+                            acCount ++;
+                        }
+                    }
+                }
+
+                SubTaskJudgeCaseVO subTaskJudgeCaseVO = new SubTaskJudgeCaseVO();
+                subTaskJudgeCaseVO.setGroupName(entry.getKey());
+                subTaskJudgeCaseVO.setAc(acCount);
+                subTaskJudgeCaseVO.setTotal(entry.getValue().size());
+
+                if(finalResJudgeCase != null) {
+                    subTaskJudgeCaseVO.setMemory(finalResJudgeCase.getMemory());
+                    subTaskJudgeCaseVO.setScore(finalResJudgeCase.getScore());
+                    subTaskJudgeCaseVO.setTime(finalResJudgeCase.getTime());
+                    subTaskJudgeCaseVO.setStatus(finalResJudgeCase.getStatus());
+                }
+            }
+        }
+        return subTaskJudgeCaseVOS;
     }
 }
