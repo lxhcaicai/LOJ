@@ -1,7 +1,9 @@
 package com.github.loj.dao.judge;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.vo.JudgeVO;
 
 /**
  * @author lxhcaicai
@@ -10,4 +12,13 @@ import com.github.loj.pojo.entity.judge.Judge;
 public interface JudgeEntityService extends IService<Judge> {
 
     void failToUseRedisPublishJudge(Long submitId, Long pid, Boolean isContest);
+
+    IPage<JudgeVO> getCommonJudgeList(Integer limit,
+                                      Integer currentPage,
+                                      String searchPid,
+                                      Integer status,
+                                      String username,
+                                      String uid,
+                                      Boolean completeProblemID,
+                                      Long gid);
 }

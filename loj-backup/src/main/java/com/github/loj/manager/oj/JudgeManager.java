@@ -3,6 +3,7 @@ package com.github.loj.manager.oj;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.exception.*;
 import com.github.loj.config.NacosSwitchConfig;
@@ -20,10 +21,7 @@ import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.judge.JudgeCase;
 import com.github.loj.pojo.entity.problem.Problem;
-import com.github.loj.pojo.vo.JudgeCaseVO;
-import com.github.loj.pojo.vo.SubTaskJudgeCaseVO;
-import com.github.loj.pojo.vo.SubmissionInfoVO;
-import com.github.loj.pojo.vo.TestJudgeVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.IpUtils;
@@ -466,5 +464,49 @@ public class JudgeManager {
             }
         }
         return subTaskJudgeCaseVOS;
+    }
+
+    public IPage<JudgeVO> getJudgeList(Integer limit,
+                                       Integer currentPage,
+                                       Boolean onlyMine,
+                                       String searchPid,
+                                       Integer searchStatus,
+                                       String searchUsername,
+                                       Boolean completeProblemID,
+                                       Long gid) throws StatusAccessDeniedException {
+        // 页数，每页题数若为空，设置默认值
+        if(currentPage == null || currentPage < 1) { currentPage = 1;}
+        if(limit == null || limit < 1) {
+            limit = 30;
+        }
+
+        String uid = null;
+
+        // 只查看当前用户的提交
+        if(onlyMine) {
+            // 需要获取一下该token对应用户的数据（有token便能获取到）
+
+            AccountProfile userRoleVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+            if(userRoleVo == null) {
+                throw new StatusAccessDeniedException("当前用户数据为空，请您重新登陆！");
+            }
+            uid = userRoleVo.getUid();
+        }
+        if(searchPid != null) {
+            searchPid = searchPid.trim();
+        }
+        if(searchUsername != null) {
+            searchUsername = searchUsername.trim();
+        }
+
+        return judgeEntityService.getCommonJudgeList(limit,
+                currentPage,
+                searchPid,
+                searchStatus,
+                searchUsername,
+                uid,
+                completeProblemID,
+                gid);
     }
 }

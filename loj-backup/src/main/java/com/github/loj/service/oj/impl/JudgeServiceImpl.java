@@ -1,5 +1,6 @@
 package com.github.loj.service.oj.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.*;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
@@ -8,6 +9,7 @@ import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.vo.JudgeCaseVO;
+import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.pojo.vo.SubmissionInfoVO;
 import com.github.loj.pojo.vo.TestJudgeVO;
 import com.github.loj.service.oj.JudgeService;
@@ -78,6 +80,22 @@ public class JudgeServiceImpl implements JudgeService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResult<IPage<JudgeVO>> getJudgeList(Integer limit, Integer currentPage, Boolean onlyMine, String searchPid, Integer searchStatus, String searchUsername, Boolean completeProblemID, Long gid) {
+        try {
+            return CommonResult.successResponse(judgeManager.getJudgeList(limit,
+                    currentPage,
+                    onlyMine,
+                    searchPid,
+                    searchStatus,
+                    searchUsername,
+                    completeProblemID,
+                    gid));
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.ACCESS_DENIED);
         }
     }
 }
