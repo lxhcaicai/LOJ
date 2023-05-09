@@ -10,4 +10,6 @@ public interface ScheduleService {
     void deleteTestCase();
 
     void deleteContestPrintText();
+
+    void getOjContestsList();
 }

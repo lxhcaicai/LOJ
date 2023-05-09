@@ -257,4 +257,17 @@ public class Constants {
             return path;
         }
     }
+
+    public enum Schedule {
+        RECENT_OTHER_CONTEST("recent-other-contest");
+        private final String code;
+
+        Schedule(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+    }
 }
