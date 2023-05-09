@@ -218,4 +218,43 @@ public class Constants {
             return DEFAULT;
         }
     }
+
+    /**
+     * 文件操作的一些常量
+     */
+    public enum File {
+        USER_AVATAR_FOLDER("/loj/file/avatar"),
+
+        GROUP_AVATAR_FOLDER("/loj/file/avatar/group"),
+
+        HOME_CAROUSEL_FOLDER("/loj/file/carousel"),
+
+        MARKDOWN_FILE_FOLDER("/loj/file/md"),
+
+        PROBLEM_FILE_FOLDER("/loj/file/problem"),
+
+        CONTEST_TEXT_PRINT_FOLDER("/loj/file/contest_print"),
+
+        IMG_API("/api/public/img/"),
+
+        FILE_API("/api/public/file/"),
+
+        TESTCASE_TMP_FOLDER("/loj/file/zip"),
+
+        TESTCASE_BASE_FOLDER("/loj/testcase"),
+
+        FILE_DOWNLOAD_TMP_FOLDER("/loj/file/zip/download"),
+
+        CONTEST_AC_SUBMISSION_TMP_FOLDER("/loj/file/zip/contest_ac");
+
+        private final String path;
+
+        File(String path) {
+            this.path = path;
+        }
+
+        public String getPath() {
+            return path;
+        }
+    }
 }
