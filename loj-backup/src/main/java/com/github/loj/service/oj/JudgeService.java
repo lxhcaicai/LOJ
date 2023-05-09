@@ -40,4 +40,6 @@ public interface JudgeService {
     public CommonResult<Void> updateSubmission(Judge judge);
 
     public CommonResult<HashMap<Long,Object>> checkCommonJudgeResult(SubmitIdListDTO submitIdListDTO);
+
+    public CommonResult<Judge> resubmit(Long submitId);
 }

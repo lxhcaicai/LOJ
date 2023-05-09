@@ -121,4 +121,15 @@ public class JudgeController {
     public CommonResult<HashMap<Long, Object>> checkCommonJudgeResult(@RequestBody SubmitIdListDTO submitIdListDTO) {
         return judgeService.checkCommonJudgeResult(submitIdListDTO);
     }
+
+    /**
+     * 调用判题服务器提交失败超过60s后，用户点击按钮重新提交判题进入的方法
+     * @param submitId
+     * @return
+     */
+    @RequiresAuthentication
+    @GetMapping(value = "/resubmit")
+    public CommonResult<Judge> resubmit(@RequestParam("submitId") Long submitId) {
+        return judgeService.resubmit(submitId);
+    }
 }

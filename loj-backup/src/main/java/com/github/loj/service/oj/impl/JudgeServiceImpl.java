@@ -117,4 +117,13 @@ public class JudgeServiceImpl implements JudgeService {
     public CommonResult<HashMap<Long, Object>> checkCommonJudgeResult(SubmitIdListDTO submitIdListDTO) {
         return CommonResult.successResponse(judgeManager.checkCommonJudgeResult(submitIdListDTO));
     }
+
+    @Override
+    public CommonResult<Judge> resubmit(Long submitId) {
+        try {
+            return CommonResult.successResponse(judgeManager.resubmit(submitId));
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
 }

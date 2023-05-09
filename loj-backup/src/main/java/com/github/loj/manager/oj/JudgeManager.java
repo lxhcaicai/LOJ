@@ -10,15 +10,19 @@ import com.github.loj.common.exception.*;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.contest.ContestRecordEntityService;
 import com.github.loj.dao.judge.JudgeCaseEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.dao.user.UserAcproblemEntityService;
 import com.github.loj.judge.self.JudgeDispatcher;
 import com.github.loj.pojo.dto.*;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.judge.JudgeCase;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.user.UserAcproblem;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
@@ -31,6 +35,7 @@ import com.github.loj.validator.JudgeValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -47,6 +52,12 @@ import java.util.stream.Collectors;
  */
 @Component
 public class JudgeManager {
+
+    @Autowired
+    private ContestRecordEntityService contestRecordEntityService;
+
+    @Autowired
+    private UserAcproblemEntityService userAcproblemEntityService;
 
     @Autowired
     private JudgeCaseEntityService judgeCaseEntityService;
@@ -562,5 +573,70 @@ public class JudgeManager {
             result.put(judge.getSubmitId(), judge);
         }
         return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Judge resubmit(Long submitId) throws StatusNotFoundException {
+
+        Judge judge = judgeEntityService.getById(submitId);
+        if(judge == null) {
+            throw new StatusNotFoundException("此提交数据不存在！");
+        }
+
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.select("id", "is_remote", "problem_id")
+                .eq("id",judge.getPid());
+        Problem problem = problemEntityService.getOne(problemQueryWrapper);
+
+        // 如果是非比赛题目
+        if(judge.getCid() == 0) {
+            // 重判前，需要将该题目对应记录表一并更新
+            // 如果该题已经是AC通过状态，更新该题目的用户ac做题表 user_acproblem
+            if(judge.getStatus().intValue() == Constants.Judge.STATUS_ACCEPTED.getStatus().intValue()) {
+                QueryWrapper<UserAcproblem> userAcproblemQueryWrapper = new QueryWrapper<>();
+                userAcproblemQueryWrapper.eq("submit_id", judge.getSubmitId());
+                userAcproblemEntityService.remove(userAcproblemQueryWrapper);
+            }
+        } else {
+            if(problem.getIsRemote()) {
+                // 将对应比赛记录设置成默认值
+                UpdateWrapper<ContestRecord> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("submit_id", submitId).setSql("status=null,score=null");
+                contestRecordEntityService.update(updateWrapper);
+            } else {
+                throw new StatusNotFoundException("错误！非vJudge题目在比赛过程无权限重新提交");
+            }
+        }
+
+        boolean isHasSubmitIdRemoteRejudge = false;
+        if(Objects.nonNull(judge.getVjudgeSubmitId()) &&
+                (judge.getStatus().intValue() == Constants.Judge.STATUS_SUBMITTED_FAILED.getStatus()
+                    || judge.getStatus().intValue() == Constants.Judge.STATUS_PENDING.getStatus()
+                    || judge.getStatus().intValue() == Constants.Judge.STATUS_JUDGING.getStatus()
+                    || judge.getStatus().intValue() == Constants.Judge.STATUS_COMPILING.getStatus()
+                    || judge.getStatus().intValue() == Constants.Judge.STATUS_SYSTEM_ERROR.getStatus())) {
+            isHasSubmitIdRemoteRejudge = true;
+        }
+
+        // 重新进入等待队列
+        judge.setStatus(Constants.Judge.STATUS_PENDING.getStatus());
+        judge.setVersion(judge.getVersion() + 1);
+        judge.setErrorMessage(null)
+                .setOiRankScore(null)
+                .setScore(null)
+                .setTime(null)
+                .setJudger("")
+                .setMemory(null);
+        judgeEntityService.updateById(judge);
+
+        // 将提交加入任务队列
+        if(problem.getIsRemote()) {  // 如果是远程oj判题
+            // TODO
+        } else {
+            judgeDispatcher.sendTask(judge.getSubmitId(),
+                    judge.getPid(),
+                    judge.getCid() != 0);
+        }
+        return judge;
     }
 }
