@@ -8,4 +8,6 @@ public interface ScheduleService {
     void deleteAvatar();
 
     void deleteTestCase();
+
+    void deleteContestPrintText();
 }
