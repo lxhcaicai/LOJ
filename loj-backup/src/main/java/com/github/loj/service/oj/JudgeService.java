@@ -34,4 +34,5 @@ public interface JudgeService {
                                                      String searchUsername,
                                                      Boolean completeProblemID,
                                                      Long gid);
+    public CommonResult<Void> updateSubmission(Judge judge);
 }

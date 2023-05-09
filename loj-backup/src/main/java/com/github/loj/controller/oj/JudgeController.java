@@ -29,7 +29,7 @@ public class JudgeController {
 
     @RequiresPermissions("submit")
     @RequiresAuthentication
-    @RequestMapping("/submit-problem-test-judge")
+    @RequestMapping(value = "/submit-problem-test-judge", method = RequestMethod.POST)
     public CommonResult<String> submitProblemTestJudge(@RequestBody TestJudgeDTO testJudgeDTO) {
         return judgeService.submitProblemTestJudge(testJudgeDTO);
     }
@@ -94,5 +94,16 @@ public class JudgeController {
                                                      @RequestParam(value = "completeProblemID", defaultValue = "false") Boolean completeProblemID,
                                                      @RequestParam(value = "gid",required = false) Long gid) {
         return judgeService.getJudgeList(limit,currentPage, onlyMine, searchPid, searchStatus, searchUsername, completeProblemID, gid);
+    }
+
+    /**
+     * 修改单个提交详情的分享权限
+     * @param judge
+     * @return
+     */
+    @PutMapping("/submission")
+    @RequiresAuthentication
+    public CommonResult<Void> updateSubmission(@RequestBody Judge judge) {
+        return judgeService.updateSubmission(judge);
     }
 }
