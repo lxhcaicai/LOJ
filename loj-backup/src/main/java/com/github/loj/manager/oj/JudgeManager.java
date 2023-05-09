@@ -14,10 +14,7 @@ import com.github.loj.dao.judge.JudgeCaseEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.judge.self.JudgeDispatcher;
-import com.github.loj.pojo.dto.SubmitJudgeDTO;
-import com.github.loj.pojo.dto.TestJudgeDTO;
-import com.github.loj.pojo.dto.TestJudgeReq;
-import com.github.loj.pojo.dto.TestJudgeRes;
+import com.github.loj.pojo.dto.*;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.judge.JudgeCase;
@@ -541,5 +538,29 @@ public class JudgeManager {
         if(!isOk) {
             throw new StatusFailException("修改代码权限失败！");
         }
+    }
+
+    public HashMap<Long,Object> checkCommonJudgeResult(SubmitIdListDTO submitIdListDTO) {
+
+        List<Long> submitIds = submitIdListDTO.getSubmitIds();
+
+        if(CollectionUtils.isEmpty(submitIds)) {
+            return new HashMap<>();
+        }
+
+        QueryWrapper<Judge> queryWrapper = new QueryWrapper<>();
+        // lambada表达式过滤掉code
+        queryWrapper.select(Judge.class, info ->!info.getColumn().equals("code")).in("submit_id", submitIds);
+        List<Judge> judgeList = judgeEntityService.list(queryWrapper);
+        HashMap<Long,Object> result = new HashMap<>();
+        for(Judge judge: judgeList) {
+            judge.setCode(null);
+            judge.setErrorMessage(null);
+            judge.setVjudgeSubmitId(null);
+            judge.setVjudgeUsername(null);
+            judge.setVjudgePassword(null);
+            result.put(judge.getSubmitId(), judge);
+        }
+        return result;
     }
 }

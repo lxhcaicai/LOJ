@@ -5,6 +5,7 @@ import com.github.loj.common.exception.*;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.JudgeManager;
+import com.github.loj.pojo.dto.SubmitIdListDTO;
 import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.rmi.AccessException;
+import java.util.HashMap;
 
 /**
  * @author lxhcaicai
@@ -109,5 +111,10 @@ public class JudgeServiceImpl implements JudgeService {
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }
+    }
+
+    @Override
+    public CommonResult<HashMap<Long, Object>> checkCommonJudgeResult(SubmitIdListDTO submitIdListDTO) {
+        return CommonResult.successResponse(judgeManager.checkCommonJudgeResult(submitIdListDTO));
     }
 }

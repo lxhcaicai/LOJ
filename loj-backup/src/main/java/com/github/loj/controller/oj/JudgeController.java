@@ -3,6 +3,7 @@ package com.github.loj.controller.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.SubmitIdListDTO;
 import com.github.loj.pojo.dto.SubmitJudgeDTO;
 import com.github.loj.pojo.dto.TestJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
@@ -15,6 +16,8 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 /**
  * @author lxhcaicai
@@ -105,5 +108,17 @@ public class JudgeController {
     @RequiresAuthentication
     public CommonResult<Void> updateSubmission(@RequestBody Judge judge) {
         return judgeService.updateSubmission(judge);
+    }
+
+
+    /**
+     * 对提交列表状态为Pending和Judging的提交进行更新检查
+     * @param submitIdListDTO
+     * @return
+     */
+    @RequestMapping(value = "/check-submissions-status", method = RequestMethod.POST)
+    @AnonApi
+    public CommonResult<HashMap<Long, Object>> checkCommonJudgeResult(@RequestBody SubmitIdListDTO submitIdListDTO) {
+        return judgeService.checkCommonJudgeResult(submitIdListDTO);
     }
 }
