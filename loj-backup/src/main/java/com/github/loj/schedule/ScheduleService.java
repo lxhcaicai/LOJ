@@ -6,4 +6,6 @@ package com.github.loj.schedule;
  */
 public interface ScheduleService {
     void deleteAvatar();
+
+    void deleteTestCase();
 }

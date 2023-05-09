@@ -3,6 +3,7 @@ package com.github.loj.schedule;
 import cn.hutool.core.io.FileUtil;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,6 +49,18 @@ public class ScheduleServiceImpl implements ScheduleService{
         boolean isSuccess = fileEntityService.removeByIds(idLists);
         if(!isSuccess) {
             log.error("数据库file表删除头像数据失败----------------->sql语句执行失败");
+        }
+    }
+
+    /**
+     * 每天3点定时删除指定文件夹的上传测试数据
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    @Override
+    public void deleteTestCase() {
+        boolean result = FileUtil.del(Constants.File.TESTCASE_TMP_FOLDER.getPath());
+        if(!result) {
+            log.error("每日定时任务异常------------------------>{}", "清除本地的题目测试数据失败!");
         }
     }
 }
