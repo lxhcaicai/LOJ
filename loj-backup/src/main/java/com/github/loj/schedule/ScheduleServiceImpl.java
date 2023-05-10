@@ -6,20 +6,31 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.user.UserInfoEntityService;
+import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.entity.user.UserInfo;
+import com.github.loj.pojo.entity.user.UserRecord;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.JsoupUtils;
 import com.github.loj.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.list.AbstractLinkedList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author lxhcaicai
@@ -35,6 +46,14 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private UserInfoEntityService userInfoEntityService;
+
+    @Resource
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private UserRecordEntityService userRecordEntityService;
 
     /**
      * 每天3点定时查询数据库字段并删除未引用的头像
@@ -146,5 +165,64 @@ public class ScheduleServiceImpl implements ScheduleService{
         redisUtils.set(redisKey, contestsList, 60 * 60 * 24);
         // 增加log提示
         log.info("获取牛客API的比赛列表成功！共获取数据" + contestsList.size() + "条");
+    }
+
+
+    /**
+     * 每天3点获取codeforces的rating分数
+     */
+    //@Scheduled(cron = "0/5 * * * * *")
+    @Scheduled(cron = "0 0 3 * * *")
+    @Override
+    public void getCodeforcesRating() {
+        String codeforcesUserInfoAPI = "https://codeforces.com/api/user.info?handles=%s";
+        QueryWrapper<UserInfo> userInfoQueryWrapper = new QueryWrapper<>();
+        // 查询cf_username不为空的数据
+        userInfoQueryWrapper.isNotNull("cf_username");
+        List<UserInfo> userInfoList = userInfoEntityService.list(userInfoQueryWrapper);
+        for(UserInfo userInfo: userInfoList) {
+            // 获取cf名字
+            String cfUsername = userInfo.getCfUsername();
+            // 获取uuid
+            String uuid = userInfo.getUuid();
+            // 格式化api
+            String ratingAPI = String.format(codeforcesUserInfoAPI, cfUsername);
+            try {
+                ScheduleServiceImpl service =applicationContext.getBean(ScheduleServiceImpl.class);
+                JSONObject resultObject = service.getCFUserInfo(ratingAPI);
+                // 获取状态码
+                String status = resultObject.getStr("status");
+                // 如果查无此用户，则跳过
+                if("FAILED".equals(status)) {
+                    continue;
+                }
+                // 用户信息存放在result列表中的第0个
+                JSONObject cfUserInfo = resultObject.getJSONArray("result").getJSONObject(0);
+                // 获取cf的分数
+                Integer cfRating = cfUserInfo.getInt("rating", null);
+                UpdateWrapper<UserRecord> userRecordUpdateWrapper = new UpdateWrapper<>();
+                // 将对应的cf分数修改
+                userRecordUpdateWrapper.eq("uid", uuid).set("rating", cfRating);
+                boolean result = userRecordEntityService.update(userRecordUpdateWrapper);
+                if(!result) {
+                    log.error("插入UserRecord表失败------------------------------->");
+                }
+            } catch (Exception e) {
+                log.error("爬虫爬取Codeforces Rating分数异常----------------------->{}", e.getMessage());
+            }
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        log.info("获取Codeforces Rating成功！");
+    }
+
+    @Retryable(value = Exception.class,
+            maxAttempts =  5,
+            backoff = @Backoff(delay = 1000, multiplier = 1.4))
+    public JSONObject getCFUserInfo(String url) throws IOException {
+        return JsoupUtils.getJsonFromConnection(JsoupUtils.getConnectionFromUrl(url, null, null));
     }
 }
