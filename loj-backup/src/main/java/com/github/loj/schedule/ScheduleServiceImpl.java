@@ -10,9 +10,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.user.SessionEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.entity.user.Session;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.entity.user.UserRecord;
 import com.github.loj.utils.Constants;
@@ -20,6 +22,8 @@ import com.github.loj.utils.JsoupUtils;
 import com.github.loj.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.list.AbstractLinkedList;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.retry.annotation.Backoff;
@@ -31,6 +35,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author lxhcaicai
@@ -54,6 +59,9 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Autowired
     private UserRecordEntityService userRecordEntityService;
+
+    @Autowired
+    private SessionEntityService sessionEntityService;
 
     /**
      * 每天3点定时查询数据库字段并删除未引用的头像
@@ -217,6 +225,36 @@ public class ScheduleServiceImpl implements ScheduleService{
             }
         }
         log.info("获取Codeforces Rating成功！");
+    }
+
+    /**
+     * 每天3点定时删除用户半年的session表记录
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    //@Scheduled(cron = "0/5 * * * * *")
+    @Override
+    public void deleteUserSession() {
+        QueryWrapper<Session> sessionQueryWrapper = new QueryWrapper<>();
+        DateTime dateTime = DateUtil.offsetMonth(new Date(), -6);
+        String strTime = DateFormatUtils.format(dateTime, "yyyy-MM-dd HH:mm:ss");
+        sessionQueryWrapper.select("distinct uid");
+        sessionQueryWrapper.apply("UNIX_TIMESTAMP(gmt_create) >= UNIX_TIMESTAMP('" + strTime + "')");
+        List<Session> sessionList = sessionEntityService.list(sessionQueryWrapper);
+        if(sessionList.size() > 0) {
+            List<String> uidList = sessionList.stream().map(Session::getUid).collect(Collectors.toList());
+            QueryWrapper<Session> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("uid", uidList)
+                    .apply("UNIX_TIMESTAMP('" + strTime + "') > UNIX_TIMESTAMP(gmt_create)");
+            List<Session> needDeletedSessionList = sessionEntityService.list(queryWrapper);
+            if(needDeletedSessionList.size() > 0) {
+                List<Long> needDeletedIdList = needDeletedSessionList.stream().map(Session::getId).collect(Collectors.toList());
+                boolean isOk = sessionEntityService.removeByIds(needDeletedIdList);
+                if(!isOk) {
+                    log.error("=============数据库session表定时删除用户6个月前的记录失败===============");
+                }
+            }
+        }
+        log.info("数据库session表定时删除用户6个月前的记录成功！");
     }
 
     @Retryable(value = Exception.class,
