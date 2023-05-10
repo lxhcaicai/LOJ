@@ -12,12 +12,15 @@ import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.dao.msg.AdminSysNoticeEntityService;
 import com.github.loj.dao.msg.UserSysNoticeEntityService;
+import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.user.SessionEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRecordEntityService;
+import com.github.loj.manager.msg.AdminNoticeManager;
 import com.github.loj.pojo.entity.common.File;
 import com.github.loj.pojo.entity.msg.AdminSysNotice;
 import com.github.loj.pojo.entity.msg.UserSysNotice;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.user.Session;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.entity.user.UserRecord;
@@ -25,6 +28,7 @@ import com.github.loj.utils.Constants;
 import com.github.loj.utils.JsoupUtils;
 import com.github.loj.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.list.AbstractLinkedList;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.checkerframework.checker.units.qual.A;
@@ -72,6 +76,12 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Resource
     private UserSysNoticeEntityService userSysNoticeEntityService;
+
+    @Resource
+    private ProblemEntityService problemEntityService;
+
+    @Resource
+    private AdminNoticeManager adminNoticeManager;
 
     /**
      * 每天3点定时查询数据库字段并删除未引用的头像
@@ -321,6 +331,39 @@ public class ScheduleServiceImpl implements ScheduleService{
         if(!isUpdateNoticeOk) {
             log.error("=============推送系统通知更新状态失败===============");
         }
+    }
+
+    /**
+     * 每天6点检查一次有没有处于正在申请中的团队题目申请公开的进度单子，发消息给超级管理和题目管理员
+     */
+    @Scheduled(cron = "0 0 6 * * *")
+//    @Scheduled(cron = "0/5 * * * * *")
+    @Override
+    public void checkUnHandleGroupProblemApplyProgress() {
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.eq("apply_public_progress", 1).isNotNull("gid");
+        int count = problemEntityService.count(problemQueryWrapper);
+        if(count > 0) {
+            String title = "团队题目审批通知(Group Problem Approval Notice)";
+            String content = getDissolutionGroupContent(count);
+            List<String> superAdminUidList = userInfoEntityService.getSuperAdminUidList();
+            List<String> problemAdminUidList = userInfoEntityService.getProblemAdminUidList();
+            if(!CollectionUtils.isEmpty(problemAdminUidList)) {
+                superAdminUidList.addAll(problemAdminUidList);
+            }
+            adminNoticeManager.addSingleNoticeToBatchUser(null, superAdminUidList, title, content, "Sys");
+        }
+        log.info("定时任务 团队审批完成");
+    }
+
+    private String getDissolutionGroupContent(int count) {
+        return "您好，尊敬的管理员，目前有**" + count +
+                "**条团队题目正在申请公开的单子，请您尽快前往后台 [团队题目审批](/admin/group-problem/apply) 进行审批！"
+                + "\n\n" +
+                "Hello, dear administrator, there are currently **" + count
+                + "** problem problems applying for public list. " +
+                "Please go to the backstage [Group Problem Examine](/admin/group-problem/apply) for approval as soon as possible!";
+
     }
 
     @Retryable(value = Exception.class,
