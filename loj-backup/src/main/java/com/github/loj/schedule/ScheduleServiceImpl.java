@@ -10,10 +10,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.msg.AdminSysNoticeEntityService;
+import com.github.loj.dao.msg.UserSysNoticeEntityService;
 import com.github.loj.dao.user.SessionEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.entity.msg.AdminSysNotice;
+import com.github.loj.pojo.entity.msg.UserSysNotice;
 import com.github.loj.pojo.entity.user.Session;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.entity.user.UserRecord;
@@ -62,6 +66,12 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Autowired
     private SessionEntityService sessionEntityService;
+
+    @Resource
+    private AdminSysNoticeEntityService adminSysNoticeEntityService;
+
+    @Resource
+    private UserSysNoticeEntityService userSysNoticeEntityService;
 
     /**
      * 每天3点定时查询数据库字段并删除未引用的头像
@@ -255,6 +265,62 @@ public class ScheduleServiceImpl implements ScheduleService{
             }
         }
         log.info("数据库session表定时删除用户6个月前的记录成功！");
+    }
+
+
+    /**
+     * 每一小时拉取系统通知表admin_sys_notice到表user_sys_notice(只推送给半年内有登录过的用户)
+     */
+    @Scheduled(cron = "0 0 0/1 * * *")
+    @Override
+    public void syncNoticeToRecentHalfYearUser() {
+        QueryWrapper<AdminSysNotice> adminSysNoticeQueryWrapper = new QueryWrapper<>();
+        adminSysNoticeQueryWrapper.eq("state", false);
+        List<AdminSysNotice> adminSysNotices = adminSysNoticeEntityService.list(adminSysNoticeQueryWrapper);
+        if(adminSysNotices.size() == 0) {
+            return;
+        }
+
+        QueryWrapper<Session> sessionQueryWrapper = new QueryWrapper<>();
+        sessionQueryWrapper.select("DISTINCT uid");
+        List<Session> sessionList = sessionEntityService.list(sessionQueryWrapper);
+        List<String> userIds = sessionList.stream().map(Session::getUid).collect(Collectors.toList());
+
+        for(AdminSysNotice adminSysNotice: adminSysNotices) {
+            switch (adminSysNotice.getType()) {
+                case "All":
+                    List<UserSysNotice> userSysNoticeList = new ArrayList<>();
+                    for(String uid: userIds) {
+                        UserSysNotice userSysNotice = new UserSysNotice();
+                        userSysNotice.setRecipientId(uid)
+                                .setType("Sys")
+                                .setSysNoticeId(adminSysNotice.getId());
+                        userSysNoticeList.add(userSysNotice);
+                    }
+                    boolean isOk1 = userSysNoticeEntityService.saveOrUpdateBatch(userSysNoticeList);
+                    if(isOk1) {
+                        adminSysNotice.setState(true);
+                    }
+                    break;
+                case "Single":
+                    UserSysNotice userSysNotice = new UserSysNotice();
+                    userSysNotice.setRecipientId(adminSysNotice.getRecipientId())
+                            .setType("Mine")
+                            .setSysNoticeId(adminSysNotice.getId());
+                    boolean isOk2 = userSysNoticeEntityService.saveOrUpdate(userSysNotice);
+                    if(isOk2) {
+                        adminSysNotice.setState(true);
+                    }
+                    break;
+                case "Admin":
+                    break;
+            }
+        }
+
+        boolean isUpdateNoticeOk = adminSysNoticeEntityService.saveOrUpdateBatch(adminSysNotices);
+        if(!isUpdateNoticeOk) {
+            log.error("=============推送系统通知更新状态失败===============");
+        }
     }
 
     @Retryable(value = Exception.class,

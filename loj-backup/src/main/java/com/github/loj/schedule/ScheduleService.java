@@ -16,4 +16,6 @@ public interface ScheduleService {
     void getCodeforcesRating();
 
     void deleteUserSession();
+
+    void syncNoticeToRecentHalfYearUser();
 }
