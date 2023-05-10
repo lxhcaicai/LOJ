@@ -60,6 +60,8 @@ public class JudgeServiceImpl implements JudgeService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.ACCESS_DENIED);
         }
     }
 

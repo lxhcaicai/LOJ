@@ -160,7 +160,7 @@ public class JudgeManager {
         return testJudgeVO;
     }
 
-    public Judge submitProblemJudge(SubmitJudgeDTO judgeDTO) throws AccessException, StatusFailException, StatusForbiddenException {
+    public Judge submitProblemJudge(SubmitJudgeDTO judgeDTO) throws AccessException, StatusFailException, StatusForbiddenException, StatusAccessDeniedException {
         judgeValidator.validateSubmissionInfo(judgeDTO);
 
         // 需要获取一下该token对应用户的数据
@@ -200,7 +200,7 @@ public class JudgeManager {
         if(isContestSubmission) {
             beforeDispatchInitManager.initContestSubmission(judgeDTO.getCid(),judgeDTO.getPid(),userRoleVo, judge);
         } else if(isTrainingSubmission) {
-            // TODO
+            beforeDispatchInitManager.initTrainingSubmission(judgeDTO.getTid(), judgeDTO.getPid(), userRoleVo, judge);
         } else {
             beforeDispatchInitManager.initCommonSubmission(judgeDTO.getPid(), judgeDTO.getGid(), judge);
         }

@@ -270,4 +270,23 @@ public class Constants {
             return code;
         }
     }
+
+    /**
+     * 训练题单的一些常量
+     */
+    public enum Training {
+        AUTH_PRIVATE("Private"),
+        AUTH_PUBLIC("Public");
+
+        private final String value;
+
+        Training(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }

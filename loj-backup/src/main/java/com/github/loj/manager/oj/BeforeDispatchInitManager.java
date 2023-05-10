@@ -3,21 +3,30 @@ package com.github.loj.manager.oj;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.loj.common.exception.StatusAccessDeniedException;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.contest.ContestRecordEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.dao.training.TrainingEntityService;
+import com.github.loj.dao.training.TrainingProblemEntityService;
+import com.github.loj.dao.training.TrainingRecordEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.training.Training;
+import com.github.loj.pojo.entity.training.TrainingProblem;
+import com.github.loj.pojo.entity.training.TrainingRecord;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
 import com.github.loj.validator.GroupValidator;
+import com.github.loj.validator.TrainingValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,6 +42,9 @@ import javax.annotation.Resource;
 public class BeforeDispatchInitManager {
 
     @Resource
+    private TrainingEntityService trainingEntityService;
+
+    @Resource
     private ContestEntityService contestEntityService;
 
     @Resource
@@ -46,6 +58,15 @@ public class BeforeDispatchInitManager {
 
     @Autowired
     private GroupValidator groupValidator;
+
+    @Resource
+    private TrainingValidator trainingValidator;
+
+    @Resource
+    private TrainingProblemEntityService trainingProblemEntityService;
+
+    @Resource
+    private TrainingRecordEntityService trainingRecordEntityService;
 
     @Autowired
     private JudgeEntityService judgeEntityService;
@@ -172,6 +193,56 @@ public class BeforeDispatchInitManager {
             contestRecord.setTime(DateUtil.between(contest.getStartTime(), judge.getSubmitTime(), DateUnit.SECOND));
         }
         contestRecordEntityService.save(contestRecord);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void initTrainingSubmission(Long tid, String displayId, AccountProfile userRolesVo, Judge judge) throws StatusFailException, StatusForbiddenException, StatusAccessDeniedException {
+
+        Training training = trainingEntityService.getById(tid);
+        if(training == null || !training.getStatus()) {
+            throw new StatusFailException("该训练不存在或不允许显示！");
+        }
+
+        trainingValidator.validateTrainingAuth(training, userRolesVo);
+
+        // 查询获取对应的pid和cpid
+        QueryWrapper<TrainingProblem> trainingProblemQueryWrapper = new QueryWrapper<>();
+        trainingProblemQueryWrapper.eq("tid", tid)
+                .eq("display_id", displayId);
+        TrainingProblem trainingProblem = trainingProblemEntityService.getOne(trainingProblemQueryWrapper);
+        judge.setPid(trainingProblem.getPid());
+
+        Problem problem = problemEntityService.getById(trainingProblem.getPid());
+
+        if(problem == null) {
+            throw new StatusForbiddenException("错误！当前题目已不存在，不可提交！");
+        }
+
+        if(problem.getAuth() == 2) {
+            throw new StatusForbiddenException("错误！当前题目不可提交！");
+        }
+
+        if(problem.getIsGroup()) {
+            judge.setGid(problem.getGid());
+        }
+        judge.setDisplayPid(problem.getProblemId())
+                .setGid(training.getGid());
+
+        // 将新提交数据插入数据库
+        judgeEntityService.save(judge);
+
+        // 非私有训练不记录
+        if(!training.getAuth().equals(Constants.Training.AUTH_PRIVATE.getValue())) {
+            return;
+        }
+
+        TrainingRecord trainingRecord = new TrainingRecord();
+        trainingRecord.setPid(problem.getId())
+                .setTid(tid)
+                .setTpid(trainingProblem.getId())
+                .setSubmitId(judge.getSubmitId())
+                .setUid(userRolesVo.getUid());
+        trainingRecordEntityService.save(trainingRecord);
     }
 
 }
