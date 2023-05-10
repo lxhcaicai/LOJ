@@ -68,6 +68,10 @@ public class Contest implements Serializable {
     @ApiModelProperty(value = "封榜起始时间，一直到比赛结束，不刷新榜单")
     private Date sealRankTime;
 
+    @ApiModelProperty(value = "账号限制规则 <prefix>**</prefix><suffix>**</suffix><start>**</start><end>**</end><extra>**</extra>")
+    private String accountLimitRule;
+
+
     @ApiModelProperty(value = "比赛结束是否自动解除封榜,自动转换成真实榜单")
     private Boolean autoRealRank;
 
