@@ -10,6 +10,7 @@ import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
@@ -17,6 +18,7 @@ import javax.annotation.Resource;
  * @author lxhcaicai
  * @date 2023/5/11 0:31
  */
+@Component
 public class TrainingValidator {
 
     @Resource
