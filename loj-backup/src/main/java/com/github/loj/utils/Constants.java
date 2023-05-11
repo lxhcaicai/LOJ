@@ -289,4 +289,41 @@ public class Constants {
         }
     }
 
+    public enum RemoteOJ {
+        HDU("HDU"),
+        CODEFORCES("CF"),
+        GYM("GYM"),
+        POJ("POJ"),
+        SPOJ("SPOJ"),
+        ATCODER("AC");
+
+        private final String name;
+
+        private RemoteOJ(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public static Boolean isRemoteOJ(String name) {
+            for(RemoteOJ remoteOJ: RemoteOJ.values()) {
+                if(remoteOJ.getName().equals(name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static RemoteOJ getRemoteOJ(String name) {
+            for(RemoteOJ remoteOJ: RemoteOJ.values()) {
+                if(remoteOJ.getName().equals(name)) {
+                    return remoteOJ;
+                }
+            }
+            return null;
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ import com.github.loj.dao.judge.JudgeCaseEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.user.UserAcproblemEntityService;
+import com.github.loj.judge.remote.RemoteJudgeDispatcher;
 import com.github.loj.judge.self.JudgeDispatcher;
 import com.github.loj.pojo.dto.*;
 import com.github.loj.pojo.entity.contest.Contest;
@@ -88,6 +89,9 @@ public class JudgeManager {
 
     @Autowired
     private ContestValidator contestValidator;
+
+    @Autowired
+    private RemoteJudgeDispatcher remoteJudgeDispatcher;
 
     @Autowired
     private AccessValidator accessValidator;

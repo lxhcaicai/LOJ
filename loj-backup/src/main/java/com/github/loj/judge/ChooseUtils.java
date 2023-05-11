@@ -6,7 +6,9 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.dao.judge.JudgeServerEntityService;
+import com.github.loj.mapper.RemoteJudgeAccountMapper;
 import com.github.loj.pojo.entity.judge.JudgeServer;
+import com.github.loj.pojo.entity.judge.RemoteJudgeAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -33,6 +36,11 @@ public class ChooseUtils {
 
     @Autowired
     private JudgeServerEntityService judgeServerEntityService;
+
+    @Autowired
+    private RemoteJudgeAccountMapper remoteJudgeAccountMapper;
+
+    public static final boolean openCodeforcesFixServer = false;
 
     @Transactional(rollbackFor = Exception.class)
     public JudgeServer chooseServer(Boolean isRemote) {
@@ -89,6 +97,55 @@ public class ChooseUtils {
             log.error("获取微服务健康实例发生异常--------->{}", e);
             return Collections.emptyList();
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public HashMap<String,Object> chooseFixedAccount(String remoteOJAccountType) {
+        List<Instance> instances = getInstances(JudgeServiceName);
+        // 过滤出当前远程可用的账号列表 悲观锁
+        QueryWrapper<RemoteJudgeAccount> remoteJudgeAccountQueryWrapper = new QueryWrapper<>();
+        remoteJudgeAccountQueryWrapper.eq("oj", remoteOJAccountType)
+                .last("for update");
+
+        List<RemoteJudgeAccount> remoteJudgeAccountList = remoteJudgeAccountMapper.selectList(remoteJudgeAccountQueryWrapper);
+        int len = remoteJudgeAccountList.size();
+        for(int i = 0; i < len && i < instances.size(); i ++) {
+            RemoteJudgeAccount remoteJudgeAccount = remoteJudgeAccountList.get(i);
+            int count = remoteJudgeAccountMapper.updateAccountStatusById(remoteJudgeAccount.getId());
+            if(count > 0) {
+                HashMap<String,Object> result = new HashMap<>();
+                result.put("index", i);
+                result.put("size", len);
+                result.put("account", remoteJudgeAccount);
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public RemoteJudgeAccount chooseRemoteAccount(String remoteOJAccountType, String username, Boolean isNeedAccountRejudge){
+        // 过滤出当前远程oj可用的账号列表 悲观锁
+        List<RemoteJudgeAccount> remoteJudgeAccountList = remoteJudgeAccountMapper.getAvailableAccount(remoteOJAccountType);
+
+        for(RemoteJudgeAccount remoteJudgeAccount: remoteJudgeAccountList) {
+            // POJ已有submitId的重判需要使用原来的账号获取结果
+            if(isNeedAccountRejudge) {
+                if(remoteJudgeAccount.getUsername().equals(username)) {
+                    int count = remoteJudgeAccountMapper.updateAccountStatusById(remoteJudgeAccount.getId());
+                    if(count > 0) {
+                        return remoteJudgeAccount;
+                    }
+                }
+            } else {
+                int count  = remoteJudgeAccountMapper.updateAccountStatusById(remoteJudgeAccount.getId());
+                if(count > 0) {
+                    return remoteJudgeAccount;
+                }
+            }
+        }
+
+        return null;
     }
 
 }
