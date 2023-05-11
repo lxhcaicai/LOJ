@@ -122,7 +122,7 @@ public class RemoteJudgeReceiver extends AbstractReceiver {
                     "Please report the matter to the administrator!");
             judgeEntityService.updateById(judge);
         } else {
-            if(remoteJudgeProblem.equals(Constants.RemoteOJ.CODEFORCES.getName())
+            if(remoteOJName.equals(Constants.RemoteOJ.CODEFORCES.getName())
                     || remoteOJName.equals(Constants.RemoteOJ.GYM.getName())) {
                 if(ChooseUtils.openCodeforcesFixServer) {
                     fixServerCFJudge(isHasSubmitIdRemoteReJudge,toJudgeDTO,judge);
@@ -240,6 +240,7 @@ public class RemoteJudgeReceiver extends AbstractReceiver {
                             .setPassword(account.getPassword());
                     toJudgeDTO.setIsHasSubmitIdRemoteReJudge(false);
                     // 调用判题服务
+                    dispatcher.dispatch(Constants.TaskType.REMOTE_JUDGE, toJudgeDTO);
                     Future future = futureTaskMap.get(key);
                     if(future != null) {
                         future.cancel(true);
