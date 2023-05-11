@@ -66,7 +66,6 @@ public class JudgeReceiver extends AbstractReceiver {
             TestJudgeReq testJudgeReq = JSONUtil.toBean(taskStr, TestJudgeReq.class);
             dispatcher.dispatch(Constants.TaskType.TEST_JUDGE, testJudgeReq);
         } else {
-            // TODO 判题测
             JSONObject task = JSONUtil.parseObj(taskStr);
             Long judgeId = task.getLong("judgeId");
             Judge judge = judgeEntityService.getById(judgeId);
