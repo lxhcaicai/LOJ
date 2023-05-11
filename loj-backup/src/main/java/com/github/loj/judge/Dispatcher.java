@@ -6,17 +6,20 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.judge.JudgeServerEntityService;
+import com.github.loj.dao.judge.RemoteJudgeAccountEntityService;
 import com.github.loj.pojo.dto.CompileDTO;
 import com.github.loj.pojo.dto.TestJudgeReq;
 import com.github.loj.pojo.dto.TestJudgeRes;
 import com.github.loj.pojo.dto.ToJudgeDTO;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.judge.JudgeServer;
+import com.github.loj.pojo.entity.judge.RemoteJudgeAccount;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -53,6 +56,9 @@ public class Dispatcher {
 
     // 每个提交任务尝试300次失败则判为提交失败
     protected final static Integer maxTryNum = 300;
+
+    @Autowired
+    private RemoteJudgeAccountEntityService remoteJudgeAccountEntityService;
 
     public CommonResult dispatch(Constants.TaskType taskType, Object data) {
         switch (taskType) {
@@ -115,7 +121,161 @@ public class Dispatcher {
      * @param path
      */
     public void remoteJudge(ToJudgeDTO data, String path) {
-        // TODO
+
+        String oj = data.getRemoteJudgeProblem().split("-")[0];
+        if(oj.equals("GYM")) {
+            oj = "CF";
+        }
+
+        // 如果是vj判題，同时不是已有提交id的获取结果操作，归属于CF的判題，需要控制判题机的权限，一机一题
+        boolean isCFFixServerJudge = ChooseUtils.openCodeforcesFixServer
+                && !data.getIsHasSubmitIdRemoteReJudge()
+                && Constants.RemoteOJ.CODEFORCES.getName().equals(oj);
+
+        Long submitId = data.getJudge().getSubmitId();
+        AtomicInteger count = new AtomicInteger(0);
+        String taskKey = UUID.randomUUID().toString() + submitId;
+        final String finalOj = oj;
+
+        Runnable getResultTask = () -> {
+            if(count.get() > maxTryNum) {
+                changeRemoteJudgeStatus(finalOj,data.getUsername(), null);
+                checkResult(null,submitId);
+                releaseTaskThread(taskKey);
+                return;
+            }
+            count.getAndIncrement();
+            JudgeServer judgeServer = null;
+            if(!isCFFixServerJudge) {
+                judgeServer = chooseUtils.chooseServer(true);
+            } else  {
+                judgeServer = chooseUtils.chooseFixedServer(true, "cf_submittable", data.getIndex(), data.getSize());
+            }
+
+            if(judgeServer != null) {
+                data.setJudgeServerIp(judgeServer.getIp());
+                data.setJudgeServerPort(judgeServer.getPort());
+                CommonResult result= null;
+                try {
+                    result = restTemplate.postForObject("http://" + judgeServer.getUrl() + path, data, CommonResult.class);
+                } catch (Exception e) {
+                    log.error("[Remote Judge] Request the judge server [" + judgeServer.getUrl() + "] error-------------->", e);
+                    changeRemoteJudgeStatus(finalOj,data.getUsername(), judgeServer);
+                } finally {
+                    checkResult(result, submitId);
+                    if(!isCFFixServerJudge) {
+                        releaseJudgerServer(judgeServer.getId());
+                    }
+                    releaseTaskThread(taskKey);
+                }
+            }
+
+        };
+
+        ScheduledFuture<?> scheduledFuture = scheduler.scheduleWithFixedDelay(getResultTask, 0, 2, TimeUnit.SECONDS);
+        futrueTaskMap.put(taskKey, scheduledFuture);
+    }
+
+    public void changeRemoteJudgeStatus(String oj, String username, JudgeServer judgeServer) {
+        changeAccountStatus(oj, username);
+        if(ChooseUtils.openCodeforcesFixServer) {
+            if(oj.equals(Constants.RemoteOJ.CODEFORCES.getName())
+                    || oj.equals(Constants.RemoteOJ.GYM.getName())) {
+                if(judgeServer != null) {
+                    changeServerSubmitCFStatus(judgeServer.getIp(), judgeServer.getPort());
+                }
+            }
+        }
+    }
+
+    @Deprecated
+    public void changeServerSubmitCFStatus(String ip, Integer port) {
+
+        if(StringUtils.isEmpty(ip) || port == null) {
+            return;
+        }
+
+        UpdateWrapper<JudgeServer> judgeServerUpdateWrapper = new UpdateWrapper<>();
+        judgeServerUpdateWrapper.set("cf_submittable", true)
+                .eq("ip", ip)
+                .eq("is_remote", true)
+                .eq("port", port);
+
+        boolean isOk = judgeServerEntityService.update(judgeServerUpdateWrapper);
+        if(!isOk) {// 重试8次
+            tryAgainUpdateServer(judgeServerUpdateWrapper, ip, port);
+        }
+    }
+
+    @Deprecated
+    private void tryAgainUpdateServer(UpdateWrapper<JudgeServer> updateWrapper, String ip, Integer port) {
+        boolean retryable;
+        int attemptNumber = 0;
+        do {
+            boolean success = judgeServerEntityService.update(updateWrapper);
+
+            if(success) {
+                return;
+            } else {
+                attemptNumber ++;
+                retryable = attemptNumber < 8;
+                if(attemptNumber == 8) {
+                    log.error("[Remote Judge] Change Codeforces Judge Server Status to `true` Failed! =======>{}", "ip:" + ip + ",port:" + port);
+                    break;
+                }
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } while (retryable);
+    }
+
+    /**
+     * 将远程评测的账号变为可用
+     * @param remoteJudge
+     * @param username
+     */
+    public void changeAccountStatus(String remoteJudge, String username) {
+        UpdateWrapper<RemoteJudgeAccount> remoteJudgeAccountUpdateWrapper = new UpdateWrapper<>();
+        remoteJudgeAccountUpdateWrapper.set("status", true)
+                .eq("status", false)
+                .eq("username", username);
+        if(remoteJudge.equals("GYM")) {
+            remoteJudge = "CF";
+        }
+        remoteJudgeAccountUpdateWrapper.eq("oj", remoteJudge);
+
+        boolean isOk = remoteJudgeAccountEntityService.update(remoteJudgeAccountUpdateWrapper);
+
+        if(!isOk) { // 重试8次
+            tryAgainUpdateAccount(remoteJudgeAccountUpdateWrapper, remoteJudge, username);
+        }
+    }
+
+    private void tryAgainUpdateAccount(UpdateWrapper<RemoteJudgeAccount> updateWrapper, String remoteJudge, String username) {
+        boolean retryable;
+        int attemptNumber = 0;
+        do {
+            boolean success = remoteJudgeAccountEntityService.update(updateWrapper);
+            if(success) {
+                return;
+            } else {
+                attemptNumber ++;
+                retryable = attemptNumber < 8;
+                if(attemptNumber == 8) {
+                    log.error("[Remote Judge] Failed to change the account to be available----------->{}", "oj:" + remoteJudge + ",username:" + username);
+                    break;
+                }
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }while (retryable);
     }
 
     /**
