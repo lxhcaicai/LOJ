@@ -211,7 +211,11 @@ public class JudgeManager {
 
         // 将提交加入任务队列
         if(judgeDTO.getIsRemote()) { // 如果是远程oj判题
-            // TODO
+            remoteJudgeDispatcher.sendTask(judge.getSubmitId(),
+                    judge.getPid(),
+                    judge.getDisplayPid(),
+                    isContestSubmission,
+                    false);
         } else {
             judgeDispatcher.sendTask(judge.getSubmitId(),
                     judge.getPid(),
@@ -635,7 +639,11 @@ public class JudgeManager {
 
         // 将提交加入任务队列
         if(problem.getIsRemote()) {  // 如果是远程oj判题
-            // TODO
+            remoteJudgeDispatcher.sendTask(judge.getSubmitId(),
+                    judge.getPid(),
+                    problem.getProblemId(),
+                    judge.getCid() != 0,
+                    isHasSubmitIdRemoteRejudge);
         } else {
             judgeDispatcher.sendTask(judge.getSubmitId(),
                     judge.getPid(),
