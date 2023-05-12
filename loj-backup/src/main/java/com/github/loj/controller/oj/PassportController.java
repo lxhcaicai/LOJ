@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
@@ -39,5 +40,11 @@ public class PassportController {
     @RequiresAuthentication
     public CommonResult<Void> logout() {
         return passportService.logout();
+    }
+
+    @PostMapping("/apply-reset-password")
+    @AnonApi
+    public CommonResult<Void> applyResetPassword(@RequestBody ApplyResetPasswordDTO applyResetPasswordDTO) {
+        return passportService.applyResetPassword(applyResetPasswordDTO);
     }
 }

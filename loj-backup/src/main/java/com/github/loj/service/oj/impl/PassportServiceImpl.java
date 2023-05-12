@@ -3,6 +3,7 @@ package com.github.loj.service.oj.impl;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.PassportManager;
+import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
@@ -35,5 +36,15 @@ public class PassportServiceImpl implements PassportService {
     public CommonResult<Void> logout() {
         passportManager.logout();
         return CommonResult.successResponse("登出成功");
+    }
+
+    @Override
+    public CommonResult<Void> applyResetPassword(ApplyResetPasswordDTO applyResetPasswordDTO) {
+        try {
+            passportManager.applyResetPassword(applyResetPasswordDTO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }

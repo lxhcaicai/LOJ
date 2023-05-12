@@ -1,6 +1,7 @@
 package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.vo.UserInfoVO;
 
@@ -16,4 +17,6 @@ public interface PassportService {
     public CommonResult<UserInfoVO> login(LoginDTO loginDTO, HttpServletResponse response, HttpServletRequest request);
 
     public CommonResult<Void> logout();
+
+    public CommonResult<Void> applyResetPassword(ApplyResetPasswordDTO applyResetPasswordDTO);
 }

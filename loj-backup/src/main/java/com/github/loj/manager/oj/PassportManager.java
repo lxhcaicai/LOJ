@@ -1,13 +1,20 @@
 package com.github.loj.manager.oj;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.user.SessionEntityService;
+import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRoleEntityService;
+import com.github.loj.manager.email.EmailManager;
+import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.entity.user.Role;
 import com.github.loj.pojo.entity.user.Session;
+import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.pojo.vo.UserRolesVO;
 import com.github.loj.shiro.AccountProfile;
@@ -16,13 +23,13 @@ import com.github.loj.utils.IpUtils;
 import com.github.loj.utils.JwtUtils;
 import com.github.loj.utils.RedisUtils;
 import org.apache.shiro.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +50,12 @@ public class PassportManager {
 
     @Resource
     private SessionEntityService sessionEntityService;
+
+    @Resource
+    private EmailManager emailManager;
+
+    @Resource
+    private UserInfoEntityService userInfoEntityService;
 
     public UserInfoVO login(LoginDTO loginDTO, HttpServletResponse response, HttpServletRequest request) throws StatusFailException {
 
@@ -119,6 +132,45 @@ public class PassportManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         jwtUtils.cleanToken(userRolesVo.getUid());
         SecurityUtils.getSubject().logout();
+    }
+
+    public void applyResetPassword(ApplyResetPasswordDTO applyResetPasswordDTO) throws StatusFailException {
+
+        String captcha = applyResetPasswordDTO.getCaptcha();
+        String captchaKey = applyResetPasswordDTO.getCaptchaKey();
+        String email = applyResetPasswordDTO.getEmail();
+
+        if(StrUtil.isBlank(captcha) || StrUtil.isBlank(email) || StrUtil.isBlank(captchaKey)) {
+            throw new StatusFailException("邮箱或验证码不能为空");
+        }
+
+        if(!emailManager.isOk()) {
+            throw new StatusFailException("对不起！本站邮箱系统未配置，暂不支持重置密码！");
+        }
+
+        String lockKey = Constants.Email.RESET_EMAIL_LOCK +email;
+        if(redisUtils.hasKey(lockKey)) {
+            throw new StatusFailException("对不起，您的操作频率过快，请在" + redisUtils.getExpire(lockKey) + "秒后再次发送重置邮件");
+        }
+
+        // 获取redis中的验证码
+        String redisCode = (String) redisUtils.get(captchaKey);
+        if(!Objects.equals(redisCode, captcha.trim().toLowerCase())) {
+            throw new StatusFailException("验证码不正确");
+        }
+
+        QueryWrapper<UserInfo> userInfoQueryWrapper = new QueryWrapper<>();
+        userInfoQueryWrapper.eq("email", email.trim());
+        UserInfo userInfo = userInfoEntityService.getOne(userInfoQueryWrapper, false);
+        if(userInfo == null) {
+            throw new StatusFailException("对不起，该邮箱无该用户，请重新检查！");
+        }
+
+        String code = IdUtil.simpleUUID().substring(0, 21);
+        redisUtils.set(Constants.Email.RESET_PASSWORD_KEY_PREFIX.getValue() + userInfo.getUsername(), code, 10 * 60); //默认链接有效10分钟
+        // 发送邮件
+        emailManager.sendResetPassword(userInfo.getUsername(), code, email.trim());
+        redisUtils.set(lockKey, 0, 90);
     }
 
 }

@@ -16,6 +16,8 @@ public class WebConfig {
 
     private String emailHost;
 
+    private Integer emailPort;
+
     private Boolean emailSsl = true;
 
     private String emailBGImg = "https://cdn.jsdelivr.net/gh/HimitZH/CDN/images/HCODE.png";
