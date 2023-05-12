@@ -10,10 +10,12 @@ import com.github.loj.pojo.entity.user.Role;
 import com.github.loj.pojo.entity.user.Session;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.pojo.vo.UserRolesVO;
+import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.IpUtils;
 import com.github.loj.utils.JwtUtils;
 import com.github.loj.utils.RedisUtils;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -111,6 +113,12 @@ public class PassportManager {
                 .map(Role::getRole)
                 .collect(Collectors.toList()));
         return userInfoVO;
+    }
+
+    public void logout() {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        jwtUtils.cleanToken(userRolesVo.getUid());
+        SecurityUtils.getSubject().logout();
     }
 
 }

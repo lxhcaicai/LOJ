@@ -5,12 +5,10 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,5 +29,15 @@ public class PassportController {
     @AnonApi
     public CommonResult<UserInfoVO> login(@Validated @RequestBody LoginDTO loginDTO, HttpServletResponse response, HttpServletRequest request) {
         return passportService.login(loginDTO, response, request);
+    }
+
+    /**
+     * 退出逻辑，将jwt在redis中清除，下次需要再次登录。
+     * @return
+     */
+    @GetMapping("/logout")
+    @RequiresAuthentication
+    public CommonResult<Void> logout() {
+        return passportService.logout();
     }
 }

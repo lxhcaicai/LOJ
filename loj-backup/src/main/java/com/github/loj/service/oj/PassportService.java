@@ -15,4 +15,5 @@ public interface PassportService {
 
     public CommonResult<UserInfoVO> login(LoginDTO loginDTO, HttpServletResponse response, HttpServletRequest request);
 
+    public CommonResult<Void> logout();
 }
