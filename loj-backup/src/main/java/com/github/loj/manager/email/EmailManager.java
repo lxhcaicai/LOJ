@@ -48,7 +48,7 @@ public class EmailManager {
                 && webConfig.getEmailPassword() != null
                 && !webConfig.getEmailUsername().equals("your_email_username")
                 && !webConfig.getEmailPassword().equals("your_email_password")
-                && Validator.isEmail(webConfig.getEmailPassword());
+                && Validator.isEmail(webConfig.getEmailUsername());
     }
 
     /**
