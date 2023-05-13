@@ -1,20 +1,28 @@
 package com.github.loj.manager.oj;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.config.NacosSwitchConfig;
+import com.github.loj.config.WebConfig;
 import com.github.loj.dao.user.SessionEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRoleEntityService;
 import com.github.loj.manager.email.EmailManager;
+import com.github.loj.pojo.bo.EmailRuleBO;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.entity.user.Role;
 import com.github.loj.pojo.entity.user.Session;
 import com.github.loj.pojo.entity.user.UserInfo;
+import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.pojo.vo.UserRolesVO;
 import com.github.loj.shiro.AccountProfile;
@@ -47,6 +55,12 @@ public class PassportManager {
 
     @Resource
     private UserRoleEntityService userRoleEntityService;
+
+    @Resource
+    private NacosSwitchConfig nacosSwitchConfig;
+
+    @Resource
+    private EmailRuleBO emailRuleBO;
 
     @Resource
     private SessionEntityService sessionEntityService;
@@ -171,6 +185,52 @@ public class PassportManager {
         // 发送邮件
         emailManager.sendResetPassword(userInfo.getUsername(), code, email.trim());
         redisUtils.set(lockKey, 0, 90);
+    }
+
+    public RegisterCodeVO getRegisterCode(String email) throws StatusAccessDeniedException, StatusFailException, StatusForbiddenException {
+
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+        if(!webConfig.getRegister()) { // 需要判断一下网站是否开启注册
+            throw new StatusAccessDeniedException("对不起！本站暂未开启注册功能！");
+        }
+        if(! emailManager.isOk()) {
+            throw new StatusAccessDeniedException("对不起！本站邮箱系统未配置，暂不支持注册！");
+        }
+
+        email = email.trim();
+
+        boolean isEmail = Validator.isEmail(email);
+        if(!isEmail) {
+            throw new StatusFailException("对不起！您的邮箱格式不正确！");
+        }
+
+        boolean isBlackEmail = emailRuleBO.getBlackList().stream().anyMatch(email::endsWith);
+        if(isBlackEmail) {
+            throw new StatusForbiddenException("对不起！您的邮箱无法注册本网站！");
+        }
+
+        String lockKey = Constants.Email.REGISTER_EMAIL_LOCK + email;
+        if(redisUtils.hasKey(lockKey)) {
+            throw new StatusFailException("对不起，您的操作频率过快，请在" + redisUtils.getExpire(lockKey) + "秒后再次发送注册邮件！");
+        }
+
+        QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        UserInfo userInfo = userInfoEntityService.getOne(queryWrapper, false);
+        if(userInfo != null) {
+            throw new StatusFailException("对不起！该邮箱已被注册，请更换新的邮箱！");
+        }
+
+        String numbers = RandomUtil.randomNumbers(6);  // 随机生成6位数字的组合
+        redisUtils.set(Constants.Email.REGISTER_KEY_PREFIX.getValue() + email, numbers, 10 * 60); //默认验证码有效10分钟
+        emailManager.sendRegisterCode(email, numbers);
+        redisUtils.set(lockKey, 0, 60);
+
+        RegisterCodeVO registerCodeVO = new RegisterCodeVO();
+        registerCodeVO.setEmail(email)
+                .setExpire(5*60);
+
+        return registerCodeVO;
     }
 
 }

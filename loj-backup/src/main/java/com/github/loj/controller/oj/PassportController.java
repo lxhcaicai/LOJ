@@ -4,6 +4,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
+import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -46,5 +47,11 @@ public class PassportController {
     @AnonApi
     public CommonResult<Void> applyResetPassword(@RequestBody ApplyResetPasswordDTO applyResetPasswordDTO) {
         return passportService.applyResetPassword(applyResetPasswordDTO);
+    }
+
+    @RequestMapping(value = "/get-register-code", method = RequestMethod.GET)
+    @AnonApi
+    public CommonResult<RegisterCodeVO> getRegisterCode(@RequestParam(value = "email", required = true) String email) {
+        return passportService.getRegisterCode(email);
     }
 }

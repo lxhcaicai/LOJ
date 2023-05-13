@@ -1,10 +1,14 @@
 package com.github.loj.service.oj.impl;
 
+import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.PassportManager;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
+import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
 import org.springframework.stereotype.Service;
@@ -45,6 +49,19 @@ public class PassportServiceImpl implements PassportService {
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<RegisterCodeVO> getRegisterCode(String email) {
+        try {
+            return CommonResult.successResponse(passportManager.getRegisterCode(email));
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.ACCESS_DENIED);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         }
     }
 }

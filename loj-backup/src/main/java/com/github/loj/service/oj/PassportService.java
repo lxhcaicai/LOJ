@@ -3,6 +3,7 @@ package com.github.loj.service.oj;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
+import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,4 +20,6 @@ public interface PassportService {
     public CommonResult<Void> logout();
 
     public CommonResult<Void> applyResetPassword(ApplyResetPasswordDTO applyResetPasswordDTO);
+
+    public CommonResult<RegisterCodeVO> getRegisterCode(String email);
 }
