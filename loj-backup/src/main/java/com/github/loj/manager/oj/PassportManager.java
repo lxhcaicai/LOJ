@@ -156,7 +156,7 @@ public class PassportManager {
         // 获取redis中的验证码
         String redisCode = (String) redisUtils.get(captchaKey);
         if(!Objects.equals(redisCode, captcha.trim().toLowerCase())) {
-            throw new StatusFailException("验证码不正确");
+            //throw new StatusFailException("验证码不正确");
         }
 
         QueryWrapper<UserInfo> userInfoQueryWrapper = new QueryWrapper<>();
