@@ -125,5 +125,41 @@ public class EmailManager {
         return sender;
     }
 
+    @Async
+    public void  sendRegisterCode(String email, String code) {
+        DateTime expireTime = DateUtil.offsetMinute(new Date(), 10);
+        JavaMailSenderImpl mailSender = getMailSender();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        try {
+
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+            // 设置渲染到html页面对应的值
+            Context context = new Context();
+            WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+            context.setVariable(Constants.Email.OJ_NAME.name(), UnicodeUtil.toString(webConfig.getName()));
+            context.setVariable(Constants.Email.OJ_SHORT_NAME.name(), UnicodeUtil.toString(webConfig.getShortName()));
+            context.setVariable(Constants.Email.OJ_URL.name(), webConfig.getBaseUrl());
+            context.setVariable(Constants.Email.EMAIL_BACKGROUND_IMG.name(), webConfig.getEmailBGImg());
+            context.setVariable("CODE", code);
+            context.setVariable("EXPIRE_TIME", expireTime.toString());
+            //利用模板引擎加载html文件进行渲染并生成对应的字符串
+            String emailContent = templateEngine.process("emailTemplate_registerCode", context);
+
+            // 设置邮件标题
+            mimeMessageHelper.setSubject(UnicodeUtil.toString(webConfig.getShortName()) + "的注册邮件");
+            mimeMessageHelper.setText(emailContent, true);
+            // 收件人
+            mimeMessageHelper.setTo(email);
+            // 发送人
+            mimeMessageHelper.setFrom(webConfig.getEmailUsername());
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            log.error("用户注册的邮件任务发生异常------------>{}", e.getMessage());
+        }
+    }
+
 
 }
