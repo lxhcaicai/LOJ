@@ -1,6 +1,11 @@
 package com.github.loj.manager.oj;
 
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.text.UnicodeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.loj.config.NacosSwitchConfig;
+import com.github.loj.config.SwitchConfig;
+import com.github.loj.config.WebConfig;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
@@ -18,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +44,9 @@ public class HomeManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private NacosSwitchConfig nacosSwitchConfig;
 
     /**
      * 获取主页轮播图
@@ -97,5 +106,29 @@ public class HomeManager {
                 .gmtModified(problem.getGmtModified())
                 .type(problem.getType())
                 .build();
+    }
+
+    /**
+     * 获取网站的基础配置。例如名字，缩写名字等等。
+     * @return
+     */
+    public Map<Object,Object> getWebConfig() {
+        SwitchConfig switchConfig = nacosSwitchConfig.getSwitchConfig();
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+        return MapUtil.builder().put("baseUrl", UnicodeUtil.toString(webConfig.getBaseUrl()))
+                .put("name", UnicodeUtil.toString(webConfig.getName()))
+                .put("shortName", UnicodeUtil.toString(webConfig.getShortName()))
+                .put("register", webConfig.getRegister())
+                .put("recordName", UnicodeUtil.toString(webConfig.getRecordName()))
+                .put("recordUrl", UnicodeUtil.toString(webConfig.getRecordUrl()))
+                .put("description", UnicodeUtil.toString(webConfig.getDescription()))
+                .put("email", UnicodeUtil.toString(webConfig.getEmailUsername()))
+                .put("projectName", UnicodeUtil.toString(webConfig.getProjectName()))
+                .put("projectUrl", UnicodeUtil.toString(webConfig.getProjectUrl()))
+                .put("openPublicDiscussion", switchConfig.getOpenPublicDiscussion())
+                .put("openGroupDiscussion", switchConfig.getOpenGroupDiscussion())
+                .put("openContestComment", switchConfig.getOpenContestComment())
+                .map();
+
     }
 }

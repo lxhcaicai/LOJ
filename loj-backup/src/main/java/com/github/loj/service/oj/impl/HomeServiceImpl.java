@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxhcaicai
@@ -40,5 +41,10 @@ public class HomeServiceImpl implements HomeService {
     @Override
     public CommonResult<List<RecentUpdatedProblemVO>> getRecentUpdatedProblemList() {
         return CommonResult.successResponse(homeManager.getRecentUpdatedProblemList());
+    }
+
+    @Override
+    public CommonResult<Map<Object, Object>> getWebConfig() {
+        return CommonResult.successResponse(homeManager.getWebConfig());
     }
 }

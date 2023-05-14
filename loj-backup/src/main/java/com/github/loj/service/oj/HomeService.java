@@ -7,6 +7,7 @@ import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxhcaicai
@@ -21,4 +22,6 @@ public interface HomeService {
     public CommonResult<List<ACMRankVO>> getRecentSevenACRank();
 
     public CommonResult<List<RecentUpdatedProblemVO>> getRecentUpdatedProblemList();
+
+    public CommonResult<Map<Object,Object>> getWebConfig();
 }

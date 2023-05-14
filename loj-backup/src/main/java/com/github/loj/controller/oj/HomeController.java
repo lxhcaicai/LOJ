@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxhcaicai
@@ -60,6 +61,16 @@ public class HomeController {
     @GetMapping("/get-recent-updated-problem")
     public CommonResult<List<RecentUpdatedProblemVO>> getRecentUpdatedProblemList() {
         return homeService.getRecentUpdatedProblemList();
+    }
+
+
+    /**
+     * 获取网站的基础配置。例如名字，缩写名字等等。
+     * @return
+     */
+    @GetMapping("/get-website-config")
+    public CommonResult<Map<Object, Object>> getWebConfig() {
+        return homeService.getWebConfig();
     }
 
 }
