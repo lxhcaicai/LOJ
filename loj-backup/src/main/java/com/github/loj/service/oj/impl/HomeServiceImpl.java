@@ -2,6 +2,7 @@ package com.github.loj.service.oj.impl;
 
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.HomeManager;
+import com.github.loj.pojo.vo.ACMRankVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.service.oj.HomeService;
 import org.springframework.stereotype.Service;
@@ -28,5 +29,10 @@ public class HomeServiceImpl implements HomeService {
     @Override
     public CommonResult<List<ContestVO>> getRecentContest() {
         return CommonResult.successResponse(homeManager.getRecentContest());
+    }
+
+    @Override
+    public CommonResult<List<ACMRankVO>> getRecentSevenACRank() {
+        return CommonResult.successResponse(homeManager.getRecentSevenACRank());
     }
 }

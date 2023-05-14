@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.vo.ACMRankVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.service.oj.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,15 @@ public class HomeController {
     @GetMapping("/get-recent-contest")
     public CommonResult<List<ContestVO>> getRecentContest() {
         return homeService.getRecentContest();
+    }
+
+    /**
+     * 获取最近7天用户做题榜单
+     * @return
+     */
+    @GetMapping("/get-recent-seven-ac-rank")
+    public CommonResult<List<ACMRankVO>> getRecentSevenACRank() {
+        return homeService.getRecentSevenACRank();
     }
 
 }

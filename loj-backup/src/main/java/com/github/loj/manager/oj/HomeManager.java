@@ -2,7 +2,9 @@ package com.github.loj.manager.oj;
 
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.vo.ACMRankVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class HomeManager {
     @Autowired
     private ContestEntityService contestEntityService;
 
+    @Autowired
+    private UserRecordEntityService userRecordEntityService;
+
     /**
      * 获取主页轮播图
      * @return
@@ -46,5 +51,14 @@ public class HomeManager {
      */
     public List<ContestVO> getRecentContest() {
         return contestEntityService.getWithinNext14DaysContests();
+    }
+
+
+    /**
+     * 获取最近7天用户做题榜单
+     * @return
+     */
+    public List<ACMRankVO> getRecentSevenACRank() {
+        return userRecordEntityService.getRecent7ACRank();
     }
 }
