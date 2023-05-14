@@ -1,6 +1,7 @@
 package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.vo.ContestVO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,4 +13,6 @@ import java.util.List;
 
 public interface HomeService {
     public CommonResult<List<HashMap<String,Object>>> getHomeCarousel();
+
+    public CommonResult<List<ContestVO>> getRecentContest();
 }

@@ -1,7 +1,9 @@
 package com.github.loj.manager.oj;
 
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,9 @@ public class HomeManager {
     @Autowired
     FileEntityService fileEntityService;
 
+    @Autowired
+    private ContestEntityService contestEntityService;
+
     /**
      * 获取主页轮播图
      * @return
@@ -35,4 +40,11 @@ public class HomeManager {
         return apiList;
     }
 
+    /**
+     * 获取最近14天的比赛
+     * @return
+     */
+    public List<ContestVO> getRecentContest() {
+        return contestEntityService.getWithinNext14DaysContests();
+    }
 }
