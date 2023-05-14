@@ -14,14 +14,15 @@ import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.WebConfig;
 import com.github.loj.dao.user.SessionEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
+import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.dao.user.UserRoleEntityService;
 import com.github.loj.manager.email.EmailManager;
+import com.github.loj.manager.msg.NoticeManager;
 import com.github.loj.pojo.bo.EmailRuleBO;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
-import com.github.loj.pojo.entity.user.Role;
-import com.github.loj.pojo.entity.user.Session;
-import com.github.loj.pojo.entity.user.UserInfo;
+import com.github.loj.pojo.dto.RegisterDTO;
+import com.github.loj.pojo.entity.user.*;
 import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.pojo.vo.UserRolesVO;
@@ -32,6 +33,7 @@ import com.github.loj.utils.JwtUtils;
 import com.github.loj.utils.RedisUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -64,6 +66,12 @@ public class PassportManager {
 
     @Resource
     private SessionEntityService sessionEntityService;
+
+    @Resource
+    private UserRecordEntityService userRecordEntityService;
+
+    @Resource
+    private NoticeManager noticeManager;
 
     @Resource
     private EmailManager emailManager;
@@ -233,4 +241,57 @@ public class PassportManager {
         return registerCodeVO;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void register(RegisterDTO registerDTO) throws StatusAccessDeniedException, StatusFailException {
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+        if(!webConfig.getRegister()) { // 需要判断一下网站是否开启注册
+            throw new StatusAccessDeniedException("对不起！本站暂未开启注册功能！");
+        }
+
+        String codeKey = Constants.Email.REGISTER_KEY_PREFIX.getValue() + registerDTO.getEmail();
+        if(!redisUtils.hasKey(codeKey)) {
+            throw new StatusFailException("验证码不存在或已过期");
+        }
+
+        if(!redisUtils.get(codeKey).equals(registerDTO.getCode())) { //验证码判断
+            throw new StatusFailException("验证码不正确");
+        }
+
+        if(StringUtils.isEmpty(registerDTO.getPassword())) {
+            throw new StatusFailException("密码不能为空");
+        }
+
+        if(registerDTO.getPassword().length() < 6 || registerDTO.getPassword().length() > 20) {
+            throw new StatusFailException("密码长度应该为6~20位！");
+        }
+
+        if(StringUtils.isEmpty(registerDTO.getUsername())) {
+            throw new StatusFailException("用户名不能为空");
+        }
+
+        if(registerDTO.getUsername().length() > 20) {
+            throw new StatusFailException("用户名长度不能超过20位!");
+        }
+
+        String uuid = IdUtil.simpleUUID();
+        //为新用户设置uuid
+        registerDTO.setUuid(uuid)
+                .setPassword(SecureUtil.md5(registerDTO.getPassword()).trim()) // 将密码MD5加密写入数据库
+                .setUsername(registerDTO.getUsername().trim())
+                .setEmail(registerDTO.getEmail().trim());
+
+        boolean addUser = userInfoEntityService.addUser(registerDTO);
+
+        boolean addUserRole = userRoleEntityService.save(new UserRole().setRoleId(1002L).setUid(uuid));
+
+        boolean addUserRecord = userRecordEntityService.save(new UserRecord().setUid(uuid));
+
+        if(addUser && addUserRole && addUserRecord) {
+            redisUtils.del(registerDTO.getEmail());
+            noticeManager.syncNoticeToNewRegisterUser(uuid);
+        } else {
+            throw new StatusFailException("注册失败，请稍后重新尝试！");
+        }
+
+    }
 }

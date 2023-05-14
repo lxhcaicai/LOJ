@@ -8,6 +8,7 @@ import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.PassportManager;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
+import com.github.loj.pojo.dto.RegisterDTO;
 import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
@@ -62,6 +63,18 @@ public class PassportServiceImpl implements PassportService {
             return CommonResult.errorResponse(e.getMessage());
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
+
+    @Override
+    public CommonResult<Void> register(RegisterDTO registerDTO) {
+        try {
+            passportManager.register(registerDTO);
+            return CommonResult.successResponse();
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.ACCESS_DENIED);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }
