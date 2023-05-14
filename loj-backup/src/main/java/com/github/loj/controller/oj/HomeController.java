@@ -4,6 +4,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.vo.ACMRankVO;
 import com.github.loj.pojo.vo.ContestVO;
+import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
 import com.github.loj.service.oj.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +51,15 @@ public class HomeController {
     @GetMapping("/get-recent-seven-ac-rank")
     public CommonResult<List<ACMRankVO>> getRecentSevenACRank() {
         return homeService.getRecentSevenACRank();
+    }
+
+    /**
+     * 获取最近前十更新的题目（不包括比赛题目、私有题目）
+     * @return
+     */
+    @GetMapping("/get-recent-updated-problem")
+    public CommonResult<List<RecentUpdatedProblemVO>> getRecentUpdatedProblemList() {
+        return homeService.getRecentUpdatedProblemList();
     }
 
 }
