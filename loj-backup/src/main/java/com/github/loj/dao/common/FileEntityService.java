@@ -11,4 +11,6 @@ import java.util.List;
  */
 public interface FileEntityService extends IService<File> {
     List<File> queryDeleteAvatarList();
+
+    List<File> queryCarouselFileList();
 }

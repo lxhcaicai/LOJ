@@ -23,4 +23,9 @@ public class FileEntityServiceImpl extends ServiceImpl<FileMapper, File> impleme
     public List<File> queryDeleteAvatarList() {
         return fileMapper.queryDeleteAvatarList();
     }
+
+    @Override
+    public List<File> queryCarouselFileList() {
+        return fileMapper.queryCarouselFileList();
+    }
 }
