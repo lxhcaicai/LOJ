@@ -4,12 +4,11 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
+import com.github.loj.pojo.vo.UserAuthInfoVO;
 import com.github.loj.service.oj.AccountService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author lxhcaicai
@@ -28,4 +27,14 @@ public class AccountController {
         return accountService.checkUsernameOrEmail(checkUsernameOrEmailDTO);
     }
 
+
+    /**
+     * 获取用户权限信息
+     * @return
+     */
+    @GetMapping("/get-user-auth-info")
+    @RequiresAuthentication
+    public CommonResult<UserAuthInfoVO> getUserAuthInfo() {
+        return accountService.getUserAuthInfo();
+    }
 }

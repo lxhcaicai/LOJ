@@ -3,6 +3,7 @@ package com.github.loj.service.oj;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
+import com.github.loj.pojo.vo.UserAuthInfoVO;
 
 /**
  * @author lxhcaicai
@@ -11,5 +12,7 @@ import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
 public interface AccountService {
 
     public CommonResult<CheckUsernameOrEmailVO> checkUsernameOrEmail(CheckUsernameOrEmailDTO checkUsernameOrEmailDTO);
+
+    public CommonResult<UserAuthInfoVO> getUserAuthInfo();
 
 }
