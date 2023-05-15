@@ -13,6 +13,7 @@ import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.JudgeVO;
+import com.github.loj.pojo.vo.ProblemCountVO;
 import com.github.loj.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,11 @@ public class JudgeEntityServiceImpl extends ServiceImpl<JudgeMapper, Judge> impl
         }
 
         return commonJudgeList;
+    }
+
+    @Override
+    public List<ProblemCountVO> getProblemListCount(List<Long> pidList) {
+        return judgeMapper.getProblemListCount(pidList);
     }
 
     private String getProblemTitleByPid(Long pid, List<Problem> problemList, HashMap<Long,String> storeMap) {
