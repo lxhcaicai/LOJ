@@ -3,14 +3,15 @@ package com.github.loj.controller.oj;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.oj.ProblemService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -46,5 +47,16 @@ public class ProblemController {
                                                         @RequestParam(value = "oj", required = false) String oj) {
 
         return problemService.getProblemList(limit,currentPage,keyword, tagId, difficulty, oj);
+    }
+
+    /**
+     * 获取用户对应该题目列表中各个题目的做题情况
+     * @param pidListDTO
+     * @return
+     */
+    @RequiresAuthentication
+    @PostMapping("/get-user-problem-status")
+    public CommonResult<HashMap<Long,Object>> getUserProblemStatus(@Validated @RequestBody PidListDTO pidListDTO) {
+        return problemService.getUserProblemStatus(pidListDTO);
     }
 }
