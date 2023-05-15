@@ -1,8 +1,10 @@
 package com.github.loj.service.oj.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.HomeManager;
 import com.github.loj.pojo.vo.ACMRankVO;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
 import com.github.loj.service.oj.HomeService;
@@ -46,5 +48,10 @@ public class HomeServiceImpl implements HomeService {
     @Override
     public CommonResult<Map<Object, Object>> getWebConfig() {
         return CommonResult.successResponse(homeManager.getWebConfig());
+    }
+
+    @Override
+    public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(Integer limit, Integer currentPage) {
+        return CommonResult.successResponse(homeManager.getCommonAnnouncement(limit, currentPage));
     }
 }

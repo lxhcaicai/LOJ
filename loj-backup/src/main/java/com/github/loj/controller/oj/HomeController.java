@@ -1,14 +1,17 @@
 package com.github.loj.controller.oj;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.vo.ACMRankVO;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
 import com.github.loj.service.oj.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -71,6 +74,19 @@ public class HomeController {
     @GetMapping("/get-website-config")
     public CommonResult<Map<Object, Object>> getWebConfig() {
         return homeService.getWebConfig();
+    }
+
+
+    /**
+     * 获取主页公告列表
+     * @param limit
+     * @param currentPage
+     * @return
+     */
+    @GetMapping("/get-common-announcement")
+    public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(@RequestParam(value = "limit", required = false) Integer limit,
+                                                                     @RequestParam(value = "currentPage", required = false) Integer currentPage) {
+        return homeService.getCommonAnnouncement(limit, currentPage);
     }
 
 }

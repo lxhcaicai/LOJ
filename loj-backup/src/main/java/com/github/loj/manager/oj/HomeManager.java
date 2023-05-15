@@ -3,9 +3,11 @@ package com.github.loj.manager.oj;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.UnicodeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.config.WebConfig;
+import com.github.loj.dao.common.AnnouncementEntityService;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
@@ -13,6 +15,7 @@ import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.pojo.entity.common.File;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.ACMRankVO;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
 import com.github.loj.utils.Constants;
@@ -47,6 +50,9 @@ public class HomeManager {
 
     @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
+
+    @Autowired
+    private AnnouncementEntityService announcementEntityService;
 
     /**
      * 获取主页轮播图
@@ -130,5 +136,21 @@ public class HomeManager {
                 .put("openContestComment", switchConfig.getOpenContestComment())
                 .map();
 
+    }
+
+    /**
+     * 获取首页公告列表数
+     * @param limit
+     * @param currentPage
+     * @return
+     */
+    public IPage<AnnouncementVO> getCommonAnnouncement(Integer limit, Integer currentPage) {
+        if(currentPage == null || currentPage < 1) {
+            currentPage = 1;
+        }
+        if(limit == null || limit < 1) {
+            limit = 10;
+        }
+        return announcementEntityService.getAnnouncementList(limit, currentPage, false);
     }
 }
