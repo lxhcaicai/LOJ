@@ -39,7 +39,7 @@ public class Tag implements Serializable {
 
     @ApiModelProperty(value = "标签分类ID")
     @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private long tcid;
+    private Long tcid;
 
     @TableField(fill = FieldFill.INSERT)
     private Date gmtCreate;
