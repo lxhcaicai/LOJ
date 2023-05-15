@@ -2,10 +2,7 @@ package com.github.loj.service.oj;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
-import com.github.loj.pojo.vo.ACMRankVO;
-import com.github.loj.pojo.vo.AnnouncementVO;
-import com.github.loj.pojo.vo.ContestVO;
-import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
+import com.github.loj.pojo.vo.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,4 +25,6 @@ public interface HomeService {
     public CommonResult<Map<Object,Object>> getWebConfig();
 
     public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(Integer limit, Integer currentPage);
+
+    public CommonResult<SubmissionStatisticsVO> getLastWeekSubmissionStatistics(Boolean forceRefresh);
 }

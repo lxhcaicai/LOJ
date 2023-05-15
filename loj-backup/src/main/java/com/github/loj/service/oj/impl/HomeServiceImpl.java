@@ -3,10 +3,7 @@ package com.github.loj.service.oj.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.HomeManager;
-import com.github.loj.pojo.vo.ACMRankVO;
-import com.github.loj.pojo.vo.AnnouncementVO;
-import com.github.loj.pojo.vo.ContestVO;
-import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.HomeService;
 import org.springframework.stereotype.Service;
 
@@ -53,5 +50,10 @@ public class HomeServiceImpl implements HomeService {
     @Override
     public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(Integer limit, Integer currentPage) {
         return CommonResult.successResponse(homeManager.getCommonAnnouncement(limit, currentPage));
+    }
+
+    @Override
+    public CommonResult<SubmissionStatisticsVO> getLastWeekSubmissionStatistics(Boolean forceRefresh) {
+        return CommonResult.successResponse(homeManager.getLastWeekSubmissionStatistics(forceRefresh));
     }
 }

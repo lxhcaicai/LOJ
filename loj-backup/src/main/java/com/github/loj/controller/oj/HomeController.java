@@ -3,10 +3,7 @@ package com.github.loj.controller.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
-import com.github.loj.pojo.vo.ACMRankVO;
-import com.github.loj.pojo.vo.AnnouncementVO;
-import com.github.loj.pojo.vo.ContestVO;
-import com.github.loj.pojo.vo.RecentUpdatedProblemVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -87,6 +84,17 @@ public class HomeController {
     public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(@RequestParam(value = "limit", required = false) Integer limit,
                                                                      @RequestParam(value = "currentPage", required = false) Integer currentPage) {
         return homeService.getCommonAnnouncement(limit, currentPage);
+    }
+
+    /**
+     * 获取最近一周提交统计
+     * @param forceRefresh
+     * @return
+     */
+    @GetMapping("/get-last-week-submission-statistics")
+    public CommonResult<SubmissionStatisticsVO> getLastWeekSubmissionStatistics(
+            @RequestParam(value = "forceRefresh", defaultValue = "false") Boolean forceRefresh) {
+        return homeService.getLastWeekSubmissionStatistics(forceRefresh);
     }
 
 }
