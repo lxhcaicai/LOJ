@@ -3,6 +3,7 @@ package com.github.loj.pojo.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.Date;
  * @date 2023/5/11 0:21
  */
 @ApiModel(value="训练题单查询对象TrainingVO", description="")
+@Accessors(chain = true)
 @Data
 public class TrainingVO implements Serializable {
     @ApiModelProperty(value = "训练id")

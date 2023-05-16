@@ -12,4 +12,6 @@ public interface TrainingService {
 
     public CommonResult<IPage<TrainingVO>> getTrainingList(Integer limit, Integer currentPage, String keyword, Long categoryId, String auth);
 
+    public CommonResult<TrainingVO> getTraining(Long tid);
+
 }

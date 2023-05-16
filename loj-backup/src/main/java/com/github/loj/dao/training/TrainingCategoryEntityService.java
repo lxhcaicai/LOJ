@@ -8,5 +8,5 @@ import com.github.loj.pojo.entity.training.TrainingCategory;
  * @date 2023/5/16 21:52
  */
 public interface TrainingCategoryEntityService extends IService<TrainingCategory> {
-
+    public TrainingCategory getTrainingCategoryByTrainingId(Long tid);
 }

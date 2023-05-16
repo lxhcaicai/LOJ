@@ -6,6 +6,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +43,18 @@ public class TrainingController {
                                                            @RequestParam(value = "auth", required = false) String auth) {
 
         return trainingService.getTrainingList(limit, currentPage, keyword, categoryId, auth);
+    }
+
+
+    /**
+     * 根据tid获取指定训练的题单题目列表
+     * @param tid
+     * @return
+     */
+    @GetMapping("/get-training-detail")
+    @RequiresAuthentication
+    public CommonResult<TrainingVO> getTraining(@RequestParam(value = "tid") Long tid) {
+        return trainingService.getTraining(tid);
     }
 
 }

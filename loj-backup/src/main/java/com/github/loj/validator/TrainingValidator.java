@@ -66,4 +66,30 @@ public class TrainingValidator {
             throw new StatusForbiddenException("错误：你已被禁止参加该训练！");
         }
     }
+
+    public boolean isInTrainingOrAdmin(Training training, AccountProfile userRolesVo) throws StatusAccessDeniedException {
+        if(Constants.Training.AUTH_PRIVATE.getValue().equals(training.getAuth())) {
+            if(userRolesVo == null ){
+                throw new StatusAccessDeniedException("该训练属于私有题单，请先登录以校验权限！");
+            }
+
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root"); // 是否为超级管理员
+            boolean isAuthor = training.getAuthor().equals(userRolesVo.getUsername()); // 是否为该私有训练的创建者
+
+            if(isRoot
+                || isAuthor
+                || (training.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), training.getGid()))) {
+                return  true;
+            }
+
+            // 如果三者都不是，需要做注册权限校验
+            QueryWrapper<TrainingRegister> trainingRegisterQueryWrapper = new QueryWrapper<>();
+            trainingRegisterQueryWrapper.eq("tid", training.getId());
+            trainingRegisterQueryWrapper.eq("uid", userRolesVo.getUid());
+            TrainingRegister trainingRegister = trainingRegisterEntityService.getOne(trainingRegisterQueryWrapper, false);
+
+            return trainingRegister != null && trainingRegister.getStatus();
+        }
+        return true;
+    }
 }
