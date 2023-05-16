@@ -4,8 +4,10 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.dao.problem.TagClassificationEntityService;
 import com.github.loj.dao.problem.TagEntityService;
+import com.github.loj.dao.training.TrainingCategoryEntityService;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.entity.problem.TagClassification;
+import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
 import com.github.loj.utils.RedisUtils;
@@ -32,6 +34,9 @@ public class CommonManager {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private TrainingCategoryEntityService trainingCategoryEntityService;
 
     public CaptchaVO getCaptcha() {
         ArithmeticCaptcha specCaptcha = new ArithmeticCaptcha(90, 30, 4);
@@ -131,5 +136,11 @@ public class CommonManager {
             }
         }
     };
+
+    public List<TrainingCategory> getTrainingCategory() {
+        QueryWrapper<TrainingCategory> trainingCategoryQueryWrapper = new QueryWrapper<>();
+        trainingCategoryQueryWrapper.isNull("gid");
+        return trainingCategoryEntityService.list(trainingCategoryQueryWrapper);
+    }
 
 }

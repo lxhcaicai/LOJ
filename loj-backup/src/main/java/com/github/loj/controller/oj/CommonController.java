@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
 import com.github.loj.service.oj.CommonService;
@@ -43,6 +44,16 @@ public class CommonController {
     @AnonApi
     public CommonResult<List<ProblemTagVO>> getProblemTagsAndClassification(@RequestParam(value = "oj", defaultValue = "ME") String oj) {
         return commonService.getProblemTagsAndClassification(oj);
+    }
+
+    /**
+     * 获取训练分类
+     * @return
+     */
+    @GetMapping("/get-training-category")
+    @AnonApi
+    public CommonResult<List<TrainingCategory>> getTrainingCategory() {
+        return commonService.getTrainingCategory();
     }
 
 }
