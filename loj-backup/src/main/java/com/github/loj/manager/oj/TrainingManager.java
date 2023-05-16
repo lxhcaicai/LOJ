@@ -1,9 +1,14 @@
 package com.github.loj.manager.oj;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.dao.training.TrainingRecordEntityService;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.pojo.entity.training.TrainingRecord;
+import com.github.loj.pojo.vo.TrainingVO;
+import com.github.loj.shiro.AccountProfile;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -25,6 +30,9 @@ public class TrainingManager {
     @Resource
     private TrainingRecordEntityService trainingRecordEntityService;
 
+    @Resource
+    private TrainingEntityService trainingEntityService;
+
     /**
      * 未启用，该操作会导致公开训练也记录，但其实并不需要，会造成数据量无效增加
      */
@@ -44,5 +52,28 @@ public class TrainingManager {
             }
             trainingRecordEntityService.saveBatch(trainingRecordList);
         }
+    }
+
+    public IPage<TrainingVO> getTrainingList(Integer limit,
+                                             Integer currentPage,
+                                             String keyword,
+                                             Long categoryId,
+                                             String auth) {
+
+        // 页数，每页题数若为空，设置默认值
+        if(currentPage == null || currentPage < 1) {
+            currentPage = 1;
+        }
+        if(limit == null || limit < 1) {
+            limit = 20;
+        }
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        String currentUid = null;
+        if(userRolesVo != null) {
+            currentUid = userRolesVo.getUid();
+        }
+        return trainingEntityService.getTrainingList(limit, currentPage, categoryId, auth, keyword, currentUid);
     }
 }

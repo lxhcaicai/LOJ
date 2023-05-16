@@ -11,4 +11,6 @@ import java.util.List;
  */
 public interface TrainingProblemEntityService extends IService<TrainingProblem> {
     public List<TrainingProblem> getPrivateTrainingProblemListByPid(Long pid, String uid);
+
+    public List<TrainingProblem> getTrainingListAcceptedCountByUid(List<Long> tidList, String uid);
 }
