@@ -1,5 +1,7 @@
 package com.github.loj.dao.contest.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.mapper.ContestMapper;
@@ -29,6 +31,17 @@ public class ContestEntityServiceImpl extends ServiceImpl<ContestMapper, Contest
         setRegisterCount(contestList);
 
         return contestList;
+    }
+
+    @Override
+    public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer type, Integer status, String keyword) {
+        // 新建分页
+        IPage<ContestVO> page = new Page<>(currentPage, limit);
+
+        List<ContestVO> contestList = contestMapper.getContestList(page, type, status, keyword);
+        setRegisterCount(contestList);
+
+        return page.setRecords(contestList);
     }
 
     private void setRegisterCount(List<ContestVO> contestList) {
