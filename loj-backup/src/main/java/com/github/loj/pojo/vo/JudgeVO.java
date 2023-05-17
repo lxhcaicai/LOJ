@@ -47,6 +47,9 @@ public class JudgeVO {
     @ApiModelProperty(value = "0为代码全部人可见，1为仅自己可见。")
     private Boolean share;
 
+    @ApiModelProperty(value = "运行时间(ms)")
+    private Integer time;
+
     @ApiModelProperty(value = "运行内存（b）")
     private Integer memory;
 

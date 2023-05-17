@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,6 +83,14 @@ public class JudgeEntityServiceImpl extends ServiceImpl<JudgeMapper, Judge> impl
     @Override
     public List<ProblemCountVO> getProblemListCount(List<Long> pidList) {
         return judgeMapper.getProblemListCount(pidList);
+    }
+
+    @Override
+    public IPage<JudgeVO> getContestJudgeList(Integer limit, Integer currentPage, String displayId, Long cid, Integer status, String username, String uid, Boolean beforeContestSubmit, String rule, Date startTime, Date sealRankTime, String sealTimeUid, Boolean completeProblemID) {
+        // 新建分页
+        Page<JudgeVO> page = new Page<>(currentPage, limit);
+        return judgeMapper.getContestJudgeList(page, displayId, cid, status, username, uid, beforeContestSubmit,
+                rule, startTime, sealRankTime, sealTimeUid, completeProblemID);
     }
 
     private String getProblemTitleByPid(Long pid, List<Problem> problemList, HashMap<Long,String> storeMap) {

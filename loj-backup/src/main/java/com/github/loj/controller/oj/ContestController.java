@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.vo.ContestVO;
+import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.service.oj.ContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,5 +54,42 @@ public class ContestController {
     @RequiresAuthentication
     public CommonResult<ContestVO> getContestInfo(@RequestParam(value = "cid", required = true) Long cid) {
         return contestService.getContestInfo(cid);
+    }
+
+    /**
+     * 获取比赛提交代码信息
+     * @param limit
+     * @param currentPage
+     * @param onlyMine
+     * @param displayId
+     * @param searchStatus
+     * @param searchUsername
+     * @param searchCid
+     * @param beforeContestSubmit
+     * @param completeProblemID
+     * @return
+     */
+    @GetMapping("/contest-submissions")
+    @RequiresAuthentication
+    public CommonResult<IPage<JudgeVO>> getContestSubmissionList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                                 @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                                 @RequestParam(value = "onlyMine", required = false) Boolean onlyMine,
+                                                                 @RequestParam(value = "problemID", required = false) String displayId,
+                                                                 @RequestParam(value = "status", required = false) Integer searchStatus,
+                                                                 @RequestParam(value = "username", required = false) String searchUsername,
+                                                                 @RequestParam(value = "contestID", required = true) Long searchCid,
+                                                                 @RequestParam(value = "beforeContestSubmit", required = true) Boolean beforeContestSubmit,
+                                                                 @RequestParam(value = "completeProblemID", defaultValue = "false") Boolean completeProblemID) {
+
+
+        return contestService.getContestSubmissionList(limit,
+                currentPage,
+                onlyMine,
+                displayId,
+                searchStatus,
+                searchUsername,
+                searchCid,
+                beforeContestSubmit,
+                completeProblemID);
     }
 }

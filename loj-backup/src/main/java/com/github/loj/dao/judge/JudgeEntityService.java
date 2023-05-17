@@ -6,6 +6,7 @@ import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.pojo.vo.ProblemCountVO;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,4 +27,18 @@ public interface JudgeEntityService extends IService<Judge> {
                                       Long gid);
 
     public List<ProblemCountVO> getProblemListCount(List<Long> pidList);
+
+    IPage<JudgeVO> getContestJudgeList(Integer limit,
+                                       Integer currentPage,
+                                       String displayId,
+                                       Long cid,
+                                       Integer status,
+                                       String username,
+                                       String uid,
+                                       Boolean beforeContestSubmit,
+                                       String rule,
+                                       Date startTime,
+                                       Date sealRankTime,
+                                       String sealTimeUid,
+                                       Boolean completeProblemID);
 }

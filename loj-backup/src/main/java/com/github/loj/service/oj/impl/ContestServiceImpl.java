@@ -7,6 +7,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ContestManager;
 import com.github.loj.pojo.vo.ContestVO;
+import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.service.oj.ContestService;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,33 @@ public class ContestServiceImpl implements ContestService {
     public CommonResult<ContestVO> getContestInfo(Long cid) {
         try {
             return CommonResult.successResponse(contestManager.getContestInfo(cid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<IPage<JudgeVO>> getContestSubmissionList(Integer limit,
+                                                                 Integer currentPage,
+                                                                 Boolean onlyMine,
+                                                                 String displayId,
+                                                                 Integer searchStatus,
+                                                                 String searchUsername,
+                                                                 Long searchCid,
+                                                                 Boolean beforeContestSubmit,
+                                                                 Boolean completeProblemID) {
+        try {
+            return CommonResult.successResponse(contestManager.getContestSubmissionList(limit,
+                    currentPage,
+                    onlyMine,
+                    displayId,
+                    searchStatus,
+                    searchUsername,
+                    searchCid,
+                    beforeContestSubmit,
+                    completeProblemID));
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
