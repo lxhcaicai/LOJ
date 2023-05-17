@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,20 @@ public class ContestEntityServiceImpl extends ServiceImpl<ContestMapper, Contest
         setRegisterCount(contestList);
 
         return page.setRecords(contestList);
+    }
+
+    @Override
+    public ContestVO getContestInfoById(Long cid) {
+        List<Long> cidList = Collections.singletonList(cid);
+        ContestVO contestVO = contestMapper.getContestInfoById(cid);
+        if(contestVO != null) {
+            List<ContestRegisterCountVO> contestRegisterCountVOList = contestMapper.getContestRegisterCount(cidList);
+            if(!CollectionUtils.isEmpty(contestRegisterCountVOList)) {
+                ContestRegisterCountVO contestRegisterCountVO = contestRegisterCountVOList.get(0);
+                contestVO.setCount(contestRegisterCountVO.getCount());
+            }
+        }
+        return contestVO;
     }
 
     private void setRegisterCount(List<ContestVO> contestList) {

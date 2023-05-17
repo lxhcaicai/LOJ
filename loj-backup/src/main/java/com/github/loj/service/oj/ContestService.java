@@ -8,4 +8,6 @@ public interface ContestService {
 
     public CommonResult<IPage<ContestVO>> getContestList(Integer limit, Integer currentPage, Integer status, Integer type, String keyword);
 
+    public CommonResult<ContestVO> getContestInfo(Long cid);
+
 }

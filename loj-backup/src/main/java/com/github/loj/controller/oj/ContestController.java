@@ -5,6 +5,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.service.oj.ContestService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,4 +43,15 @@ public class ContestController {
         return contestService.getContestList(limit, currentPage, status, type, keyword);
     }
 
+
+    /**
+     * 获得指定比赛的详细信息
+     * @param cid
+     * @return
+     */
+    @GetMapping("get-contest-info")
+    @RequiresAuthentication
+    public CommonResult<ContestVO> getContestInfo(@RequestParam(value = "cid", required = true) Long cid) {
+        return contestService.getContestInfo(cid);
+    }
 }

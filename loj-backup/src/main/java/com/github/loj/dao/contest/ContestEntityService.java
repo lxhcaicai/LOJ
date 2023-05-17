@@ -16,4 +16,6 @@ public interface ContestEntityService extends IService<Contest> {
     List<ContestVO> getWithinNext14DaysContests();
 
     IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer type, Integer status, String keyword);
+
+    ContestVO getContestInfoById(Long cid);
 }
