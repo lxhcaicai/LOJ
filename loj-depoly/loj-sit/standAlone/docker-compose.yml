@@ -60,6 +60,20 @@ services:
       loj-network:
          ipv4_address: ${NACOS_HOST:-172.20.0.4}
 
+  loj-judger:
+    image: criyle/executorserver
+    container_name: loj-judger-1
+    restart: always
+    volumes:
+      - d:/judge:/judge
+    ports:
+      - ${LOJ_JUDGE_PORT:-5050}:5050
+    privileged: true
+    shm_size: 512m
+    networks:
+      loj-network:
+        ipv4_address: ${LOJ_JUDGE_HOST:-172.20.0.5}
+
   loj-autohealth: # 监控不健康的容器进行重启
     restart: always
     container_name: loj-autohealth
