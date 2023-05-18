@@ -60,6 +60,15 @@ services:
       loj-network:
          ipv4_address: ${NACOS_HOST:-172.20.0.4}
 
+  loj-autohealth: # 监控不健康的容器进行重启
+    restart: always
+    container_name: loj-autohealth
+    image: willfarrell/autoheal
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 networks:
   loj-network:
     driver: bridge
