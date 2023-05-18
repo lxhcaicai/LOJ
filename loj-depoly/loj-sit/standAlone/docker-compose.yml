@@ -61,8 +61,8 @@ services:
          ipv4_address: ${NACOS_HOST:-172.20.0.4}
 
   loj-judger:
-    image: criyle/executorserver
-    container_name: loj-judger-1
+    image: loj-judger
+    container_name: loj-judger
     restart: always
     volumes:
       - d:/judge:/judge
