@@ -23,13 +23,42 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-123456} # mysql数据库root账号的密码
       - TZ=Asia/Shanghai
-      - NACOS_USERNAME=${NACOS_USERNAME:-root} # 后续nacos所用管理员账号
-      - NACOS_PASSWORD=${NACOS_PASSWORD:-123456} # 后续nacos所用管理员密码
+      - NACOS_USERNAME=${NACOS_USERNAME:-nacos} # 后续nacos所用管理员账号
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-nacos} # 后续nacos所用管理员密码
     ports:
       - ${MYSQL_PUBLIC_PORT:-3306}:3306
     networks:
       loj-network:
         ipv4_address: ${MYSQL_HOST:-172.20.0.3}
+
+  loj-nacos:
+    image: nacos/nacos-server:1.4.1
+    container_name: loj-nacos
+    restart: always
+    depends_on:
+      - loj-mysql
+    environment:
+      - JVM_XMX=384m
+      - JVM_XMS=384m
+      - JVM_XMN=192m
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=${MYSQL_HOST:-172.20.0.3}
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=${MYSQL_ROOT_PASSWORD:-123456} # 与上面数据库密码一致
+      - MYSQL_SERVICE_DB_NAME=nacos
+      - NACOS_AUTH_ENABLE=true # 开启鉴权
+    ports:
+      - ${NACOS_PORT:-8848}:8848
+    healthcheck:
+      test: curl -f http://${NACOS_HOST:-172.20.0.4}:8848/nacos/index.html || exit 1
+      interval: 6s
+      timeout: 10s
+      retries: 10
+    networks:
+      loj-network:
+         ipv4_address: ${NACOS_HOST:-172.20.0.4}
 
 networks:
   loj-network:
