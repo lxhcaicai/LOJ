@@ -9,6 +9,7 @@
 
 .DS_Store
 node_modules
+loj/
 dist/
 target/
 out/
