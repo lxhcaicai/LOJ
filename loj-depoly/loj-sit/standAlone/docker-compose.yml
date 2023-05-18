@@ -1,0 +1,23 @@
+version: "1"
+services:
+
+  loj-redis:
+    image: redis
+    container_name: loj-redis
+    restart: always
+    volumes:
+      - ${LOJ_DATA_DIRECTORY}/data/redis/data:/data
+    networks:
+      loj-network:
+        ipv4_address: ${REDIS_HOST:-172.20.0.2}
+
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    command: redis-server --requirepass ${REDIS_PASSWORD:-123456} --appendonly yes
+
+networks:
+  loj-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET:-172.20.0.0/16}
