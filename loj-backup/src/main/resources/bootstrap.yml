@@ -1,7 +1,7 @@
 # nacos配置
 nacos-url: 127.0.0.1:8848
-nacos-username: nacos
-nacos-password: nacos
+nacos-username: root
+nacos-password: 123456
 nacos-switch-config: loj-switch.yml
 nacos-web-config: loj-web.yml
 

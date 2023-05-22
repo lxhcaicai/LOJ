@@ -19,13 +19,13 @@ spring:
   cloud:
     nacos:
       discovery: # 作为服务注册
-        username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nacos}
+        username: ${NACOS_USERNAME:root}
+        password: ${NACOS_PASSWORD:123456}
         server-addr: ${loj-judge-server.nacos-url}
 
       config: # 作为配置中心地址
-        username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nacos}
+        username: ${NACOS_USERNAME:root}
+        password: ${NACOS_PASSWORD:123456}
         server-addr: ${loj-judge-server.nacos-url}
         file-extension: yml # 指定yaml格式的配置
         group: DEFAULT_GROUP # 指定分组
