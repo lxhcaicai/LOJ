@@ -20,6 +20,9 @@ public class ACMContestRankVO {
     @ApiModelProperty(value = "是否得奖")
     private Boolean isWinAward;
 
+    @ApiModelProperty(value = "排名奖项名称")
+    private String awardName;
+
     @ApiModelProperty(value = "排名背景颜色")
     private String awardBackground;
 

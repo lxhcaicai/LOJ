@@ -3,15 +3,13 @@ package com.github.loj.controller.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.service.oj.ContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author lxhcaicai
@@ -91,5 +89,16 @@ public class ContestController {
                 searchCid,
                 beforeContestSubmit,
                 completeProblemID);
+    }
+
+    /**
+     * 获得比赛做题记录以用来排名
+     * @param contestRankDTO
+     * @return
+     */
+    @PostMapping("/get-contest-rank")
+    @RequiresAuthentication
+    public CommonResult<IPage> getContestRank(@RequestBody ContestRankDTO contestRankDTO) {
+        return contestService.getContestRank(contestRankDTO);
     }
 }

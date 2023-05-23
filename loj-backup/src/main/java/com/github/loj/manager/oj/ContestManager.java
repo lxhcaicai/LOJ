@@ -5,10 +5,10 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
+import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
-import com.github.loj.service.oj.ContestService;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -25,6 +26,9 @@ import java.util.Date;
  */
 @Component
 public class ContestManager {
+
+    @Autowired
+    private ContestRankManager contestRankManager;
 
     @Autowired
     private ContestEntityService contestEntityService;
@@ -149,5 +153,63 @@ public class ContestManager {
             }
             return contestJudgeList;
         }
+    }
+
+    public IPage getContestRank(ContestRankDTO contestRankDTO) throws StatusFailException, StatusForbiddenException {
+        Long cid = contestRankDTO.getCid();
+        List<String> concernedList = contestRankDTO.getConcernedList();
+        Integer currentPage = contestRankDTO.getCurrentPage();
+        Integer limit = contestRankDTO.getLimit();
+        Boolean removeStar = contestRankDTO.getRemoveStar();
+        Boolean forceRefresh = contestRankDTO.getForceRefresh();
+
+        if(cid == null) {
+            throw new StatusFailException("错误：cid不能为空");
+        }
+
+        if(removeStar == null) {
+            removeStar = false;
+        }
+        if(forceRefresh == null) {
+            forceRefresh = false;
+        }
+        // 页数，每页题数若为空，设置默认值
+        if(currentPage == null|| currentPage < 1) {
+            currentPage = 1;
+        }
+        if(limit == null || limit < 1) {
+            limit = 50;
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(contestRankDTO.getCid());
+
+        // 超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        // 需要对该比赛做判断，是否处于开始或结束状态才可以获取题目，同时若是私有赛需要判断是否已注册（比赛管理员包括超级管理员可以直接获取）
+        contestValidator.validateContestAuth(contest, userRolesVo, isRoot);
+
+        // 校验该比赛是否开启了封榜模式，超级管理员和比赛创建者可以直接看到实际榜单
+        boolean isOpenSealRank = contestValidator.isSealRank(userRolesVo.getUid(), contest, forceRefresh, isRoot);
+
+        IPage resultList = null;
+        if(contest.getType().intValue() == Constants.Contest.TYPE_ACM.getCode()) {
+            // ACM比赛
+            // 进行排行榜计算以及排名分页
+            resultList = contestRankManager.getContestACMRankPage(isOpenSealRank,
+                    removeStar,
+                    userRolesVo.getUid(),
+                    concernedList,
+                    contestRankDTO.getExternalCidList(),
+                    contest,currentPage,
+                    limit,
+                    contestRankDTO.getKeyword());
+        } else {
+            // TODO  // OI比赛
+
+        }
+        return resultList;
     }
 }
