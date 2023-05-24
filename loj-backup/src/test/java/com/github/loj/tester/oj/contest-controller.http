@@ -1,0 +1,12 @@
+POST {{host}}/api/get-contest-rank
+Authorization:eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJzdWIiOiIxIiwiaWF0IjoxNjg0ODU2MzQzLCJleHAiOjE2ODQ5NDI3NDN9.BaA9Sns57UIq8zxPWB6VI46MSVL6O1jCH6m_QRxzgP2UDJ8k25AouQX85fqeNKNudHUixIEjR8-EbufYA16sqA
+
+{
+    "currentPage": 1,
+    "limit": 50,
+    "cid": 1000,
+    "forceRefresh": false,
+    "removeStar": false,
+    "concernedList": [],
+    "keyword": null
+}
