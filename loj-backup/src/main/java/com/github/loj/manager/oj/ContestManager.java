@@ -3,10 +3,12 @@ package com.github.loj.manager.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.dao.common.AnnouncementEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.shiro.AccountProfile;
@@ -38,6 +40,9 @@ public class ContestManager {
 
     @Autowired
     private JudgeEntityService judgeEntityService;
+
+    @Autowired
+    private AnnouncementEntityService announcementEntityService;
 
     @Autowired
     private ContestValidator contestValidator;
@@ -211,5 +216,26 @@ public class ContestManager {
 
         }
         return resultList;
+    }
+
+    public IPage<AnnouncementVO> getContestAnnouncement(Long cid, Integer limit, Integer currentPage) throws StatusForbiddenException, StatusFailException {
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(cid);
+
+        // 超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 需要对该比赛做判断，是否处于开始或结束状态才可以获取题目，同时若是私有赛需要判断是否已注册（比赛管理员包括超级管理员可以直接获取）
+        contestValidator.validateContestAuth(contest, userRolesVo, isRoot);
+        if(currentPage == null || currentPage < 1) {
+            currentPage = 1;
+        }
+        if(limit == null || limit < 1) {
+            limit = 10;
+        }
+        return announcementEntityService.getContestAnnouncement(cid, true, limit, currentPage);
     }
 }

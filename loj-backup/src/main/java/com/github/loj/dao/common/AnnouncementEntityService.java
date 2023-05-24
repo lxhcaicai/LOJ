@@ -11,4 +11,6 @@ import com.github.loj.pojo.vo.AnnouncementVO;
  */
 public interface AnnouncementEntityService extends IService<Announcement> {
     IPage<AnnouncementVO> getAnnouncementList(int limit, int currentPage, Boolean notAdmin);
+
+    IPage<AnnouncementVO> getContestAnnouncement(Long cid, Boolean notAdmin, int limit, int currentPage);
 }

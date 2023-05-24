@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.service.oj.ContestService;
@@ -100,5 +101,20 @@ public class ContestController {
     @RequiresAuthentication
     public CommonResult<IPage> getContestRank(@RequestBody ContestRankDTO contestRankDTO) {
         return contestService.getContestRank(contestRankDTO);
+    }
+
+    /**
+     * 获得比赛的通知列表
+     * @param cid
+     * @param limit
+     * @param currentPage
+     * @return
+     */
+    @GetMapping("/get-contest-announcement")
+    @RequiresAuthentication
+    public CommonResult<IPage<AnnouncementVO>> getContestAnnouncement(@RequestParam(value = "cid", required = true) Long cid,
+                                                                      @RequestParam(value = "limit", required = false) Integer limit,
+                                                                      @RequestParam(value = "currentPage", required = false) Integer currentPage) {
+        return contestService.getContestAnnouncement(cid, limit, currentPage);
     }
 }

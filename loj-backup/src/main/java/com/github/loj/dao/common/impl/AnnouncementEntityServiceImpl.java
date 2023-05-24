@@ -25,4 +25,10 @@ public class AnnouncementEntityServiceImpl extends ServiceImpl<AnnouncementMappe
         Page<AnnouncementVO> page = new Page<>(currentPage, limit);
         return announcementMapper.getAnnouncementList(page, notAdmin);
     }
+
+    @Override
+    public IPage<AnnouncementVO> getContestAnnouncement(Long cid, Boolean notAdmin, int limit, int currentPage) {
+        Page<AnnouncementVO> page = new Page<>(currentPage, limit);
+        return announcementMapper.getContestAnnouncement(page, cid, notAdmin);
+    }
 }

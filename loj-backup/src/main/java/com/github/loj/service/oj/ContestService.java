@@ -3,6 +3,7 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
 
@@ -23,5 +24,7 @@ public interface ContestService {
                                                                  Boolean completeProblemID);
 
     public CommonResult<IPage> getContestRank(ContestRankDTO contestRankDTO);
+
+    public CommonResult<IPage<AnnouncementVO>> getContestAnnouncement(Long cid, Integer limit, Integer currentPage);
 
 }
