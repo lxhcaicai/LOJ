@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loj-redis
+  namespace: default
+  labels:
+    app: loj-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: loj-redis
+  template:
+    metadata:
+      labels:
+        name: loj-redis
+    spec:
+      containers:
+        - name: loj-redis
+          image: redis
+#          volumeMounts:
+#            - mountPath: "/usr/local/etc/redis"
+#              name: redis-config
+#            - mountPath: "/data"
+#              name: redis-data
+#          command:
+#            - "redis-server "
+#          args:
+#            - "usr/local/etc/redis/redis.conf"
+#      volumes:
+#        - name: redis-config
+#          hostPath:
+#            path: /data/redis/redis-config
+#            type: DirectoryOrcreate
+#        - name: redis-data
+#          hostPath:
+#            path: /data/redis/redis-data
+#            type: DirectoryOrcreate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loj-redis
+  labels:
+    app: loj-redis
+spec:
+  type: NodePort
+  ports:
+    - port: 6379
+      protocol: TCP
+      name: loj-redis
+      targetPort: 6379
+      nodePort: 32379
+  selector:
+    name: redis
