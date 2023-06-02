@@ -37,7 +37,7 @@
         <module>loj-judge</module>
         <module>loj-api</module>
         <module>loj-backup</module>
-        <module>loj-depoly</module>
+<!--        <module>loj-depoly</module>-->
     </modules>
 
     <!--版本控制-->
