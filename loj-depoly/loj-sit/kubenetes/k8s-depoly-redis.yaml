@@ -18,24 +18,24 @@ spec:
       containers:
         - name: loj-redis
           image: redis
-#          volumeMounts:
-#            - mountPath: "/usr/local/etc/redis"
-#              name: redis-config
-#            - mountPath: "/data"
-#              name: redis-data
-#          command:
-#            - "redis-server "
-#          args:
-#            - "usr/local/etc/redis/redis.conf"
-#      volumes:
-#        - name: redis-config
-#          hostPath:
-#            path: /data/redis/redis-config
-#            type: DirectoryOrcreate
-#        - name: redis-data
-#          hostPath:
-#            path: /data/redis/redis-data
-#            type: DirectoryOrcreate
+          volumeMounts:
+            - mountPath: "/usr/local/etc/redis"
+              name: redis-config
+            - mountPath: "/data"
+              name: redis-data
+          command:
+            - "redis-server "
+          args:
+            - "usr/local/etc/redis/redis.conf"
+      volumes:
+        - name: redis-config
+          hostPath:
+            path: /data/redis/redis-config
+            type: DirectoryOrcreate
+        - name: redis-data
+          hostPath:
+            path: /data/redis/redis-data
+            type: DirectoryOrcreate
 
 ---
 apiVersion: v1
