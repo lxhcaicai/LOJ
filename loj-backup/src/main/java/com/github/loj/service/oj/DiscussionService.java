@@ -1,6 +1,8 @@
 package com.github.loj.service.oj;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.pojo.entity.problem.Category;
 
 import java.util.List;
@@ -11,4 +13,12 @@ import java.util.List;
  */
 public interface DiscussionService {
     public CommonResult<List<Category>> getDiscussionCategory();
+
+    public CommonResult<IPage<Discussion>> getDiscussionList(Integer limit,
+                                                             Integer currentPage,
+                                                             Integer categoryId,
+                                                             String pid,
+                                                             Boolean onlyMine,
+                                                             String keyword,
+                                                             Boolean admin);
 }
