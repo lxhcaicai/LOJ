@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.pojo.entity.problem.Category;
+import com.github.loj.pojo.vo.DiscussionVO;
 
 import java.util.List;
 
@@ -21,4 +22,6 @@ public interface DiscussionService {
                                                              Boolean onlyMine,
                                                              String keyword,
                                                              Boolean admin);
+
+    public CommonResult<DiscussionVO> getDiscussion(Integer did);
 }

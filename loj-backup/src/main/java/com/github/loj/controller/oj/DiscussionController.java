@@ -5,6 +5,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.pojo.entity.problem.Category;
+import com.github.loj.pojo.vo.DiscussionVO;
 import com.github.loj.service.oj.DiscussionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,5 +42,11 @@ public class DiscussionController {
                                                              @RequestParam(value = "keyword", required = false) String keyword,
                                                              @RequestParam(value = "admin", defaultValue = "false") Boolean admin) {
         return discussionService.getDiscussionList(limit,currentPage,categoryId,pid,onlyMine,keyword,admin);
+    }
+
+    @GetMapping("/get-discussion-detail")
+    @AnonApi
+    public CommonResult<DiscussionVO> getDiscussion(@RequestParam(value = "did", required = true) Integer did) {
+        return discussionService.getDiscussion(did);
     }
 }
