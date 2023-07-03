@@ -24,4 +24,6 @@ public interface DiscussionService {
                                                              Boolean admin);
 
     public CommonResult<DiscussionVO> getDiscussion(Integer did);
+
+    public CommonResult<Void> addDiscussion(Discussion discussion);
 }

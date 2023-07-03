@@ -2,16 +2,17 @@ package com.github.loj.controller.oj;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
+import com.github.loj.annotation.LOJAccess;
+import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.pojo.entity.problem.Category;
 import com.github.loj.pojo.vo.DiscussionVO;
 import com.github.loj.service.oj.DiscussionService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -48,5 +49,13 @@ public class DiscussionController {
     @AnonApi
     public CommonResult<DiscussionVO> getDiscussion(@RequestParam(value = "did", required = true) Integer did) {
         return discussionService.getDiscussion(did);
+    }
+
+    @PostMapping("/discussion")
+    @RequiresPermissions("discussion_add")
+    @RequiresAuthentication
+    @LOJAccess({LOJAccessEnum.PUBLIC_DISCUSSION})
+    public CommonResult<Void> addDiscussion(@RequestBody Discussion discussion) {
+        return discussionService.addDiscussion(discussion);
     }
 }

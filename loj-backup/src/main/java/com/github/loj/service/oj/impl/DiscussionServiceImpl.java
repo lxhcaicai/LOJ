@@ -1,6 +1,7 @@
 package com.github.loj.service.oj.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
@@ -44,6 +45,20 @@ public class DiscussionServiceImpl implements DiscussionService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         } catch (StatusForbiddenException | AccessException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addDiscussion(Discussion discussion) {
+        try {
+            discussionManager.addDiscussion(discussion);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FAIL);
         }
     }
 }
