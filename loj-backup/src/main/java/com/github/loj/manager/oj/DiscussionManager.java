@@ -250,4 +250,47 @@ public class DiscussionManager {
             throw new StatusFailException("发布失败，请重新尝试！");
         }
     }
+
+    public void updateDiscussion(Discussion discussion) throws StatusFailException, StatusNotFoundException, StatusForbiddenException {
+        commonValidator.validateNotEmpty(discussion.getId(), "讨论ID");
+        commonValidator.validateContent(discussion.getTitle(), "讨论标题", 255);
+        commonValidator.validateContent(discussion.getDescription(), "讨论描述", 255);
+        commonValidator.validateContent(discussion.getContent(), "讨论", 65535);
+        commonValidator.validateNotEmpty(discussion.getCategoryId(), "讨论分类");
+
+        QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+        discussionQueryWrapper
+                .select("id","uid","gid")
+                .eq("id",discussion.getId());
+
+        Discussion oriDiscussion = discussionEntityService.getOne(discussionQueryWrapper);
+        if(oriDiscussion == null) {
+            throw new StatusNotFoundException("更新失败，该讨论不存在！");
+        }
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        if(!isRoot
+                && !oriDiscussion.getUid().equals(userRolesVo.getUid())
+                && !(oriDiscussion.getGid() != null)
+                && groupValidator.isGroupMember(userRolesVo.getUid(), oriDiscussion.getGid())) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+        UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+        discussionUpdateWrapper.set("title", discussion.getTitle())
+                .set("content", discussion.getContent())
+                .set("description", discussion.getContent())
+                .set("category_id", discussion.getCategoryId())
+                .set(isRoot || isProblemAdmin || isAdmin,
+                        "top_priority", discussion.getTopPriority())
+                .eq("id", discussion.getId());
+        boolean isOk = discussionEntityService.update(discussionUpdateWrapper);
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+    }
 }

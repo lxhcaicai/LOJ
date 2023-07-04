@@ -26,4 +26,6 @@ public interface DiscussionService {
     public CommonResult<DiscussionVO> getDiscussion(Integer did);
 
     public CommonResult<Void> addDiscussion(Discussion discussion);
+
+    public CommonResult<Void> updateDiscussion(Discussion discussion);
 }

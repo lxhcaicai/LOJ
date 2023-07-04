@@ -58,4 +58,12 @@ public class DiscussionController {
     public CommonResult<Void> addDiscussion(@RequestBody Discussion discussion) {
         return discussionService.addDiscussion(discussion);
     }
+
+    @PutMapping("/discussion")
+    @RequiresPermissions("discussion_edit")
+    @RequiresAuthentication
+    @LOJAccess({LOJAccessEnum.PUBLIC_DISCUSSION})
+    public CommonResult<Void> updateDiscussion(@RequestBody Discussion discussion) {
+        return discussionService.updateDiscussion(discussion);
+    }
 }
