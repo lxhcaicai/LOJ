@@ -274,10 +274,10 @@ public class DiscussionManager {
         boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
         boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
 
-        if(!isRoot
+        if (!isRoot
                 && !oriDiscussion.getUid().equals(userRolesVo.getUid())
-                && !(oriDiscussion.getGid() != null)
-                && groupValidator.isGroupMember(userRolesVo.getUid(), oriDiscussion.getGid())) {
+                && !(oriDiscussion.getGid() != null
+                && groupValidator.isGroupAdmin(userRolesVo.getUid(), oriDiscussion.getGid()))) {
             throw new StatusForbiddenException("对不起，您无权限操作！");
         }
         UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
@@ -291,6 +291,41 @@ public class DiscussionManager {
         boolean isOk = discussionEntityService.update(discussionUpdateWrapper);
         if(!isOk) {
             throw new StatusFailException("修改失败");
+        }
+    }
+
+    public void removeDiscussion(Integer did) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+        discussionQueryWrapper
+                .select("id","uid", "gid")
+                .eq("id", did);
+
+        Discussion discussion = discussionEntityService.getOne(discussionQueryWrapper);
+        if(discussion == null) {
+            throw new StatusNotFoundException("删除失败，该讨论已不存在！");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if(!isRoot
+                && !discussion.getUid().equals(userRolesVo.getUid())
+                && !(discussion.getGid() != null
+                && groupValidator.isGroupAdmin(userRolesVo.getUid(), discussion.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<Discussion>().eq("id", did);
+        // 如果不是是管理员,则需要附加当前用户的uid条件
+        if(!SecurityUtils.getSubject().hasRole("root")
+                && !SecurityUtils.getSubject().hasRole("admin")
+                && !SecurityUtils.getSubject().hasRole("problem_admin")) {
+            discussionUpdateWrapper.eq("uid", userRolesVo.getUid());
+        }
+        boolean isOk = discussionEntityService.remove(discussionUpdateWrapper);
+        if(!isOk) {
+            throw new StatusFailException("删除失败，无权限或者该讨论不存在");
         }
     }
 }

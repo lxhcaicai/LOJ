@@ -28,4 +28,6 @@ public interface DiscussionService {
     public CommonResult<Void> addDiscussion(Discussion discussion);
 
     public CommonResult<Void> updateDiscussion(Discussion discussion);
+
+    public CommonResult<Void> removeDiscussion(Integer did);
 }

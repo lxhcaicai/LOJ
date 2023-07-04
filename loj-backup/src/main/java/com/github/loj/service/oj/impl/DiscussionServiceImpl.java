@@ -75,4 +75,18 @@ public class DiscussionServiceImpl implements DiscussionService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FAIL);
         }
     }
+
+    @Override
+    public CommonResult<Void> removeDiscussion(Integer did) {
+        try {
+            discussionManager.removeDiscussion(did);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FAIL);
+        }
+    }
 }

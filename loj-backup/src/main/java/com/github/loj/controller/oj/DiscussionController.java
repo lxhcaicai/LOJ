@@ -66,4 +66,12 @@ public class DiscussionController {
     public CommonResult<Void> updateDiscussion(@RequestBody Discussion discussion) {
         return discussionService.updateDiscussion(discussion);
     }
+
+    @DeleteMapping("/discussion")
+    @RequiresPermissions("discussion_del")
+    @RequiresAuthentication
+    @LOJAccess({LOJAccessEnum.PUBLIC_DISCUSSION})
+    public CommonResult<Void> removeDiscussion(@RequestParam("did") Integer did) {
+        return discussionService.removeDiscussion(did);
+    }
 }
