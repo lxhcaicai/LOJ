@@ -1,7 +1,7 @@
 package com.github.loj.manager.msg;
 
+import com.github.loj.dao.msg.MsgRemindEntityService;
 import com.github.loj.pojo.vo.UserUnreadMsgCountVO;
-import com.github.loj.service.msg.MsgRemindEntityService;
 import com.github.loj.shiro.AccountProfile;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Component;

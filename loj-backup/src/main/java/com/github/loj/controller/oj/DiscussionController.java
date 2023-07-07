@@ -11,6 +11,7 @@ import com.github.loj.pojo.vo.DiscussionVO;
 import com.github.loj.service.oj.DiscussionService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.authz.annotation.RequiresUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,5 +74,12 @@ public class DiscussionController {
     @LOJAccess({LOJAccessEnum.PUBLIC_DISCUSSION})
     public CommonResult<Void> removeDiscussion(@RequestParam("did") Integer did) {
         return discussionService.removeDiscussion(did);
+    }
+
+    @GetMapping("/discussion-like")
+    @RequiresAuthentication
+    public CommonResult<Void> addDiscussionLike(@RequestParam("did") Integer did,
+                                                @RequestParam("toLike") Boolean toLike) {
+        return discussionService.addDiscussionLike(did, toLike);
     }
 }
