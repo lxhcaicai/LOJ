@@ -6,6 +6,7 @@ import com.github.loj.annotation.LOJAccess;
 import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.DiscussionReport;
 import com.github.loj.pojo.entity.problem.Category;
 import com.github.loj.pojo.vo.DiscussionVO;
 import com.github.loj.service.oj.DiscussionService;
@@ -81,5 +82,11 @@ public class DiscussionController {
     public CommonResult<Void> addDiscussionLike(@RequestParam("did") Integer did,
                                                 @RequestParam("toLike") Boolean toLike) {
         return discussionService.addDiscussionLike(did, toLike);
+    }
+
+    @PostMapping("discussion-report")
+    @RequiresAuthentication
+    public CommonResult<Void> addDiscussionReport(@RequestBody DiscussionReport discussionReport) {
+        return discussionService.addDiscussionReport(discussionReport);
     }
 }

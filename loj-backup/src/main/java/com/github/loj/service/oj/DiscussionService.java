@@ -3,6 +3,7 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.DiscussionReport;
 import com.github.loj.pojo.entity.problem.Category;
 import com.github.loj.pojo.vo.DiscussionVO;
 
@@ -32,4 +33,6 @@ public interface DiscussionService {
     public CommonResult<Void> removeDiscussion(Integer did);
 
     public CommonResult<Void> addDiscussionLike(Integer did, Boolean toLike);
+
+    public CommonResult<Void> addDiscussionReport(DiscussionReport discussionReport);
 }

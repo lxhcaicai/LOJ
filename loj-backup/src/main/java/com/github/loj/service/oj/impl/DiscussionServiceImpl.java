@@ -8,6 +8,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.DiscussionManager;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.DiscussionReport;
 import com.github.loj.pojo.entity.problem.Category;
 import com.github.loj.pojo.vo.DiscussionVO;
 import com.github.loj.service.oj.DiscussionService;
@@ -99,6 +100,16 @@ public class DiscussionServiceImpl implements DiscussionService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
         } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addDiscussionReport(DiscussionReport discussionReport) {
+        try {
+            discussionManager.addDiscussionReport(discussionReport);
+            return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }

@@ -12,11 +12,13 @@ import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.dao.discussion.DiscussionEntityService;
 import com.github.loj.dao.discussion.DiscussionLikeEntityService;
+import com.github.loj.dao.discussion.DiscussionReportEntityService;
 import com.github.loj.dao.problem.CategoryEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.user.UserAcproblemEntityService;
 import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.pojo.entity.discussion.DiscussionLike;
+import com.github.loj.pojo.entity.discussion.DiscussionReport;
 import com.github.loj.pojo.entity.problem.Category;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.user.UserAcproblem;
@@ -64,6 +66,9 @@ public class DiscussionManager {
 
     @Autowired
     private UserAcproblemEntityService userAcproblemEntityService;
+
+    @Autowired
+    private DiscussionReportEntityService discussionReportEntityService;
 
     @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
@@ -391,6 +396,13 @@ public class DiscussionManager {
             UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
             discussionUpdateWrapper.setSql("like_num=like_num-1").eq("id", did);
             discussionEntityService.update(discussionUpdateWrapper);
+        }
+    }
+
+    public void addDiscussionReport(DiscussionReport discussionReport) throws StatusFailException {
+        boolean isOk = discussionReportEntityService.saveOrUpdate(discussionReport);
+        if(!isOk) {
+            throw new StatusFailException("举报失败，请重新尝试");
         }
     }
 }

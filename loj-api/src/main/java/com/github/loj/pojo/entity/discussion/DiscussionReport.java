@@ -1,4 +1,4 @@
-package com.github.loj.dao.discussion;
+package com.github.loj.pojo.entity.discussion;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -12,26 +12,27 @@ import lombok.experimental.Accessors;
 
 import java.util.Date;
 
-/**
- * @author lxhcaicai
- * @date 2023/5/25 1:19
- */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="CommentLike对象", description="")
-public class CommentLike {
-
+@ApiModel(value="DiscussionReport对象", description="")
+public class DiscussionReport {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
-    @ApiModelProperty(value = "评论id")
-    private Integer cid;
+    @ApiModelProperty(value = "讨论id")
+    private Integer did;
 
-    @ApiModelProperty(value = "用户id")
-    private String uid;
+    @ApiModelProperty(value = "举报者的用户名")
+    private String reporter;
+
+    @ApiModelProperty(value = "举报内容")
+    private String content;
+
+    @ApiModelProperty(value = "是否已读")
+    private Boolean status;
 
     @TableField(fill = FieldFill.INSERT)
     private Date gmtCreate;

@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.discussion.CommentEntityService;
-import com.github.loj.dao.discussion.CommentLike;
+import com.github.loj.pojo.entity.discussion.CommentLike;
 import com.github.loj.dao.discussion.CommentLikeEntityService;
 import com.github.loj.dao.discussion.DiscussionEntityService;
 import com.github.loj.pojo.entity.discussion.Discussion;
@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.rmi.AccessException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
