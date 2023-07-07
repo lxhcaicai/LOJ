@@ -11,10 +11,12 @@ import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.dao.discussion.DiscussionEntityService;
+import com.github.loj.dao.discussion.DiscussionLikeEntityService;
 import com.github.loj.dao.problem.CategoryEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.user.UserAcproblemEntityService;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.DiscussionLike;
 import com.github.loj.pojo.entity.problem.Category;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.user.UserAcproblem;
@@ -28,6 +30,7 @@ import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -67,6 +70,9 @@ public class DiscussionManager {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private DiscussionLikeEntityService discussionLikeEntityService;
 
     public List<Category> getDiscussionCategory() {
         return categoryEntityService.list();
@@ -326,6 +332,65 @@ public class DiscussionManager {
         boolean isOk = discussionEntityService.remove(discussionUpdateWrapper);
         if(!isOk) {
             throw new StatusFailException("删除失败，无权限或者该讨论不存在");
+        }
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public void addDiscussionLike(Integer did, Boolean toLike) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        Discussion discussion = discussionEntityService.getById(did);
+
+        if(discussion == null) {
+            throw new StatusNotFoundException("对不起，该讨论不存在！");
+        }
+
+        if(discussion.getGid() != null) {
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+            if(!isRoot && ! discussion.getUid().equals(userRolesVo.getUid())
+                    && !groupValidator.isGroupMember(userRolesVo.getUid(), discussion.getGid())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
+
+        QueryWrapper<DiscussionLike> discussionLikeQueryWrapper = new QueryWrapper<>();
+        discussionLikeQueryWrapper.eq("did", did).eq("uid", userRolesVo.getUid());
+
+        DiscussionLike discussionLike = discussionLikeEntityService.getOne(discussionLikeQueryWrapper,false);
+
+        if(toLike) {
+            if(discussionLike == null) {
+                boolean isSave = discussionLikeEntityService.saveOrUpdate(new DiscussionLike().setUid(userRolesVo.getUid()).setDid(did));
+                if(!isSave) {
+                    throw new StatusFailException("点赞失败，请重试尝试！");
+                }
+            }
+
+            // 点赞 + 1
+            UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+            discussionUpdateWrapper.eq("id", discussion.getId())
+                    .setSql("like_num=like_num+1");
+            discussionEntityService.update(discussionUpdateWrapper);
+            // 当前帖子要不是点赞者的 才发送点赞消息
+            if(!userRolesVo.getUid().equals(discussion.getAuthor())) {
+                discussionEntityService.updatePostLikeMsg(discussion.getUid(),
+                        userRolesVo.getUid(),
+                        did,
+                        discussion.getGid());
+            }
+        } else {
+            // 取消点赞
+            if(discussionLike != null) {
+                boolean isDelete = discussionLikeEntityService.removeById(discussionLike.getId());
+                if(!isDelete) {
+                    throw new StatusFailException("取消点赞失败，请重试尝试！");
+                }
+            }
+            // 点赞 - 1
+            UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+            discussionUpdateWrapper.setSql("like_num=like_num-1").eq("id", did);
+            discussionEntityService.update(discussionUpdateWrapper);
         }
     }
 }

@@ -30,4 +30,6 @@ public interface DiscussionService {
     public CommonResult<Void> updateDiscussion(Discussion discussion);
 
     public CommonResult<Void> removeDiscussion(Integer did);
+
+    public CommonResult<Void> addDiscussionLike(Integer did, Boolean toLike);
 }
