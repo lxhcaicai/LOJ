@@ -35,4 +35,6 @@ public interface DiscussionService {
     public CommonResult<Void> addDiscussionLike(Integer did, Boolean toLike);
 
     public CommonResult<Void> addDiscussionReport(DiscussionReport discussionReport);
+
+    public CommonResult<List<Category>> upsertDiscussionCategory(List<Category> categoryList);
 }

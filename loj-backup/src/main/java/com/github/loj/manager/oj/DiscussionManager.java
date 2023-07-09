@@ -38,6 +38,7 @@ import org.springframework.util.StringUtils;
 
 import java.rmi.AccessException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lxhcaicai
@@ -404,5 +405,16 @@ public class DiscussionManager {
         if(!isOk) {
             throw new StatusFailException("举报失败，请重新尝试");
         }
+    }
+
+    public List<Category> upsertDiscussionCategory(List<Category> categoryList) throws StatusFailException {
+        List<Category> categories = categoryList.stream().filter(category -> category.getName() != null
+                            && !category.getName().trim().isEmpty())
+                .collect(Collectors.toList());
+        boolean isOk = categoryEntityService.saveOrUpdateBatch(categories);
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+        return categoryEntityService.list();
     }
 }

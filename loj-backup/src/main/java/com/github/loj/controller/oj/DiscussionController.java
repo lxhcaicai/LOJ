@@ -12,6 +12,7 @@ import com.github.loj.pojo.vo.DiscussionVO;
 import com.github.loj.service.oj.DiscussionService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -88,5 +89,12 @@ public class DiscussionController {
     @RequiresAuthentication
     public CommonResult<Void> addDiscussionReport(@RequestBody DiscussionReport discussionReport) {
         return discussionService.addDiscussionReport(discussionReport);
+    }
+
+    @PostMapping("/discussion-category")
+    @RequiresAuthentication
+    @RequiresRoles("root")
+    public CommonResult<List<Category>> upsertDiscussionCategory(@RequestBody List<Category> categoryList) {
+        return discussionService.upsertDiscussionCategory(categoryList);
     }
 }

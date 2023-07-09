@@ -114,4 +114,13 @@ public class DiscussionServiceImpl implements DiscussionService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<List<Category>> upsertDiscussionCategory(List<Category> categoryList) {
+        try {
+            return CommonResult.successResponse(discussionManager.upsertDiscussionCategory(categoryList));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
