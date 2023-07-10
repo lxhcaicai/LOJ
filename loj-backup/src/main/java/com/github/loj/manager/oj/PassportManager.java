@@ -7,6 +7,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
@@ -22,6 +23,7 @@ import com.github.loj.pojo.bo.EmailRuleBO;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.dto.RegisterDTO;
+import com.github.loj.pojo.dto.ResetPasswordDTO;
 import com.github.loj.pojo.entity.user.*;
 import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
@@ -293,5 +295,36 @@ public class PassportManager {
             throw new StatusFailException("注册失败，请稍后重新尝试！");
         }
 
+    }
+
+    public void resetPassword(ResetPasswordDTO resetPasswordDTO) throws StatusFailException {
+        String username = resetPasswordDTO.getUsername();
+        String password = resetPasswordDTO.getPassword();
+        String code = resetPasswordDTO.getCode();
+
+        if(StringUtils.isEmpty(password) || StringUtils.isEmpty(username) || StringUtils.isEmpty(code))  {
+            throw new StatusFailException("用户名、新密码或验证码不能为空");
+        }
+
+        if(password.length() < 6 || password.length()  > 20) {
+            throw new StatusFailException("新密码长度应该为6~20位！");
+        }
+
+        String codeKey = Constants.Email.RESET_PASSWORD_KEY_PREFIX.getValue() + username;
+        if(!redisUtils.hasKey(codeKey)) {
+            throw new StatusFailException("重置密码链接不存在或已过期，请重新发送重置邮件");
+        }
+
+        if (!redisUtils.get(codeKey).equals(code)) {
+            throw new StatusFailException("重置密码的验证码不正确，请重新输入");
+        }
+
+        UpdateWrapper<UserInfo> userInfoUpdateWrapper = new UpdateWrapper<>();
+        userInfoUpdateWrapper.eq("username",username).set("password", SecureUtil.md5(password));
+        boolean isOk = userInfoEntityService.update(userInfoUpdateWrapper);
+        if(!isOk) {
+            throw new StatusFailException("重置密码失败");
+        }
+        redisUtils.del(codeKey);
     }
 }

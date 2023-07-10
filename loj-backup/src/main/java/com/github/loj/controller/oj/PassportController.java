@@ -5,6 +5,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.dto.RegisterDTO;
+import com.github.loj.pojo.dto.ResetPasswordDTO;
 import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
@@ -71,4 +72,11 @@ public class PassportController {
     public CommonResult<Void> register(@RequestBody RegisterDTO registerDTO) {
         return passportService.register(registerDTO);
     }
+
+    @PostMapping("/reset-password")
+    @AnonApi
+    public CommonResult<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
+        return passportService.resetPassword(resetPasswordDTO);
+    }
+
 }

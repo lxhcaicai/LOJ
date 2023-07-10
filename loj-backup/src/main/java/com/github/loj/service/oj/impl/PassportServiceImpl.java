@@ -9,6 +9,7 @@ import com.github.loj.manager.oj.PassportManager;
 import com.github.loj.pojo.dto.ApplyResetPasswordDTO;
 import com.github.loj.pojo.dto.LoginDTO;
 import com.github.loj.pojo.dto.RegisterDTO;
+import com.github.loj.pojo.dto.ResetPasswordDTO;
 import com.github.loj.pojo.vo.RegisterCodeVO;
 import com.github.loj.pojo.vo.UserInfoVO;
 import com.github.loj.service.oj.PassportService;
@@ -73,6 +74,16 @@ public class PassportServiceImpl implements PassportService {
             return CommonResult.successResponse();
         } catch (StatusAccessDeniedException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.ACCESS_DENIED);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        try {
+            passportManager.resetPassword(resetPasswordDTO);
+            return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }
