@@ -1,10 +1,12 @@
 package com.github.loj.service.oj.impl;
 
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.AccountManager;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
 import com.github.loj.pojo.vo.UserAuthInfoVO;
+import com.github.loj.pojo.vo.UserCalendarHeatmapVO;
 import com.github.loj.service.oj.AccountService;
 import org.springframework.stereotype.Service;
 
@@ -28,5 +30,14 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public CommonResult<UserAuthInfoVO> getUserAuthInfo() {
         return CommonResult.successResponse(accountManager.getUserAuthInfo());
+    }
+
+    @Override
+    public CommonResult<UserCalendarHeatmapVO> getUserCalendarHeatmap(String uid, String username) {
+        try {
+            return CommonResult.successResponse(accountManager.getUserCalendarHeatmap(uid, username));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }
