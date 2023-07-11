@@ -7,6 +7,7 @@ import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
 import com.github.loj.pojo.vo.UserAuthInfoVO;
 import com.github.loj.pojo.vo.UserCalendarHeatmapVO;
+import com.github.loj.pojo.vo.UserHomeVO;
 import com.github.loj.service.oj.AccountService;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,15 @@ public class AccountServiceImpl implements AccountService {
     public CommonResult<UserCalendarHeatmapVO> getUserCalendarHeatmap(String uid, String username) {
         try {
             return CommonResult.successResponse(accountManager.getUserCalendarHeatmap(uid, username));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<UserHomeVO> getUserHomeInfo(String uid, String username) {
+        try {
+            return CommonResult.successResponse(accountManager.getUserHomeInfo(uid,username));
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }

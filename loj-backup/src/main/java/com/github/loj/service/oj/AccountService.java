@@ -5,6 +5,7 @@ import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
 import com.github.loj.pojo.vo.UserAuthInfoVO;
 import com.github.loj.pojo.vo.UserCalendarHeatmapVO;
+import com.github.loj.pojo.vo.UserHomeVO;
 
 /**
  * @author lxhcaicai
@@ -17,5 +18,7 @@ public interface AccountService {
     public CommonResult<UserAuthInfoVO> getUserAuthInfo();
 
     public CommonResult<UserCalendarHeatmapVO> getUserCalendarHeatmap(String uid, String username);
+
+    public CommonResult<UserHomeVO> getUserHomeInfo(String uid, String username);
 
 }
