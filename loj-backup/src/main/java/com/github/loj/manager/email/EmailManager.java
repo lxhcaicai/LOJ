@@ -161,5 +161,43 @@ public class EmailManager {
         }
     }
 
+    /**
+     *  为正在修改邮箱的用户的新邮箱发送验证码
+     * @param email 用户邮箱
+     * @param username
+     * @param code
+     */
+    public void sendChangeEmailCode(String email, String username, String code) {
+        DateTime expireTime = DateUtil.offsetMinute(new Date(), 10);
+        JavaMailSenderImpl mailSender = getMailSender();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+            // 设置渲染到html页面对应的值
+            Context context = new Context();
+            WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+            context.setVariable(Constants.Email.OJ_NAME.name(), UnicodeUtil.toString(webConfig.getName()));
+            context.setVariable(Constants.Email.OJ_SHORT_NAME.name(), UnicodeUtil.toString(webConfig.getName()));
+            context.setVariable(Constants.Email.OJ_URL.name() , webConfig.getBaseUrl());
+            context.setVariable(Constants.Email.EMAIL_BACKGROUND_IMG.name(), webConfig.getEmailBGImg());
+            context.setVariable("CODE", code);
+            context.setVariable("USERNAME", username);
+            context.setVariable("EXPIRE_TIME", expireTime.toString());
 
+            //利用模板引擎加载html文件进行渲染并生成对应的字符串
+            String emailContent = templateEngine.process("emailTemplate_changeEmailCode", context);
+
+            // 设置邮件标题
+            mimeMessageHelper.setSubject(UnicodeUtil.toString(webConfig.getShortName()) + "的修改邮箱邮件");
+            mimeMessageHelper.setText(emailContent, true);
+
+            // 收件人
+            mimeMessageHelper.setTo(email);
+            // 发送人
+            mimeMessageHelper.setFrom(webConfig.getEmailUsername());
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            log.error("用户修改邮箱的邮件任务发生异常------------>{}", e.getMessage());
+        }
+    }
 }

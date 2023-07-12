@@ -50,4 +50,14 @@ public class AccountServiceImpl implements AccountService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> getChangeEmailCode(String email) {
+        try {
+            accountManager.getChangeEmailCode(email);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

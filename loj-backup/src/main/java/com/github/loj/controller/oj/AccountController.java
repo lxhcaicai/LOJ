@@ -64,4 +64,15 @@ public class AccountController {
                                                     @RequestParam(value = "username",required = false) String username) {
         return accountService.getUserHomeInfo(uid, username);
     }
+
+    /**
+     * 获取修改邮箱的验证码
+     * @param email
+     * @return
+     */
+    @GetMapping("/get-change-email-code")
+    @RequiresAuthentication
+    public CommonResult<Void> getChangeEmailCode(@RequestParam("email") String email) {
+        return accountService.getChangeEmailCode(email);
+    }
 }

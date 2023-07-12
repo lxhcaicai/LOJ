@@ -21,4 +21,6 @@ public interface AccountService {
 
     public CommonResult<UserHomeVO> getUserHomeInfo(String uid, String username);
 
+    public CommonResult<Void> getChangeEmailCode(String email);
+
 }

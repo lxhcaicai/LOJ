@@ -7,10 +7,12 @@ package com.github.loj.manager.oj;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.user.*;
+import com.github.loj.manager.email.EmailManager;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
@@ -20,6 +22,8 @@ import com.github.loj.pojo.entity.user.UserAcproblem;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
+import com.github.loj.utils.RedisUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,6 +53,11 @@ public class AccountManager {
 
     @Autowired
     private SessionEntityService sessionEntityService;
+
+    @Autowired
+    private RedisUtils redisUtils;
+
+    private EmailManager emailManager;
 
     public CheckUsernameOrEmailVO checkUsernameOrEmail(CheckUsernameOrEmailDTO checkUsernameOrEmailDTO) {
 
@@ -191,5 +200,33 @@ public class AccountManager {
                 .id(problem.getId())
                 .difficulty(problem.getDifficulty())
                 .build();
+    }
+
+    public void getChangeEmailCode(String email) throws StatusFailException {
+        String lockKey = Constants.Email.CHANGE_EMAIL_LOCK + email;
+        if(redisUtils.hasKey(lockKey)) {
+            throw new StatusFailException("对不起，您的操作频率过快，请在" + redisUtils.getExpire(lockKey) + "秒后再次发送修改邮件！");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<UserInfo> emailUserInfoQueryWrapper = new QueryWrapper<>();
+        emailUserInfoQueryWrapper.select("uuid", "email")
+                .eq("email", email);
+        UserInfo emailUserInfo = userInfoEntityService.getOne(emailUserInfoQueryWrapper,false);
+
+        if(emailUserInfo != null) {
+            if(Objects.equals(emailUserInfo.getUuid(), userRolesVo.getUid()))  {
+                throw new StatusFailException("新邮箱与当前邮箱一致，请不要重复设置！");
+            } else {
+                throw new StatusFailException("该邮箱已被他人使用，请重新设置其它邮箱！");
+            }
+        }
+
+        String numbers = RandomUtil.randomNumbers(6);
+        redisUtils.set(Constants.Email.CHANGE_EMAIL_KEY_PREFIX.getValue() + email, numbers, 10 * 60);
+        emailManager.sendChangeEmailCode(email,userRolesVo.getUsername(), numbers);
+        redisUtils.set(lockKey, 0, 30);
     }
 }
