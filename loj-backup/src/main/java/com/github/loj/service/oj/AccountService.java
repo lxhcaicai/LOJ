@@ -2,10 +2,7 @@ package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
-import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
-import com.github.loj.pojo.vo.UserAuthInfoVO;
-import com.github.loj.pojo.vo.UserCalendarHeatmapVO;
-import com.github.loj.pojo.vo.UserHomeVO;
+import com.github.loj.pojo.vo.*;
 
 /**
  * @author lxhcaicai
@@ -22,5 +19,7 @@ public interface AccountService {
     public CommonResult<UserHomeVO> getUserHomeInfo(String uid, String username);
 
     public CommonResult<Void> getChangeEmailCode(String email);
+
+    public CommonResult<UserInfoVO> changeUserInfo(UserInfoVO userInfoVO);
 
 }

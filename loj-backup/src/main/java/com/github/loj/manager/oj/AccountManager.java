@@ -5,10 +5,12 @@ package com.github.loj.manager.oj;
  * @date 2023/5/13 22:02
  */
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.user.*;
@@ -24,6 +26,7 @@ import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
+import com.github.loj.validator.CommonValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,6 +59,9 @@ public class AccountManager {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private CommonValidator commonValidator;
 
     private EmailManager emailManager;
 
@@ -228,5 +234,43 @@ public class AccountManager {
         redisUtils.set(Constants.Email.CHANGE_EMAIL_KEY_PREFIX.getValue() + email, numbers, 10 * 60);
         emailManager.sendChangeEmailCode(email,userRolesVo.getUsername(), numbers);
         redisUtils.set(lockKey, 0, 30);
+    }
+
+    public UserInfoVO changeUserInfo(UserInfoVO userInfoVO) throws StatusFailException {
+        commonValidator.validateContentLength(userInfoVO.getRealname(), "真实姓名", 50);
+        commonValidator.validateContentLength(userInfoVO.getNickname(), "昵称", 20);
+        commonValidator.validateContentLength(userInfoVO.getSignature(), "个性简介", 65535);
+        commonValidator.validateContentLength(userInfoVO.getBlog(), "博客", 255);
+        commonValidator.validateContentLength(userInfoVO.getGithub(),"Github", 255);
+        commonValidator.validateContentLength(userInfoVO.getSchool(), "学校", 100);
+        commonValidator.validateContentLength(userInfoVO.getNumber(), "学号", 200);
+        commonValidator.validateContentLength(userInfoVO.getCfUsername(), "Codeforces用户名", 255);
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        UpdateWrapper<UserInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("uuid", userInfoVO.getUid())
+                .set("cf_username", userInfoVO.getCfUsername())
+                .set("realname", userInfoVO.getRealname())
+                .set("nickname", userInfoVO.getSignature())
+                .set("blog", userInfoVO.getBlog())
+                .set("gender", userInfoVO.getGender())
+                .set("github", userInfoVO.getGithub())
+                .set("school", userInfoVO.getSchool())
+                .set("number", userInfoVO.getNumber());
+
+        boolean isOk = userInfoEntityService.update(updateWrapper);
+
+        if(isOk) {
+            UserRolesVO userRoles = userRoleEntityService.getUserRoles(userRolesVo.getUid(), null);
+            // 更新session
+            BeanUtil.copyProperties(userRoles, userRolesVo);
+            UserInfoVO userInfoVo = new UserInfoVO();
+            BeanUtil.copyProperties(userRoles, userInfoVo, "roles");
+            userInfoVo.setRoleList(userRoles.getRoles().stream().map(Role::getRole).collect(Collectors.toList()));
+            return userInfoVo;
+        } else {
+            throw new StatusFailException("更新个人信息失败！");
+        }
     }
 }

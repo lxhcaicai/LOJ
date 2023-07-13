@@ -3,10 +3,7 @@ package com.github.loj.controller.oj;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
-import com.github.loj.pojo.vo.CheckUsernameOrEmailVO;
-import com.github.loj.pojo.vo.UserAuthInfoVO;
-import com.github.loj.pojo.vo.UserCalendarHeatmapVO;
-import com.github.loj.pojo.vo.UserHomeVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.AccountService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,5 +71,11 @@ public class AccountController {
     @RequiresAuthentication
     public CommonResult<Void> getChangeEmailCode(@RequestParam("email") String email) {
         return accountService.getChangeEmailCode(email);
+    }
+
+    @PostMapping("/change-userInfo")
+    @RequiresAuthentication
+    public CommonResult<UserInfoVO> changeUserInfo(@RequestBody UserInfoVO userInfoVO) {
+        return accountService.changeUserInfo(userInfoVO);
     }
 }
