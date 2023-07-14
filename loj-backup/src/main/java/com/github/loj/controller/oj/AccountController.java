@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ChangePasswordDTO;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.AccountService;
@@ -77,5 +78,16 @@ public class AccountController {
     @RequiresAuthentication
     public CommonResult<UserInfoVO> changeUserInfo(@RequestBody UserInfoVO userInfoVO) {
         return accountService.changeUserInfo(userInfoVO);
+    }
+
+    /**
+     * 修改密码
+     * @param changePasswordDto
+     * @return
+     */
+    @PostMapping("/change-password")
+    @RequiresAuthentication
+    public CommonResult<ChangeAccountVO> changePassword(@RequestBody ChangePasswordDTO changePasswordDto) {
+        return accountService.changePassword(changePasswordDto);
     }
 }

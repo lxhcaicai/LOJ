@@ -1,6 +1,7 @@
 package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ChangePasswordDTO;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.*;
 
@@ -21,5 +22,7 @@ public interface AccountService {
     public CommonResult<Void> getChangeEmailCode(String email);
 
     public CommonResult<UserInfoVO> changeUserInfo(UserInfoVO userInfoVO);
+
+    public CommonResult<ChangeAccountVO> changePassword(ChangePasswordDTO changePasswordDTO);
 
 }

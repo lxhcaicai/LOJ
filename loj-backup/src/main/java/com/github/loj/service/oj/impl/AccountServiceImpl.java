@@ -1,8 +1,11 @@
 package com.github.loj.service.oj.impl;
 
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusSystemErrorException;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.AccountManager;
+import com.github.loj.pojo.dto.ChangePasswordDTO;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.AccountService;
@@ -64,6 +67,17 @@ public class AccountServiceImpl implements AccountService {
             return CommonResult.successResponse(accountManager.changeUserInfo(userInfoVO));
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<ChangeAccountVO> changePassword(ChangePasswordDTO changePasswordDTO) {
+        try {
+            return CommonResult.successResponse(accountManager.changePassword(changePasswordDTO));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusSystemErrorException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
         }
     }
 }
