@@ -254,10 +254,11 @@ public class AccountManager {
         // 获取当前登录的用户
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         UpdateWrapper<UserInfo> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("uuid", userInfoVO.getUid())
+        updateWrapper.eq("uuid", userRolesVo.getUid())
                 .set("cf_username", userInfoVO.getCfUsername())
                 .set("realname", userInfoVO.getRealname())
-                .set("nickname", userInfoVO.getSignature())
+                .set("nickname", userInfoVO.getNickname())
+                .set("signature", userInfoVO.getSignature())
                 .set("blog", userInfoVO.getBlog())
                 .set("gender", userInfoVO.getGender())
                 .set("github", userInfoVO.getGithub())
