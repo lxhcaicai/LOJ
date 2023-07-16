@@ -317,7 +317,7 @@ public class AccountManager {
                 .eq("uuid", userRolesVo.getUid());
         UserInfo userInfo = userInfoEntityService.getOne(userInfoQueryWrapper,false);
         // 与当前登录用户的密码进行比较判断
-        if(userInfo.getPassword().equals(SecureUtil.md5(newPassword))) {
+        if(userInfo.getPassword().equals(SecureUtil.md5(oldPassword))) {
             UpdateWrapper<UserInfo> updateWrapper = new UpdateWrapper<>();
             updateWrapper.set("password", SecureUtil.md5(newPassword))
                     .eq("uuid", userRolesVo.getUid());
