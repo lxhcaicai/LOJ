@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ChangeEmailDTO;
 import com.github.loj.pojo.dto.ChangePasswordDTO;
 import com.github.loj.pojo.dto.CheckUsernameOrEmailDTO;
 import com.github.loj.pojo.vo.*;
@@ -89,5 +90,16 @@ public class AccountController {
     @RequiresAuthentication
     public CommonResult<ChangeAccountVO> changePassword(@RequestBody ChangePasswordDTO changePasswordDto) {
         return accountService.changePassword(changePasswordDto);
+    }
+
+    /**
+     * 修改邮箱的操作，连续半小时内密码错误5次，则需要半个小时后才可以再次尝试修改
+     * @param changeEmailDTO
+     * @return
+     */
+    @PostMapping("/change-email")
+    @RequiresAuthentication
+    public CommonResult<ChangeAccountVO>  changeEmail(@RequestBody ChangeEmailDTO changeEmailDTO) {
+        return accountService.changeEmail(changeEmailDTO);
     }
 }
