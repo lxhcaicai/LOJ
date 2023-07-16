@@ -1,7 +1,9 @@
 package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.vo.CommentListVO;
+import com.github.loj.pojo.vo.CommentVO;
 
 /**
  * @author lxhcaicai
@@ -10,4 +12,6 @@ import com.github.loj.pojo.vo.CommentListVO;
 public interface CommentService {
 
     public CommonResult<CommentListVO> getComments(Long cid, Integer did, Integer limit, Integer currentPage);
+
+    public CommonResult<CommentVO> addComment(Comment comment);
 }

@@ -12,4 +12,6 @@ import com.github.loj.pojo.vo.CommentVO;
 public interface CommentEntityService extends IService<Comment> {
 
     IPage<CommentVO> getCommentList(int limit, int currentPage, Long cid, Integer did, Boolean isRoot, String uid);
+
+    void updateCommentMsg(String recipientId, String senderId, String content, Integer discussionId, Long gid);
 }

@@ -2,13 +2,14 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.vo.CommentListVO;
+import com.github.loj.pojo.vo.CommentVO;
 import com.github.loj.service.oj.CommentService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author lxhcaicai
@@ -37,6 +38,13 @@ public class CommentController {
                                                    @RequestParam(value = "currentPage", required = false, defaultValue = "1") Integer currentPage) {
 
         return commentService.getComments(cid, did, limit, currentPage);
+    }
+
+    @PostMapping("/comment")
+    @RequiresPermissions("comment_add")
+    @RequiresAuthentication
+    public CommonResult<CommentVO> addComment(@RequestBody Comment comment) {
+        return commentService.addComment(comment);
     }
 
 }

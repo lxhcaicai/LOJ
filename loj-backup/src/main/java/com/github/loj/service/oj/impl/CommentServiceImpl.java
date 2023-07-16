@@ -1,10 +1,13 @@
 package com.github.loj.service.oj.impl;
 
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.CommentManager;
+import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.vo.CommentListVO;
+import com.github.loj.pojo.vo.CommentVO;
 import com.github.loj.service.oj.CommentService;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,17 @@ public class CommentServiceImpl implements CommentService {
             return CommonResult.successResponse(commentManager.getComments(cid, did, limit, currentPage));
         } catch (AccessException |  StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
+
+    @Override
+    public CommonResult<CommentVO> addComment(Comment comment) {
+        try {
+            return CommonResult.successResponse(commentManager.addComment(comment));
+        } catch (StatusForbiddenException | AccessException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException  e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }

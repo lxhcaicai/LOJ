@@ -7,16 +7,20 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.discussion.CommentEntityService;
 import com.github.loj.dao.group.GroupMemberEntityService;
+import com.github.loj.dao.msg.MsgRemindEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.mapper.CommentMapper;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.entity.group.GroupMember;
+import com.github.loj.pojo.entity.msg.MsgRemind;
 import com.github.loj.pojo.vo.CommentVO;
 import com.github.loj.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -37,6 +41,9 @@ public class CommentEntityServiceImpl extends ServiceImpl<CommentMapper, Comment
 
     @Autowired
     private CommentMapper commentMapper;
+
+    @Resource
+    private MsgRemindEntityService msgRemindEntityService;
 
     @Override
     public IPage<CommentVO> getCommentList(int limit, int currentPage, Long cid, Integer did, Boolean isRoot, String uid) {
@@ -69,5 +76,27 @@ public class CommentEntityServiceImpl extends ServiceImpl<CommentMapper, Comment
 
         }
         return commentMapper.getCommentList(page, cid, did, false, null);
+    }
+
+    @Async
+    @Override
+    public void updateCommentMsg(String recipientId, String senderId, String content, Integer discussionId, Long gid) {
+        if(content.length() > 200) {
+            content = content.substring(0, 200) + "...";
+        }
+        MsgRemind msgRemind = new MsgRemind();
+        msgRemind.setAction("Discuss")
+                .setRecipientId(recipientId)
+                .setSenderId(senderId)
+                .setSourceId(discussionId)
+                .setSourceType("Discussion")
+                .setUrl("/discussion-detail/" + discussionId);
+
+        if(gid != null) {
+            msgRemind.setUrl("/group/" + gid + "/discussion-detail/" + discussionId);
+        } else {
+            msgRemind.setUrl("/discussion-detail/" + discussionId);
+        }
+        msgRemindEntityService.saveOrUpdate(msgRemind);
     }
 }
