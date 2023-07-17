@@ -2,6 +2,7 @@ package com.github.loj.manager.oj;
 
 import cn.hutool.extra.emoji.EmojiUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.exception.StatusFailException;
@@ -230,6 +231,52 @@ public class CommentManager {
         } else {
             throw new StatusFailException("评论失败，请重新尝试！");
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addCommentLike(Integer cid, Boolean toLike, Integer sourceId, String sourceType) throws StatusFailException {
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<CommentLike> commentLikeQueryWrapper = new QueryWrapper<>();
+        commentLikeQueryWrapper.eq("cid", cid).eq("uid",userRolesVo.getUid());
+
+        CommentLike commentLike = commentLikeEntityService.getOne(commentLikeQueryWrapper,false);
+
+        if(toLike) { // 添加点赞
+            if(commentLike == null) {
+                boolean isSave = commentLikeEntityService.saveOrUpdate(new CommentLike()
+                        .setUid(userRolesVo.getUid())
+                        .setCid(cid));
+                if(!isSave) {
+                    throw new StatusFailException("点赞失败，请重试尝试！");
+                }
+            }
+            // 点赞+1
+            Comment comment = commentEntityService.getById(cid);
+            if(comment != null) {
+                comment.setLikeNum(comment.getLikeNum() + 1);
+                commentEntityService.updateById(comment);
+                // 当前的评论要不是点赞者的 才发送点赞消息
+                if(!userRolesVo.getUsername().equals(comment.getFromName())) {
+                    commentEntityService.updateCommentLikeMsg(comment.getFromUid(), userRolesVo.getUid(),sourceId, sourceType);
+                }
+            }
+        } else { // 取消点赞
+            if(commentLike != null) {
+                boolean isDelete = commentLikeEntityService.removeById(commentLike.getId());
+                if(!isDelete) {
+                    throw new StatusFailException("取消点赞失败，请重试尝试！");
+                }
+            }
+
+            // 点赞 - 1
+            UpdateWrapper<Comment> commentUpdateWrapper = new UpdateWrapper<>();
+            commentUpdateWrapper.setSql("like_num=like_num-1").eq("id", cid);
+            commentEntityService.update(commentUpdateWrapper);
+        }
+
     }
 
     private String formatContentRemoveAutoPlay(String content) {

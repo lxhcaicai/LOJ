@@ -47,4 +47,13 @@ public class CommentController {
         return commentService.addComment(comment);
     }
 
+    @GetMapping("/comment-like")
+    @RequiresAuthentication
+    public CommonResult<Void> addCommentLike(@RequestParam("cid") Integer cid,
+                                             @RequestParam("toLike") Boolean toLike,
+                                             @RequestParam("sourceId") Integer sourceId,
+                                             @RequestParam("sourceType") String sourceType) {
+        return commentService.addCommentLike(cid, toLike, sourceId, sourceType);
+    }
+
 }

@@ -6,12 +6,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.discussion.CommentEntityService;
+import com.github.loj.dao.discussion.DiscussionEntityService;
 import com.github.loj.dao.group.GroupMemberEntityService;
 import com.github.loj.dao.msg.MsgRemindEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.mapper.CommentMapper;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.discussion.Comment;
+import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.pojo.entity.group.GroupMember;
 import com.github.loj.pojo.entity.msg.MsgRemind;
 import com.github.loj.pojo.vo.CommentVO;
@@ -44,6 +46,9 @@ public class CommentEntityServiceImpl extends ServiceImpl<CommentMapper, Comment
 
     @Resource
     private MsgRemindEntityService msgRemindEntityService;
+
+    @Autowired
+    private DiscussionEntityService discussionEntityService;
 
     @Override
     public IPage<CommentVO> getCommentList(int limit, int currentPage, Long cid, Integer did, Boolean isRoot, String uid) {
@@ -97,6 +102,32 @@ public class CommentEntityServiceImpl extends ServiceImpl<CommentMapper, Comment
         } else {
             msgRemind.setUrl("/discussion-detail/" + discussionId);
         }
+        msgRemindEntityService.saveOrUpdate(msgRemind);
+    }
+
+    @Async
+    @Override
+    public void updateCommentLikeMsg(String recipientId, String senderId, Integer sourceId, String sourceType) {
+
+        MsgRemind msgRemind = new MsgRemind();
+        msgRemind.setAction("Like_Discuss")
+                .setRecipientId(recipientId)
+                .setSenderId(senderId)
+                .setSourceId(sourceId)
+                .setSourceType(sourceType);
+        if (sourceType.equals("Discussion")) {
+            Discussion discussion = discussionEntityService.getById(sourceId);
+            if (discussion != null) {
+                if (discussion.getGid() != null) {
+                    msgRemind.setUrl("/group/" + discussion.getGid() + "/discussion-detail/" + sourceId);
+                } else {
+                    msgRemind.setUrl("/discussion-detail/" + sourceId);
+                }
+            }
+        } else if(sourceType.equals("Contest")){
+            msgRemind.setUrl("/contest/" + sourceId + "/comment");
+        }
+
         msgRemindEntityService.saveOrUpdate(msgRemind);
     }
 }

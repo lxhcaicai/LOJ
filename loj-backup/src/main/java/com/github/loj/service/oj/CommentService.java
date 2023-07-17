@@ -14,4 +14,6 @@ public interface CommentService {
     public CommonResult<CommentListVO> getComments(Long cid, Integer did, Integer limit, Integer currentPage);
 
     public CommonResult<CommentVO> addComment(Comment comment);
+
+    public CommonResult<Void> addCommentLike(Integer cid, Boolean toLike, Integer sourceId, String sourceType);
 }
