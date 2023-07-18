@@ -11,6 +11,7 @@ import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.discussion.CommentEntityService;
+import com.github.loj.dao.discussion.ReplyEntityService;
 import com.github.loj.dao.user.UserAcproblemEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.discussion.Comment;
@@ -18,6 +19,7 @@ import com.github.loj.pojo.entity.discussion.CommentLike;
 import com.github.loj.dao.discussion.CommentLikeEntityService;
 import com.github.loj.dao.discussion.DiscussionEntityService;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.Reply;
 import com.github.loj.pojo.entity.user.UserAcproblem;
 import com.github.loj.pojo.vo.CommentListVO;
 import com.github.loj.pojo.vo.CommentVO;
@@ -65,6 +67,9 @@ public class CommentManager {
 
     @Autowired
     private UserAcproblemEntityService userAcproblemEntityService;
+
+    @Autowired
+    private ReplyEntityService replyEntityService;
 
     @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
@@ -286,6 +291,73 @@ public class CommentManager {
             sb.replace(matcher.start(1), matcher.end(1), "controls");
         }
         return sb.toString();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteComment(Comment comment) throws StatusFailException, StatusForbiddenException, AccessException {
+        commonValidator.validateNotEmpty(comment.getId(), "评论ID");
+        // 如果不是评论本人 或者不是管理员 无权限删除该评论
+        comment = commentEntityService.getById(comment.getId());
+        if(comment == null) {
+            throw new StatusFailException("删除失败，当前评论已不存在！");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        Long cid = comment.getCid();
+        if(cid == null) {
+            QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+            discussionQueryWrapper.select("id","gid").eq("id", comment.getDid());
+            Discussion discussion = discussionEntityService.getOne(discussionQueryWrapper);
+            Long gid = discussion.getGid();
+            if(gid == null) {
+                accessValidator.validateAccess(LOJAccessEnum.PUBLIC_DISCUSSION);
+                if(!comment.getFromUid().equals(userRolesVo.getUid()) && !isRoot && !isProblemAdmin && !isAdmin) {
+                    throw new StatusForbiddenException("无权删除该评论");
+                }
+            } else {
+                accessValidator.validateAccess(LOJAccessEnum.GROUP_DISCUSSION);
+                if(!groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)
+                        && !comment.getFromUid().equals(userRolesVo.getUid())
+                        && !isRoot) {
+                    throw new StatusForbiddenException("无权删除该评论");
+                }
+            }
+        } else {
+            accessValidator.validateAccess(LOJAccessEnum.CONTEST_COMMENT);
+            Contest contest = contestEntityService.getById(cid);
+            Long gid = contest.getGid();
+            if(!comment.getFromUid().equals(userRolesVo.getUid())
+                    && !isRoot
+                    && !contest.getUid().equals(userRolesVo.getUid())
+                    && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), gid))) {
+                throw new StatusForbiddenException("无权删除该评论");
+            }
+        }
+        // 获取需要删除该评论的回复数
+        int replyNum = replyEntityService.count(new QueryWrapper<Reply>().eq("comment_id",comment.getId()));
+
+        // 删除该数据 包括关联外键的reply表数据
+        boolean isDeleteComment = commentEntityService.removeById(comment.getId());
+
+        // 同时需要删除该评论的回复表数据
+        replyEntityService.remove(new UpdateWrapper<Reply>().eq("comment_id", comment.getId()));
+        if(isDeleteComment) {
+            // 如果是讨论区的回复，删除成功需要减少统计该讨论的回复数
+            if(comment.getDid() != null) {
+                UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+                discussionUpdateWrapper.eq("id", comment.getDid())
+                        .setSql("comment_num=comment_num-" + (replyNum + 1));
+                discussionEntityService.update(discussionUpdateWrapper);
+            }
+        } else {
+            throw new StatusFailException("删除失败，请重新尝试");
+        }
     }
 
 }

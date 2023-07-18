@@ -53,4 +53,16 @@ public class CommentServiceImpl implements CommentService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteComment(Comment comment) {
+        try {
+            commentManager.deleteComment(comment);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusForbiddenException | AccessException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
 }

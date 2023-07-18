@@ -47,6 +47,12 @@ public class CommentController {
         return commentService.addComment(comment);
     }
 
+    @DeleteMapping("/comment")
+    @RequiresAuthentication
+    public CommonResult<Void> deleteComment(@RequestBody Comment comment) {
+        return commentService.deleteComment(comment);
+    }
+
     @GetMapping("/comment-like")
     @RequiresAuthentication
     public CommonResult<Void> addCommentLike(@RequestParam("cid") Integer cid,

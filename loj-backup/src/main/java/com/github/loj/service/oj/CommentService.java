@@ -16,4 +16,6 @@ public interface CommentService {
     public CommonResult<CommentVO> addComment(Comment comment);
 
     public CommonResult<Void> addCommentLike(Integer cid, Boolean toLike, Integer sourceId, String sourceType);
+
+    public CommonResult<Void> deleteComment(Comment comment);
 }
