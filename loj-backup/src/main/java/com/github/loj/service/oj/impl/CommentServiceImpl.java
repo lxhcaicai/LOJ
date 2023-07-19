@@ -5,9 +5,11 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.CommentManager;
+import com.github.loj.pojo.dto.ReplyDTO;
 import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.vo.CommentListVO;
 import com.github.loj.pojo.vo.CommentVO;
+import com.github.loj.pojo.vo.ReplyVO;
 import com.github.loj.service.oj.CommentService;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +61,17 @@ public class CommentServiceImpl implements CommentService {
         try {
             commentManager.deleteComment(comment);
             return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusForbiddenException | AccessException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
+
+    @Override
+    public CommonResult<ReplyVO> addReply(ReplyDTO replyDTO) {
+        try {
+            return CommonResult.successResponse(commentManager.addReply(replyDTO));
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         } catch (StatusForbiddenException | AccessException e) {

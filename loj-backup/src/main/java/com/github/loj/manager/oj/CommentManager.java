@@ -1,5 +1,6 @@
 package com.github.loj.manager.oj;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.extra.emoji.EmojiUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -13,6 +14,7 @@ import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.discussion.CommentEntityService;
 import com.github.loj.dao.discussion.ReplyEntityService;
 import com.github.loj.dao.user.UserAcproblemEntityService;
+import com.github.loj.pojo.dto.ReplyDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.entity.discussion.CommentLike;
@@ -23,6 +25,7 @@ import com.github.loj.pojo.entity.discussion.Reply;
 import com.github.loj.pojo.entity.user.UserAcproblem;
 import com.github.loj.pojo.vo.CommentListVO;
 import com.github.loj.pojo.vo.CommentVO;
+import com.github.loj.pojo.vo.ReplyVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.validator.AccessValidator;
 import com.github.loj.validator.CommonValidator;
@@ -358,6 +361,110 @@ public class CommentManager {
         } else {
             throw new StatusFailException("删除失败，请重新尝试");
         }
+    }
+
+    public ReplyVO addReply(ReplyDTO replyDTO) throws StatusFailException, AccessException, StatusForbiddenException {
+
+        commonValidator.validateContent(replyDTO.getReply().getContent(),"回复", 10000);
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        Reply reply = replyDTO.getReply();
+        if(reply == null || reply.getCommentId() == null) {
+            throw new StatusFailException("回复失败，当前请求的参数错误！");
+        }
+
+        Comment comment = commentEntityService.getById(reply.getCommentId());
+
+        if(comment == null) {
+            throw new StatusFailException("回复失败，当前评论已不存在！");
+        }
+
+        Long cid = comment.getCid();
+        if(cid == null) {
+            QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+            discussionQueryWrapper.select("id","gid").eq("id",comment.getDid());
+            Discussion discussion = discussionEntityService.getOne(discussionQueryWrapper);
+
+            Long gid = discussion.getGid();
+            if(gid != null) {
+                accessValidator.validateAccess(LOJAccessEnum.GROUP_DISCUSSION);
+                if(!groupValidator.isGroupMember(userRolesVo.getUid(),gid) && isRoot) {
+                    throw new StatusForbiddenException("对不起，您无权限回复！");
+                }
+            } else {
+                accessValidator.validateAccess(LOJAccessEnum.PUBLIC_DISCUSSION);
+            }
+
+            if(!isRoot && !isProblemAdmin && !isAdmin) {
+                QueryWrapper<UserAcproblem> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("uid", userRolesVo.getUid()).select("distinct pid");
+                int userAcProblemCount = userAcproblemEntityService.count(queryWrapper);
+                SwitchConfig switchConfig = nacosSwitchConfig.getSwitchConfig();
+                if(userAcProblemCount < switchConfig.getDefaultCreateCommentACInitValue()) {
+                    throw new StatusForbiddenException("对不起，您暂时不能回复！请先去提交题目通过" +
+                            switchConfig.getDefaultCreateCommentACInitValue() + "道以上!");
+                }
+            }
+
+        } else {
+            accessValidator.validateAccess(LOJAccessEnum.CONTEST_COMMENT);
+            Contest contest = contestEntityService.getById(cid);
+            Long gid = contest.getGid();
+            if(!comment.getFromUid().equals(userRolesVo.getUid())
+                    && !isRoot
+                    && !contest.getUid().equals(userRolesVo.getUid())
+                    && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), gid))) {
+                throw new StatusForbiddenException("对不起，您无权限回复！");
+            }
+        }
+        reply.setFromAvatar(userRolesVo.getAvatar())
+                .setFromName(userRolesVo.getUsername())
+                .setFromUid(userRolesVo.getUid());
+        if(SecurityUtils.getSubject().hasRole("root")) {
+            reply.setFromRole("root");
+        } else if(SecurityUtils.getSubject().hasRole("admin")
+                || SecurityUtils.getSubject().hasRole("problem_admin")) {
+            reply.setFromRole("admin");
+        } else {
+            reply.setFromRole("user");
+        }
+        // 带有表情的字符串转换为编码
+        reply.setContent(EmojiUtil.toHtml(formatContentRemoveAutoPlay(reply.getContent())));
+
+        boolean isOk = replyEntityService.saveOrUpdate(reply);
+
+        if(isOk) {
+            // 如果是讨论区的回复，发布成功需要增加统计该讨论的回复数
+            if(replyDTO.getDid() != null) {
+                UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+                discussionUpdateWrapper.eq("id", replyDTO.getDid())
+                        .setSql("comment_num=comment_num+1");
+                discussionEntityService.update(discussionUpdateWrapper);
+                // 更新消息
+                replyEntityService.updateReplyMsg(replyDTO.getDid(),
+                        "Discussion",
+                        reply.getContent(),
+                        replyDTO.getQuoteId(),
+                        replyDTO.getQuoteType(),
+                        reply.getToUid(),
+                        reply.getFromUid());
+            }
+
+            ReplyVO replyVO = new ReplyVO();
+            BeanUtil.copyProperties(reply,replyVO);
+            replyVO.setFromTitleName(userRolesVo.getTitleName());
+            replyVO.setFromTitleColor(userRolesVo.getTitleColor());
+            return replyVO;
+        }  else {
+            throw new StatusFailException("回复失败，请重新尝试！");
+        }
+
     }
 
 }

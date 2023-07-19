@@ -2,9 +2,11 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ReplyDTO;
 import com.github.loj.pojo.entity.discussion.Comment;
 import com.github.loj.pojo.vo.CommentListVO;
 import com.github.loj.pojo.vo.CommentVO;
+import com.github.loj.pojo.vo.ReplyVO;
 import com.github.loj.service.oj.CommentService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -60,6 +62,13 @@ public class CommentController {
                                              @RequestParam("sourceId") Integer sourceId,
                                              @RequestParam("sourceType") String sourceType) {
         return commentService.addCommentLike(cid, toLike, sourceId, sourceType);
+    }
+
+    @PostMapping("/reply")
+    @RequiresPermissions("reply_add")
+    @RequiresAuthentication
+    public CommonResult<ReplyVO> addReply(@RequestBody ReplyDTO replyDTO) {
+        return commentService.addReply(replyDTO);
     }
 
 }
