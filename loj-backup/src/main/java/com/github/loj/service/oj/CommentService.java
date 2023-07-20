@@ -22,4 +22,6 @@ public interface CommentService {
     public CommonResult<Void> deleteComment(Comment comment);
 
     public CommonResult<ReplyVO> addReply(ReplyDTO replyDTO);
+
+    public CommonResult<Void> deleteReply(ReplyDTO replyDTO);
 }

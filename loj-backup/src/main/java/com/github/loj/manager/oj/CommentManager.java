@@ -467,4 +467,72 @@ public class CommentManager {
 
     }
 
+    public void deleteReply(ReplyDTO replyDTO) throws StatusFailException, AccessException, StatusForbiddenException {
+        Reply reply = replyDTO.getReply();
+
+        if(reply == null || reply.getId() == null) {
+            throw new StatusFailException("删除失败，删除的回复不可为空！");
+        }
+
+        reply = replyEntityService.getById(reply.getId());
+
+        if(reply == null) {
+            throw new StatusFailException("删除失败，当前回复的数据已不存在！");
+        }
+        Comment comment = commentEntityService.getById(reply.getCommentId());
+        if(comment == null) {
+            throw new StatusFailException("删除失败,当前回复所属的评论不存在!");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        Long cid = comment.getCid();
+        if(cid == null) {
+            Discussion discussion = discussionEntityService.getById(comment.getDid());
+            Long gid = discussion.getGid();
+            if(gid == null) {
+                accessValidator.validateAccess(LOJAccessEnum.PUBLIC_DISCUSSION);
+                if(!reply.getFromUid().equals(userRolesVo.getUid())
+                        && !isRoot
+                        && !isProblemAdmin
+                        && !isAdmin) {
+                    throw new StatusForbiddenException("无权删除该回复");
+                }
+            } else {
+                accessValidator.validateAccess(LOJAccessEnum.GROUP_DISCUSSION);
+                if(!reply.getFromUid().equals(userRolesVo.getUid())
+                        && !isRoot
+                        && !groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)) {
+                    throw new StatusForbiddenException("无权删除该回复");
+                }
+            }
+        } else {
+            accessValidator.validateAccess(LOJAccessEnum.CONTEST_COMMENT);
+            Contest contest = contestEntityService.getById(cid);
+            if(!reply.getFromUid().equals(userRolesVo.getUid())
+                    && !isRoot
+                    && !contest.getUid().equals(userRolesVo.getUid())
+                    && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+                throw new StatusForbiddenException("无权删除该回复");
+            }
+        }
+
+        boolean isOk = replyEntityService.removeById(reply.getId());
+        if(isOk) {
+            // 如果是讨论区的回复，删除成功需要减少统计该讨论的回复数
+            if(replyDTO.getDid() != null) {
+                UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+                discussionUpdateWrapper.eq("id", replyDTO.getDid())
+                        .setSql("comment_num=comment_num-1");
+                discussionEntityService.update(discussionUpdateWrapper);
+            }
+        } else {
+            throw new StatusFailException("删除失败，请重新尝试");
+        }
+    }
+
 }

@@ -71,4 +71,10 @@ public class CommentController {
         return commentService.addReply(replyDTO);
     }
 
+    @DeleteMapping("/reply")
+    @RequiresAuthentication
+    public CommonResult<Void> deleteReply(@RequestBody ReplyDTO replyDTO) {
+        return commentService.deleteReply(replyDTO);
+    }
+
 }
