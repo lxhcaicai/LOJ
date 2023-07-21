@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.rmi.AccessException;
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -88,6 +89,17 @@ public class CommentServiceImpl implements CommentService {
             return CommonResult.errorResponse(e.getMessage());
         } catch (StatusForbiddenException | AccessException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
+
+    @Override
+    public CommonResult<List<ReplyVO>> getAllReply(Integer commentId, Long cid) {
+        try {
+            return CommonResult.successResponse(commentManager.getAllReply(commentId, cid));
+        } catch (StatusForbiddenException | AccessException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FAIL);
         }
     }
 }

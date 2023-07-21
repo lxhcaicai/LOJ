@@ -7,6 +7,8 @@ import com.github.loj.pojo.vo.CommentListVO;
 import com.github.loj.pojo.vo.CommentVO;
 import com.github.loj.pojo.vo.ReplyVO;
 
+import java.util.List;
+
 /**
  * @author lxhcaicai
  * @date 2023/5/25 0:08
@@ -24,4 +26,6 @@ public interface CommentService {
     public CommonResult<ReplyVO> addReply(ReplyDTO replyDTO);
 
     public CommonResult<Void> deleteReply(ReplyDTO replyDTO);
+
+    public CommonResult<List<ReplyVO>> getAllReply(Integer commentId, Long cid);
 }

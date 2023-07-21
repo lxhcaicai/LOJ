@@ -4,6 +4,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ReplyDTO;
 import com.github.loj.pojo.entity.discussion.Comment;
+import com.github.loj.pojo.entity.discussion.Reply;
 import com.github.loj.pojo.vo.CommentListVO;
 import com.github.loj.pojo.vo.CommentVO;
 import com.github.loj.pojo.vo.ReplyVO;
@@ -12,6 +13,8 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -75,6 +78,13 @@ public class CommentController {
     @RequiresAuthentication
     public CommonResult<Void> deleteReply(@RequestBody ReplyDTO replyDTO) {
         return commentService.deleteReply(replyDTO);
+    }
+
+    @GetMapping("/reply")
+    @AnonApi
+    public CommonResult<List<ReplyVO>> getAllReply(@RequestParam("commentId") Integer commentId,
+                                                   @RequestParam(value = "cid",required = false) Long cid) {
+        return commentService.getAllReply(commentId,cid);
     }
 
 }

@@ -535,4 +535,35 @@ public class CommentManager {
         }
     }
 
+    public List<ReplyVO> getAllReply(Integer commentId, Long cid) throws StatusForbiddenException, AccessException, StatusFailException {
+        // 如果有登录，则获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if(cid == null) {
+            Comment comment = commentEntityService.getById(commentId);
+            QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+            discussionQueryWrapper.select("id", "gid").eq("id", comment.getDid());
+            Discussion discussion = discussionEntityService.getOne(discussionQueryWrapper);
+            Long gid = discussion.getGid();
+            if(gid != null) {
+                accessValidator.validateAccess(LOJAccessEnum.GROUP_DISCUSSION);
+                if(!isRoot && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+                    throw new StatusForbiddenException("对不起，您无权限操作！");
+                }
+            } else {
+                accessValidator.validateAccess(LOJAccessEnum.PUBLIC_DISCUSSION);
+            }
+        } else {
+            accessValidator.validateAccess(LOJAccessEnum.CONTEST_COMMENT);
+            Contest contest = contestEntityService.getById(cid);
+            contestValidator.validateContestAuth(contest, userRolesVo, isRoot);
+        }
+
+        return replyEntityService.getAllReplyByCommentId(cid,
+                userRolesVo != null ? userRolesVo.getUid(): null,
+                isRoot,
+                commentId);
+    }
+
 }
