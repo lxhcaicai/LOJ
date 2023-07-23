@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.problem.Language;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
@@ -54,6 +55,13 @@ public class CommonController {
     @AnonApi
     public CommonResult<List<TrainingCategory>> getTrainingCategory() {
         return commonService.getTrainingCategory();
+    }
+
+    @GetMapping("/languages")
+    @AnonApi
+    public CommonResult<List<Language>> getLanguages(@RequestParam(value = "pid", required = false) Long pid,
+                                                     @RequestParam(value = "all", required = false) Boolean all) {
+        return commonService.getLanguages(pid, all);
     }
 
 }
