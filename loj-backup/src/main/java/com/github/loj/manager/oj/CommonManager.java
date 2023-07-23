@@ -2,9 +2,13 @@ package com.github.loj.manager.oj;
 
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.loj.dao.problem.LanguageEntityService;
+import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.problem.TagClassificationEntityService;
 import com.github.loj.dao.problem.TagEntityService;
 import com.github.loj.dao.training.TrainingCategoryEntityService;
+import com.github.loj.pojo.entity.problem.Language;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.entity.problem.TagClassification;
 import com.github.loj.pojo.entity.training.TrainingCategory;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author lxhcaicai
@@ -34,6 +39,12 @@ public class CommonManager {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private LanguageEntityService languageEntityService;
 
     @Autowired
     private TrainingCategoryEntityService trainingCategoryEntityService;
@@ -143,4 +154,24 @@ public class CommonManager {
         return trainingCategoryEntityService.list(trainingCategoryQueryWrapper);
     }
 
+    public List<Language> getLanguages(Long pid, Boolean all) {
+        String oj = "ME";
+        if(pid != null) {
+            Problem problem = problemEntityService.getById(pid);
+            if(problem.getIsRemote()) {
+                oj = problem.getProblemId().split("-")[0];
+            }
+        }
+
+        if(oj.equals("GYM")) {
+            oj = "CF";
+        }
+
+        QueryWrapper<Language> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(all != null && !all, "oj", oj);
+        List<Language> languageList = languageEntityService.list(queryWrapper);
+        return languageList.stream().sorted(Comparator.comparing(Language::getSeq,Comparator.reverseOrder())
+                .thenComparing(Language::getId))
+                .collect(Collectors.toList());
+    }
 }

@@ -2,6 +2,7 @@ package com.github.loj.service.oj.impl;
 
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.CommonManager;
+import com.github.loj.pojo.entity.problem.Language;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
@@ -34,5 +35,10 @@ public class CommonServiceImpl implements CommonService {
     @Override
     public CommonResult<List<TrainingCategory>> getTrainingCategory() {
         return CommonResult.successResponse(commonManager.getTrainingCategory());
+    }
+
+    @Override
+    public CommonResult<List<Language>> getLanguages(Long pid, Boolean all) {
+        return CommonResult.successResponse(commonManager.getLanguages(pid, all));
     }
 }

@@ -1,6 +1,7 @@
 package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.problem.Language;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
@@ -18,5 +19,7 @@ public interface CommonService {
     public CommonResult<List<ProblemTagVO>> getProblemTagsAndClassification(String oj);
 
     public CommonResult<List<TrainingCategory>> getTrainingCategory();
+
+    public CommonResult<List<Language>> getLanguages(Long pid, Boolean all);
 
 }
