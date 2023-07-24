@@ -3,6 +3,7 @@ package com.github.loj.controller.oj;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.problem.Language;
+import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -62,6 +64,12 @@ public class CommonController {
     public CommonResult<List<Language>> getLanguages(@RequestParam(value = "pid", required = false) Long pid,
                                                      @RequestParam(value = "all", required = false) Boolean all) {
         return commonService.getLanguages(pid, all);
+    }
+
+    @GetMapping("/get-problem-tags")
+    @AnonApi
+    public CommonResult<Collection<Tag>> getProblemTags(Long pid) {
+        return commonService.getProblemTags(pid);
     }
 
 }

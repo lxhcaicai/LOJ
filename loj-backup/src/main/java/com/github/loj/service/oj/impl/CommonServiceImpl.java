@@ -3,6 +3,7 @@ package com.github.loj.service.oj.impl;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.oj.CommonManager;
 import com.github.loj.pojo.entity.problem.Language;
+import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
@@ -10,6 +11,7 @@ import com.github.loj.service.oj.CommonService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -40,5 +42,10 @@ public class CommonServiceImpl implements CommonService {
     @Override
     public CommonResult<List<Language>> getLanguages(Long pid, Boolean all) {
         return CommonResult.successResponse(commonManager.getLanguages(pid, all));
+    }
+
+    @Override
+    public CommonResult<Collection<Tag>> getProblemTags(Long pid) {
+        return CommonResult.successResponse(commonManager.getProblemTags(pid));
     }
 }

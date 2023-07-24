@@ -2,15 +2,9 @@ package com.github.loj.manager.oj;
 
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.github.loj.dao.problem.LanguageEntityService;
-import com.github.loj.dao.problem.ProblemEntityService;
-import com.github.loj.dao.problem.TagClassificationEntityService;
-import com.github.loj.dao.problem.TagEntityService;
+import com.github.loj.dao.problem.*;
 import com.github.loj.dao.training.TrainingCategoryEntityService;
-import com.github.loj.pojo.entity.problem.Language;
-import com.github.loj.pojo.entity.problem.Problem;
-import com.github.loj.pojo.entity.problem.Tag;
-import com.github.loj.pojo.entity.problem.TagClassification;
+import com.github.loj.pojo.entity.problem.*;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.CaptchaVO;
 import com.github.loj.pojo.vo.ProblemTagVO;
@@ -48,6 +42,9 @@ public class CommonManager {
 
     @Autowired
     private TrainingCategoryEntityService trainingCategoryEntityService;
+
+    @Autowired
+    private ProblemTagEntityService problemTagEntityService;
 
     public CaptchaVO getCaptcha() {
         ArithmeticCaptcha specCaptcha = new ArithmeticCaptcha(90, 30, 4);
@@ -173,5 +170,18 @@ public class CommonManager {
         return languageList.stream().sorted(Comparator.comparing(Language::getSeq,Comparator.reverseOrder())
                 .thenComparing(Language::getId))
                 .collect(Collectors.toList());
+    }
+
+    public Collection<Tag> getProblemTags(Long pid) {
+        Map<String,Object> map = new HashMap<>();
+        map.put("pid",pid);
+        List<Long> tidList = problemTagEntityService.listByMap(map)
+                .stream()
+                .map(ProblemTag::getTid)
+                .collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(tidList)) {
+            return new ArrayList<>();
+        }
+        return tagEntityService.listByIds(tidList);
     }
 }
