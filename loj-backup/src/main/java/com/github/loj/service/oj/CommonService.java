@@ -1,6 +1,7 @@
 package com.github.loj.service.oj;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.problem.CodeTemplate;
 import com.github.loj.pojo.entity.problem.Language;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.entity.training.TrainingCategory;
@@ -27,5 +28,7 @@ public interface CommonService {
     public CommonResult<Collection<Tag>> getProblemTags(Long pid);
 
     public CommonResult<Collection<Language>> getProblemLanguages(Long pid);
+
+    public CommonResult<List<CodeTemplate>> getProblemCodeTemplate(Long pid);
 
 }

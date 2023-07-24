@@ -49,6 +49,9 @@ public class CommonManager {
     @Autowired
     private ProblemLanguageEntityService problemLanguageEntityService;
 
+    @Autowired
+    private CodeTemplateEntityService codeTemplateEntityService;
+
     public CaptchaVO getCaptcha() {
         ArithmeticCaptcha specCaptcha = new ArithmeticCaptcha(90, 30, 4);
         specCaptcha.setCharType(Captcha.TYPE_DEFAULT);
@@ -197,5 +200,11 @@ public class CommonManager {
         return languages.stream().sorted(Comparator.comparing(Language::getSeq,Comparator.reverseOrder())
                 .thenComparing(Language::getId))
                 .collect(Collectors.toList());
+    }
+
+    public List<CodeTemplate> getProblemCodeTemplate(Long pid) {
+        QueryWrapper<CodeTemplate> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pid", pid);
+        return codeTemplateEntityService.list(queryWrapper);
     }
 }

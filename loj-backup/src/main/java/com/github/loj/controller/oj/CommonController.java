@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.problem.CodeTemplate;
 import com.github.loj.pojo.entity.problem.Language;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.entity.training.TrainingCategory;
@@ -76,6 +77,12 @@ public class CommonController {
     @AnonApi
     public CommonResult<Collection<Language>> getProblemLanguages(@RequestParam("pid") Long pid) {
         return commonService.getProblemLanguages(pid);
+    }
+
+    @GetMapping("/get-problem-code-template")
+    @AnonApi
+    public CommonResult<List<CodeTemplate>> getProblemCodeTemplate(@RequestParam("pid") Long pid) {
+        return commonService.getProblemCodeTemplate(pid);
     }
 
 }
