@@ -26,4 +26,6 @@ public interface CommonService {
 
     public CommonResult<Collection<Tag>> getProblemTags(Long pid);
 
+    public CommonResult<Collection<Language>> getProblemLanguages(Long pid);
+
 }

@@ -46,6 +46,9 @@ public class CommonManager {
     @Autowired
     private ProblemTagEntityService problemTagEntityService;
 
+    @Autowired
+    private ProblemLanguageEntityService problemLanguageEntityService;
+
     public CaptchaVO getCaptcha() {
         ArithmeticCaptcha specCaptcha = new ArithmeticCaptcha(90, 30, 4);
         specCaptcha.setCharType(Captcha.TYPE_DEFAULT);
@@ -183,5 +186,16 @@ public class CommonManager {
             return new ArrayList<>();
         }
         return tagEntityService.listByIds(tidList);
+    }
+
+    public Collection<Language> getProblemLanguages(Long pid) {
+        QueryWrapper<ProblemLanguage> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pid",pid).select("lid");
+        List<Long> idList = problemLanguageEntityService.list(queryWrapper)
+                .stream().map(ProblemLanguage::getLid).collect(Collectors.toList());
+        Collection<Language> languages = languageEntityService.listByIds(idList);
+        return languages.stream().sorted(Comparator.comparing(Language::getSeq,Comparator.reverseOrder())
+                .thenComparing(Language::getId))
+                .collect(Collectors.toList());
     }
 }

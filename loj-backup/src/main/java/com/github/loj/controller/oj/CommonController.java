@@ -72,4 +72,10 @@ public class CommonController {
         return commonService.getProblemTags(pid);
     }
 
+    @GetMapping("/get-problem-languages")
+    @AnonApi
+    public CommonResult<Collection<Language>> getProblemLanguages(@RequestParam("pid") Long pid) {
+        return commonService.getProblemLanguages(pid);
+    }
+
 }

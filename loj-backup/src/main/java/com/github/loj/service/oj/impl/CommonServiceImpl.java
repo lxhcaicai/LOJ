@@ -48,4 +48,9 @@ public class CommonServiceImpl implements CommonService {
     public CommonResult<Collection<Tag>> getProblemTags(Long pid) {
         return CommonResult.successResponse(commonManager.getProblemTags(pid));
     }
+
+    @Override
+    public CommonResult<Collection<Language>> getProblemLanguages(Long pid) {
+        return CommonResult.successResponse(commonManager.getProblemLanguages(pid));
+    }
 }
