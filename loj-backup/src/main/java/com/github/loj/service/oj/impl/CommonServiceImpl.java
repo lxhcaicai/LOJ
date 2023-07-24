@@ -59,4 +59,9 @@ public class CommonServiceImpl implements CommonService {
     public CommonResult<List<CodeTemplate>> getProblemCodeTemplate(Long pid) {
         return CommonResult.successResponse(commonManager.getProblemCodeTemplate(pid));
     }
+
+    @Override
+    public CommonResult<List<Tag>> getAllProblemTagsList(String oj) {
+        return CommonResult.successResponse(commonManager.getAllProblemTagsList(oj));
+    }
 }

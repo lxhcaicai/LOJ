@@ -207,4 +207,18 @@ public class CommonManager {
         queryWrapper.eq("pid", pid);
         return codeTemplateEntityService.list(queryWrapper);
     }
+
+    public List<Tag> getAllProblemTagsList(String oj) {
+        List<Tag> tagList;
+        oj = oj.toUpperCase();
+        QueryWrapper<Tag> tagQueryWrapper = new QueryWrapper<>();
+        tagQueryWrapper.isNull("gid");
+        if(oj.equals("ALL")) {
+            tagList = tagEntityService.list(tagQueryWrapper);
+        } else {
+            tagQueryWrapper.eq("oj", oj);
+            tagList = tagEntityService.list(tagQueryWrapper);
+        }
+        return tagList;
+    }
 }

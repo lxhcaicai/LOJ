@@ -85,4 +85,10 @@ public class CommonController {
         return commonService.getProblemCodeTemplate(pid);
     }
 
+    @GetMapping("/get-all-problem-tags")
+    @AnonApi
+    public CommonResult<List<Tag>> getAllProblemTagsList(@RequestParam(value = "oj", defaultValue = "ME") String oj) {
+        return commonService.getAllProblemTagsList(oj);
+    }
+
 }

@@ -31,4 +31,6 @@ public interface CommonService {
 
     public CommonResult<List<CodeTemplate>> getProblemCodeTemplate(Long pid);
 
+    public CommonResult<List<Tag>> getAllProblemTagsList(String oj);
+
 }
