@@ -5,6 +5,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.RandomProblemVO;
 import com.github.loj.service.oj.ProblemService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,5 +59,15 @@ public class ProblemController {
     @PostMapping("/get-user-problem-status")
     public CommonResult<HashMap<Long,Object>> getUserProblemStatus(@Validated @RequestBody PidListDTO pidListDTO) {
         return problemService.getUserProblemStatus(pidListDTO);
+    }
+
+    /**
+     * 随机选取一道题目
+     * @return
+     */
+    @GetMapping("/get-random-problem")
+    @AnonApi
+    public CommonResult<RandomProblemVO> getRandomProblem() {
+        return problemService.getRandomProblem();
     }
 }

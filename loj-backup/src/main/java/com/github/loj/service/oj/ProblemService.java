@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.RandomProblemVO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,5 +19,7 @@ public interface ProblemService {
                                                         String keyword, List<Long> tagId, Integer difficulty, String oj);
 
     public CommonResult<HashMap<Long,Object>> getUserProblemStatus(PidListDTO pidListDTO);
+
+    public CommonResult<RandomProblemVO> getRandomProblem();
 
 }

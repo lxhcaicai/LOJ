@@ -3,6 +3,7 @@ package com.github.loj.manager.oj;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
@@ -10,7 +11,9 @@ import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.RandomProblemVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
@@ -21,6 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author lxhcaicai
@@ -169,6 +173,27 @@ public class ProblemManager {
         }
 
         return result;
+    }
+
+    /**
+     * 随机选取一道题目
+     * @return
+     * @throws StatusFailException
+     */
+    public RandomProblemVO getRandomProblem() throws StatusFailException {
+        QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
+        // 必须是公开题目
+        queryWrapper.select("problem_id").eq("auth", 1)
+                .eq("is_group", false);
+        List<Problem> list = problemEntityService.list(queryWrapper);
+        if(list.size() == 0) {
+            throw new StatusFailException("获取随机题目失败，题库暂无公开题目！");
+        }
+        Random random = new Random();
+        int index = random.nextInt(list.size());
+        RandomProblemVO randomProblemVO = new RandomProblemVO();
+        randomProblemVO.setProblemId(list.get(index).getProblemId());
+        return randomProblemVO;
     }
 
 }

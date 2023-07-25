@@ -1,12 +1,14 @@
 package com.github.loj.service.oj.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ProblemManager;
 import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.RandomProblemVO;
 import com.github.loj.service.oj.ProblemService;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,15 @@ public class ProblemServiceImpl implements ProblemService {
             return CommonResult.successResponse(problemManager.getUserProblemStatus(pidListDTO));
         } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResult<RandomProblemVO> getRandomProblem() {
+        try {
+            return CommonResult.successResponse(problemManager.getRandomProblem());
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }
