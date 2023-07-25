@@ -1,8 +1,10 @@
 package com.github.loj.manager.oj;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.annotation.LOJAccessEnum;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
@@ -13,12 +15,10 @@ import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.*;
-import com.github.loj.pojo.vo.ProblemCountVO;
-import com.github.loj.pojo.vo.ProblemInfoVO;
-import com.github.loj.pojo.vo.ProblemVO;
-import com.github.loj.pojo.vo.RandomProblemVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
+import com.github.loj.validator.AccessValidator;
 import com.github.loj.validator.ContestValidator;
 import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.rmi.AccessException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,9 @@ public class ProblemManager {
 
     @Autowired
     private CodeTemplateEntityService codeTemplateEntityService;
+
+    @Autowired
+    private AccessValidator accessValidator;
 
     public Page<ProblemVO> getProblemList(Integer limit, Integer currentPage,
                                           String keyword, List<Long> tagId, Integer difficulty, String oj) {
@@ -299,6 +303,68 @@ public class ProblemManager {
 
         // 将数据统一写入到一个Vo返回数据实体类中
         return new ProblemInfoVO(problem, tags, languagesStr, problemCount, LangNameAndCode);
+    }
+
+    public LastAcceptedCodeVO getUserLastAcceptedCode(Long pid, Long cid) {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        if(cid == null) {
+            cid = 0L;
+        }
+        QueryWrapper<Judge> judgeQueryWrapper = new QueryWrapper<>();
+        judgeQueryWrapper.select("submit_id", "cid", "code", "username", "submit_time", "language")
+                .eq("uid", userRolesVo.getUid())
+                .eq("pid", pid)
+                .eq("cid", cid)
+                .eq("status", 0)
+                .orderByDesc("submit_id")
+                .last("limit 1");
+        List<Judge> judgeList = judgeEntityService.list(judgeQueryWrapper);
+        LastAcceptedCodeVO lastAcceptedCodeVO = new LastAcceptedCodeVO();
+        if(CollectionUtil.isNotEmpty(judgeList)) {
+            Judge judge = judgeList.get(0);
+            lastAcceptedCodeVO.setSubmitId(judge.getSubmitId());
+            lastAcceptedCodeVO.setLanguage(judge.getLanguage());
+            lastAcceptedCodeVO.setCode(buildCode(judge));
+        } else {
+            lastAcceptedCodeVO.setCode("");
+        }
+        return lastAcceptedCodeVO;
+    }
+
+    private String buildCode(Judge judge) {
+        if(judge.getCid() == 0) {
+            // 比赛外的提交代码 如果不是超管或题目管理员，需要检查网站是否开启隐藏代码功能
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+            boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+            if(!isRoot && !isProblemAdmin) {
+                try {
+                    accessValidator.validateAccess(LOJAccessEnum.HIDE_NON_CONTEST_SUBMISSION_CODE);
+                } catch (AccessException e) {
+                    return "Because the super administrator has enabled " +
+                            "the function of not viewing the submitted code outside the contest of master station, \n" +
+                            "the code of this submission details has been hidden.";
+                }
+            }
+        }
+
+        if(!judge.getLanguage().toLowerCase(Locale.ROOT).contains("py")) {
+            return judge.getCode() + "\n\n" +
+                    "/**\n" +
+                    "* @runId: " + judge.getSubmitId() + "\n" +
+                    "* @language: " + judge.getLanguage() + "\n" +
+                    "* @author: " + judge.getUsername() + "\n" +
+                    "* @submitTime: " + DateUtil.format(judge.getSubmitTime(), "yyyy-MM-dd HH:mm:ss") + "\n" +
+                    "*/";
+        } else {
+            return judge.getCode() + "\n\n" +
+                    "'''\n" +
+                    "    @runId: " + judge.getSubmitId() + "\n" +
+                    "    @language: " + judge.getLanguage() + "\n" +
+                    "    @author: " + judge.getUsername() + "\n" +
+                    "    @submitTime: " + DateUtil.format(judge.getSubmitTime(), "yyyy-MM-dd HH:mm:ss") + "\n" +
+                    "'''";
+        }
+
     }
 
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
+import com.github.loj.pojo.vo.LastAcceptedCodeVO;
 import com.github.loj.pojo.vo.ProblemInfoVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.RandomProblemVO;
@@ -83,5 +84,18 @@ public class ProblemController {
     public CommonResult<ProblemInfoVO> getProblemInfo(@RequestParam(value = "problemId",required = true) String problemId,
                                                       @RequestParam(value = "gid", required = false) Long gid) {
         return problemService.getProblemInfo(problemId, gid);
+    }
+
+    /**
+     * 获取用户对于该题最近AC的代码
+     * @param pid
+     * @param cid
+     * @return
+     */
+    @GetMapping("/get-last-ac-code")
+    @RequiresAuthentication
+    public CommonResult<LastAcceptedCodeVO> getUserLastAcceptedCode(@RequestParam(value = "pid") Long pid,
+                                                                    @RequestParam(value = "cid", required = false) Long cid) {
+        return problemService.getUserLastAcceptedCode(pid, cid);
     }
 }

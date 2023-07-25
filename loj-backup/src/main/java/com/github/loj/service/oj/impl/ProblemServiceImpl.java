@@ -8,6 +8,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ProblemManager;
 import com.github.loj.pojo.dto.PidListDTO;
+import com.github.loj.pojo.vo.LastAcceptedCodeVO;
 import com.github.loj.pojo.vo.ProblemInfoVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.RandomProblemVO;
@@ -60,5 +61,10 @@ public class ProblemServiceImpl implements ProblemService {
         } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
+    }
+
+    @Override
+    public CommonResult<LastAcceptedCodeVO> getUserLastAcceptedCode(Long pid, Long cid) {
+        return CommonResult.successResponse(problemManager.getUserLastAcceptedCode(pid, cid));
     }
 }
