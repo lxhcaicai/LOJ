@@ -3,6 +3,7 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
+import com.github.loj.pojo.vo.ProblemInfoVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.RandomProblemVO;
 
@@ -21,5 +22,7 @@ public interface ProblemService {
     public CommonResult<HashMap<Long,Object>> getUserProblemStatus(PidListDTO pidListDTO);
 
     public CommonResult<RandomProblemVO> getRandomProblem();
+
+    public CommonResult<ProblemInfoVO> getProblemInfo(String problemId, Long gid);
 
 }

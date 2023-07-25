@@ -41,4 +41,6 @@ public interface JudgeEntityService extends IService<Judge> {
                                        Date sealRankTime,
                                        String sealTimeUid,
                                        Boolean completeProblemID);
+
+    ProblemCountVO getProblemCount(Long pid, Long gid);
 }

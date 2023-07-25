@@ -4,27 +4,30 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
-import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.dao.problem.*;
 import com.github.loj.pojo.dto.PidListDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.judge.Judge;
-import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.*;
+import com.github.loj.pojo.vo.ProblemCountVO;
+import com.github.loj.pojo.vo.ProblemInfoVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.RandomProblemVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
+import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author lxhcaicai
@@ -44,6 +47,24 @@ public class ProblemManager {
 
     @Autowired
     private ContestValidator contestValidator;
+
+    @Autowired
+    private GroupValidator groupValidator;
+
+    @Autowired
+    private ProblemTagEntityService problemTagEntityService;
+
+    @Autowired
+    private TagEntityService tagEntityService;
+
+    @Autowired
+    private ProblemLanguageEntityService problemLanguageEntityService;
+
+    @Autowired
+    private LanguageEntityService languageEntityService;
+
+    @Autowired
+    private CodeTemplateEntityService codeTemplateEntityService;
 
     public Page<ProblemVO> getProblemList(Integer limit, Integer currentPage,
                                           String keyword, List<Long> tagId, Integer difficulty, String oj) {
@@ -194,6 +215,90 @@ public class ProblemManager {
         RandomProblemVO randomProblemVO = new RandomProblemVO();
         randomProblemVO.setProblemId(list.get(index).getProblemId());
         return randomProblemVO;
+    }
+
+    /**
+     * 获取指定题目的详情信息，标签，所支持语言，做题情况（只能查询公开题目 也就是auth为1）
+     * @param problemId
+     * @param gid
+     * @return
+     * @throws StatusNotFoundException
+     * @throws StatusForbiddenException
+     */
+    public ProblemInfoVO getProblemInfo(String problemId, Long gid) throws StatusNotFoundException, StatusForbiddenException {
+        QueryWrapper<Problem> wrapper = new QueryWrapper<Problem>().eq("problem_id",problemId);
+        //查询题目详情，题目标签，题目语言，题目做题情况
+        Problem problem = problemEntityService.getOne(wrapper, false);
+        if(problem == null) {
+            throw new StatusNotFoundException("该题号对应的题目不存在");
+        }
+        if(problem.getAuth() != 1) {
+            throw new StatusForbiddenException("该题号对应题目并非公开题目，不支持访问！");
+        }
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        if(problem.getIsGroup() && !isRoot) {
+            if(gid == null) {
+                throw new StatusForbiddenException("题目为团队所属，此处不支持访问，请前往团队查看！");
+            }
+            if(!groupValidator.isGroupMember(userRolesVo.getUid(), problem.getGid())) {
+                throw new StatusForbiddenException("对不起，您并非该题目所属的团队内成员，无权查看题目！");
+            }
+        }
+
+        QueryWrapper<ProblemTag> problemTagQueryWrapper = new QueryWrapper<>();
+        problemTagQueryWrapper.eq("pid", problem.getId());
+
+        // 获取该题号对应的标签id
+        List<Long> tidList = new LinkedList<>();
+        problemTagEntityService.list(problemTagQueryWrapper).forEach(problemTag -> {
+            tidList.add(problemTag.getTid());
+        });
+        List<Tag> tags = new ArrayList<>();
+        if(tidList.size() > 0) {
+            tags = (List<Tag>) tagEntityService.listByIds(tidList);
+        }
+
+        // 记录 languageId对应的name
+        HashMap<Long,String> tmpMap = new HashMap<>();
+        // 获取题目提交的代码支持的语言
+        List<String> languagesStr = new LinkedList<>();
+        QueryWrapper<ProblemLanguage> problemLanguageQueryWrapper = new QueryWrapper<>();
+        problemLanguageQueryWrapper.eq("pid",problem.getId()).select("lid");
+        List<Long> lidList = problemLanguageEntityService.list(problemLanguageQueryWrapper)
+                .stream().map(ProblemLanguage::getLid).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(lidList)) {
+            Collection<Language> languages = languageEntityService.listByIds(lidList);
+            languages = languages.stream().sorted(Comparator.comparing(Language::getSeq,Comparator.reverseOrder())
+                        .thenComparing(Language::getId))
+                    .collect(Collectors.toList());
+            languages.forEach(language -> {
+                languagesStr.add(language.getName());
+                tmpMap.put(language.getId(),language.getName());
+            });
+        }
+
+        // 获取题目的提交记录
+        ProblemCountVO problemCount = judgeEntityService.getProblemCount(problem.getId(),gid);
+
+        // 获取题目的代码模板
+        QueryWrapper<CodeTemplate> codeTemplateQueryWrapper = new QueryWrapper<>();
+        codeTemplateQueryWrapper.eq("pid", problem.getId()).eq("status",true);
+        List<CodeTemplate> codeTemplates = codeTemplateEntityService.list(codeTemplateQueryWrapper);
+        HashMap<String, String> LangNameAndCode = new HashMap<>();
+        if(CollectionUtil.isNotEmpty(codeTemplates)) {
+            for(CodeTemplate codeTemplate: codeTemplates) {
+                LangNameAndCode.put(tmpMap.get(codeTemplate.getLid()),codeTemplate.getCode());
+            }
+        }
+        // 屏蔽一些题目参数
+        problem.setJudgeExtraFile(null)
+                .setSpjCode(null)
+                .setSpjLanguage(null);
+
+        // 将数据统一写入到一个Vo返回数据实体类中
+        return new ProblemInfoVO(problem, tags, languagesStr, problemCount, LangNameAndCode);
     }
 
 }

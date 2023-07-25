@@ -2,11 +2,13 @@ package com.github.loj.service.oj.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ProblemManager;
 import com.github.loj.pojo.dto.PidListDTO;
+import com.github.loj.pojo.vo.ProblemInfoVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.RandomProblemVO;
 import com.github.loj.service.oj.ProblemService;
@@ -46,6 +48,17 @@ public class ProblemServiceImpl implements ProblemService {
             return CommonResult.successResponse(problemManager.getRandomProblem());
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<ProblemInfoVO> getProblemInfo(String problemId, Long gid) {
+        try {
+            return CommonResult.successResponse(problemManager.getProblemInfo(problemId, gid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
 }

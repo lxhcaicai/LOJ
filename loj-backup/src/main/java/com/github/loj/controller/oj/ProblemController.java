@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
+import com.github.loj.pojo.vo.ProblemInfoVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.RandomProblemVO;
 import com.github.loj.service.oj.ProblemService;
@@ -69,5 +70,18 @@ public class ProblemController {
     @AnonApi
     public CommonResult<RandomProblemVO> getRandomProblem() {
         return problemService.getRandomProblem();
+    }
+
+    /**
+     * 获取指定题目的详情信息，标签，所支持语言，做题情况（只能查询公开题目 也就是auth为1）
+     * @param problemId
+     * @param gid
+     * @return
+     */
+    @GetMapping(value = "/get-problem-detail")
+    @AnonApi
+    public CommonResult<ProblemInfoVO> getProblemInfo(@RequestParam(value = "problemId",required = true) String problemId,
+                                                      @RequestParam(value = "gid", required = false) Long gid) {
+        return problemService.getProblemInfo(problemId, gid);
     }
 }
