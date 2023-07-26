@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.dao.training.TrainingEntityService;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -57,4 +58,14 @@ public class TrainingController {
         return trainingService.getTraining(tid);
     }
 
+    /**
+     * 私有权限的训练需要获取当前用户是否有进入训练的权限
+     * @param tid
+     * @return
+     */
+    @RequiresAuthentication
+    @GetMapping("/get-training-access")
+    public CommonResult<AccessVO> getTrainingAccess(@RequestParam(value = "tid") Long tid) {
+        return trainingService.getTrainingAccess(tid);
+    }
 }

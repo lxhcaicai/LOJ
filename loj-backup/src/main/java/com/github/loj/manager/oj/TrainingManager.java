@@ -7,16 +7,11 @@ import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.judge.JudgeEntityService;
-import com.github.loj.dao.training.TrainingCategoryEntityService;
-import com.github.loj.dao.training.TrainingEntityService;
-import com.github.loj.dao.training.TrainingProblemEntityService;
-import com.github.loj.dao.training.TrainingRecordEntityService;
+import com.github.loj.dao.training.*;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.entity.judge.Judge;
-import com.github.loj.pojo.entity.training.Training;
-import com.github.loj.pojo.entity.training.TrainingCategory;
-import com.github.loj.pojo.entity.training.TrainingProblem;
-import com.github.loj.pojo.entity.training.TrainingRecord;
+import com.github.loj.pojo.entity.training.*;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemFullScreenListVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.shiro.AccountProfile;
@@ -57,6 +52,9 @@ public class TrainingManager {
 
     @Resource
     private JudgeEntityService judgeEntityService;
+
+    @Resource
+    private TrainingRegisterEntityService trainingRegisterEntityService;
 
     @Resource
     private GroupValidator groupValidator;
@@ -191,5 +189,33 @@ public class TrainingManager {
             }
         }
         return problemList;
+    }
+
+
+    /**
+     * 私有权限的训练需要获取当前用户是否有进入训练的权限
+     * @param tid
+     * @return
+     * @throws StatusFailException
+     */
+    public AccessVO getTrainingAccess(Long tid) throws StatusFailException {
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<TrainingRegister> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tid",tid).eq("uid", userRolesVo.getUid());
+        TrainingRegister trainingRegister = trainingRegisterEntityService.getOne(queryWrapper,false);
+        boolean access = false;
+        if(trainingRegister != null) {
+            access = true;
+            Training training = trainingEntityService.getById(tid);
+            if(training == null || !training.getStatus()) {
+                throw new StatusFailException("对不起，该训练不存在!");
+            }
+        }
+
+        AccessVO accessVO = new AccessVO();
+        accessVO.setAccess(access);
+        return accessVO;
     }
 }

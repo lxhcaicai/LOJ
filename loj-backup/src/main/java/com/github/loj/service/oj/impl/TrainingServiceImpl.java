@@ -7,6 +7,7 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.TrainingManager;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,15 @@ public class TrainingServiceImpl implements TrainingService {
             return CommonResult.errorResponse(e.getMessage());
         } catch (StatusAccessDeniedException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        }
+    }
+
+    @Override
+    public CommonResult<AccessVO> getTrainingAccess(Long tid) {
+        try {
+            return CommonResult.successResponse(trainingManager.getTrainingAccess(tid));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }
