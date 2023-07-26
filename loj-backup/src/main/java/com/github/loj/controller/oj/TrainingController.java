@@ -5,6 +5,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.pojo.vo.AccessVO;
+import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -67,5 +69,17 @@ public class TrainingController {
     @GetMapping("/get-training-access")
     public CommonResult<AccessVO> getTrainingAccess(@RequestParam(value = "tid") Long tid) {
         return trainingService.getTrainingAccess(tid);
+    }
+
+
+    /**
+     * 根据tid获取指定训练的题单题目列表
+     * @param tid
+     * @return
+     */
+    @GetMapping("/get-training-problem-list")
+    @RequiresAuthentication
+    public CommonResult<List<ProblemVO>> getTrainingProblemList(@RequestParam(value = "tid") Long tid) {
+        return trainingService.getTrainingProblemList(tid);
     }
 }

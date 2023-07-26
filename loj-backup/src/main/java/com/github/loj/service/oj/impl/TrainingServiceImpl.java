@@ -8,11 +8,13 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.TrainingManager;
 import com.github.loj.pojo.vo.AccessVO;
+import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -48,6 +50,19 @@ public class TrainingServiceImpl implements TrainingService {
             return CommonResult.successResponse(trainingManager.getTrainingAccess(tid));
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<List<ProblemVO>> getTrainingProblemList(Long tid) {
+        try {
+            return CommonResult.successResponse(trainingManager.getTrainingProblemList(tid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.ACCESS_DENIED);
         }
     }
 }

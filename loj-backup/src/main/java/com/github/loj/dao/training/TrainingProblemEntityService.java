@@ -3,6 +3,7 @@ package com.github.loj.dao.training;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.pojo.vo.ProblemFullScreenListVO;
+import com.github.loj.pojo.vo.ProblemVO;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface TrainingProblemEntityService extends IService<TrainingProblem> 
     public Integer getUserTrainingACProblemCount(String uid, Long gid, List<Long> pidList);
 
     public List<ProblemFullScreenListVO> getTrainingFullScreenProblemList(Long tid);
+
+    public List<ProblemVO> getTrainingProblemList(Long tid);
 }

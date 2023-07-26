@@ -3,7 +3,10 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.vo.AccessVO;
+import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
+
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -16,5 +19,7 @@ public interface TrainingService {
     public CommonResult<TrainingVO> getTraining(Long tid);
 
     public CommonResult<AccessVO> getTrainingAccess(Long tid);
+
+    public CommonResult<List<ProblemVO>> getTrainingProblemList(Long tid);
 
 }

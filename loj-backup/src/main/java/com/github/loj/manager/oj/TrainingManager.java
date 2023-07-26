@@ -13,6 +13,7 @@ import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.training.*;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemFullScreenListVO;
+import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
@@ -217,5 +218,23 @@ public class TrainingManager {
         AccessVO accessVO = new AccessVO();
         accessVO.setAccess(access);
         return accessVO;
+    }
+
+    /**
+     * 根据tid获取指定训练的题单题目列表
+     * @param tid
+     * @return
+     * @throws StatusFailException
+     * @throws StatusForbiddenException
+     * @throws StatusAccessDeniedException
+     */
+    public List<ProblemVO> getTrainingProblemList(Long tid) throws StatusFailException, StatusForbiddenException, StatusAccessDeniedException {
+        Training training = trainingEntityService.getById(tid);
+        if(training == null || !training.getStatus()) {
+            throw new StatusFailException("该训练不存在或不允许显示！");
+        }
+        trainingValidator.validateTrainingAuth(training);
+
+        return trainingProblemEntityService.getTrainingProblemList(tid);
     }
 }
