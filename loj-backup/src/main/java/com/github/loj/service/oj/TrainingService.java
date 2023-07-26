@@ -2,6 +2,7 @@ package com.github.loj.service.oj;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
@@ -21,5 +22,7 @@ public interface TrainingService {
     public CommonResult<AccessVO> getTrainingAccess(Long tid);
 
     public CommonResult<List<ProblemVO>> getTrainingProblemList(Long tid);
+
+    public CommonResult<Void> toRegisterTraining(RegisterTrainingDTO registerTrainingDTO);
 
 }

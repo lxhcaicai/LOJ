@@ -4,15 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.dao.training.TrainingEntityService;
+import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -81,5 +79,16 @@ public class TrainingController {
     @RequiresAuthentication
     public CommonResult<List<ProblemVO>> getTrainingProblemList(@RequestParam(value = "tid") Long tid) {
         return trainingService.getTrainingProblemList(tid);
+    }
+
+    /**
+     * 注册校验私有权限的训练
+     * @param registerTrainingDTO
+     * @return
+     */
+    @PostMapping("/register-training")
+    @RequiresAuthentication
+    public CommonResult<Void> toRegisterTraining(@RequestBody RegisterTrainingDTO registerTrainingDTO) {
+        return trainingService.toRegisterTraining(registerTrainingDTO);
     }
 }

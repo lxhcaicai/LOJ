@@ -7,6 +7,7 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.TrainingManager;
+import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.pojo.vo.TrainingVO;
@@ -63,6 +64,16 @@ public class TrainingServiceImpl implements TrainingService {
             return CommonResult.errorResponse(e.getMessage());
         } catch (StatusAccessDeniedException e) {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.ACCESS_DENIED);
+        }
+    }
+
+    @Override
+    public CommonResult<Void> toRegisterTraining(RegisterTrainingDTO registerTrainingDTO) {
+        try {
+            trainingManager.toRegisterTraining(registerTrainingDTO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }

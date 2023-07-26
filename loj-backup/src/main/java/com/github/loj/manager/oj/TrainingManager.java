@@ -8,7 +8,9 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.training.*;
+import com.github.loj.manager.admin.training.AdminTrainingRecordManager;
 import com.github.loj.pojo.bo.Pair_;
+import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.training.*;
 import com.github.loj.pojo.vo.AccessVO;
@@ -24,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -56,6 +59,9 @@ public class TrainingManager {
 
     @Resource
     private TrainingRegisterEntityService trainingRegisterEntityService;
+
+    @Resource
+    private AdminTrainingRecordManager adminTrainingRecordManager;
 
     @Resource
     private GroupValidator groupValidator;
@@ -236,5 +242,49 @@ public class TrainingManager {
         trainingValidator.validateTrainingAuth(training);
 
         return trainingProblemEntityService.getTrainingProblemList(tid);
+    }
+
+    /**
+     * 注册校验私有权限的训练
+     * @param registerTrainingDTO
+     * @throws StatusFailException
+     */
+    public void toRegisterTraining(RegisterTrainingDTO registerTrainingDTO) throws StatusFailException {
+
+        Long tid = registerTrainingDTO.getTid();
+        String password = registerTrainingDTO.getPassword();
+
+        if(tid == null || StringUtils.isEmpty(password)) {
+            throw new StatusFailException("请求参数不能为空！");
+        }
+
+        Training training = trainingEntityService.getById(tid);
+
+        if(training == null || !training.getStatus()) {
+            throw new StatusFailException("对不起，该训练不存在或不允许显示!");
+        }
+
+        if(!training.getPrivatePwd().equals(password)) { // 密码不对
+            throw new StatusFailException("训练密码错误，请重新输入！");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<TrainingRegister> registerQueryWrapper = new QueryWrapper<>();
+        registerQueryWrapper.eq("tid",tid).eq("uid",userRolesVo.getUid());
+        if(trainingRegisterEntityService.count(registerQueryWrapper) > 0) {
+            throw new StatusFailException("您已注册过该训练，请勿重复注册！");
+        }
+
+        boolean isOk = trainingRegisterEntityService.save(new TrainingRegister()
+                .setTid(tid)
+                .setUid(userRolesVo.getUid()));
+
+        if(!isOk) {
+            throw new StatusFailException("校验训练密码失败，请稍后再试");
+        } else {
+            adminTrainingRecordManager.syncUserSubmissionToRecordByTid(tid,userRolesVo.getUid());
+        }
     }
 }
