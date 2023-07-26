@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
-import com.github.loj.pojo.vo.LastAcceptedCodeVO;
-import com.github.loj.pojo.vo.ProblemInfoVO;
-import com.github.loj.pojo.vo.ProblemVO;
-import com.github.loj.pojo.vo.RandomProblemVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.ProblemService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,4 +95,12 @@ public class ProblemController {
                                                                     @RequestParam(value = "cid", required = false) Long cid) {
         return problemService.getUserLastAcceptedCode(pid, cid);
     }
+
+    @RequiresAuthentication
+    @GetMapping("/get-full-screen-problem-list")
+    public CommonResult<List<ProblemFullScreenListVO>> getFullScreenProblemList(@RequestParam(value = "tid",required = false) Long tid,
+                                                                                @RequestParam(value = "cid", required = false) Long cid) {
+        return problemService.getFullScreenProblemList(tid,cid);
+    }
+
 }

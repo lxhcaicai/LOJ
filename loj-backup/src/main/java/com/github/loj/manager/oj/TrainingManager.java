@@ -1,20 +1,26 @@
 package com.github.loj.manager.oj;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.training.TrainingCategoryEntityService;
 import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.dao.training.TrainingRecordEntityService;
+import com.github.loj.pojo.bo.Pair_;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.pojo.entity.training.TrainingRecord;
+import com.github.loj.pojo.vo.ProblemFullScreenListVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
 import com.github.loj.validator.GroupValidator;
 import com.github.loj.validator.TrainingValidator;
 import org.apache.shiro.SecurityUtils;
@@ -25,7 +31,10 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author lxhcaicai
@@ -45,6 +54,9 @@ public class TrainingManager {
 
     @Resource
     private TrainingCategoryEntityService trainingCategoryEntityService;
+
+    @Resource
+    private JudgeEntityService judgeEntityService;
 
     @Resource
     private GroupValidator groupValidator;
@@ -129,5 +141,55 @@ public class TrainingManager {
             trainingVO.setAcCount(0);
         }
         return trainingVO;
+    }
+
+    public List<ProblemFullScreenListVO> getProblemFullScreenList(Long tid) throws StatusFailException, StatusForbiddenException, StatusAccessDeniedException {
+        Training training = trainingEntityService.getById(tid);
+        if(training == null || !training.getStatus()) {
+            throw new StatusFailException("该训练不存在或不允许显示！");
+        }
+        trainingValidator.validateTrainingAuth(training);
+        List<ProblemFullScreenListVO> problemList = trainingProblemEntityService.getTrainingFullScreenProblemList(tid);
+
+        List<Long> pidList = problemList.stream().map(ProblemFullScreenListVO::getPid).collect(Collectors.toList());
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<Judge> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("distinct pid,status,score,submit_time")
+                .in("pid", pidList)
+                .eq("uid",userRolesVo.getUid())
+                .orderByDesc("submit_time");
+
+        queryWrapper.eq("cid",0);
+        if(training.getGid() != null && training.getIsGroup()) {
+            queryWrapper.eq("gid", training.getGid());
+        } else {
+            queryWrapper.isNull("gid");
+        }
+
+        List<Judge> judges = judgeEntityService.list(queryWrapper);
+        HashMap<Long, Pair_<Integer,Integer>> pidMap = new HashMap<>();
+        for(Judge judge: judges) {
+            if(Objects.equals(judge.getStatus(), Constants.Judge.STATUS_PENDING.getStatus())
+                    || Objects.equals(judge.getStatus(),Constants.Judge.STATUS_COMPILING.getStatus())
+                    || Objects.equals(judge.getStatus(),Constants.Judge.STATUS_JUDGING.getStatus())) {
+                continue;
+            }
+            if(judge.getStatus().intValue() == Constants.Judge.STATUS_ACCEPTED.getStatus()) {
+                // 如果该题目已通过，则强制写为通过（0）
+                pidMap.put(judge.getPid(),new Pair_<>(judge.getStatus(),judge.getScore()));
+            } else if(!pidMap.containsKey(judge.getPid())) {
+                // 还未写入，则使用最新一次提交的结果
+                pidMap.put(judge.getPid(),new Pair_<>(judge.getStatus(),judge.getScore()));
+            }
+        }
+        for(ProblemFullScreenListVO problemVo: problemList) {
+            Pair_<Integer, Integer> pair_ = pidMap.get(problemVo.getPid());
+            if(pair_ != null) {
+                problemVo.setStatus(pair_.getKey());
+                problemVo.setScore(pair_.getValue());
+            }
+        }
+        return problemList;
     }
 }

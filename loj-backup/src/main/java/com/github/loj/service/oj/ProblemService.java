@@ -3,10 +3,7 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.PidListDTO;
-import com.github.loj.pojo.vo.LastAcceptedCodeVO;
-import com.github.loj.pojo.vo.ProblemInfoVO;
-import com.github.loj.pojo.vo.ProblemVO;
-import com.github.loj.pojo.vo.RandomProblemVO;
+import com.github.loj.pojo.vo.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,5 +24,7 @@ public interface ProblemService {
     public CommonResult<ProblemInfoVO> getProblemInfo(String problemId, Long gid);
 
     public CommonResult<LastAcceptedCodeVO> getUserLastAcceptedCode(Long pid, Long cid);
+
+    public CommonResult<List<ProblemFullScreenListVO>> getFullScreenProblemList(Long tid, Long cid);
 
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.annotation.LOJAccessEnum;
+import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
@@ -69,6 +70,12 @@ public class ProblemManager {
 
     @Autowired
     private AccessValidator accessValidator;
+
+    @Autowired
+    private TrainingManager trainingManager;
+
+    @Autowired
+    private ContestManager contestManager;
 
     public Page<ProblemVO> getProblemList(Integer limit, Integer currentPage,
                                           String keyword, List<Long> tagId, Integer difficulty, String oj) {
@@ -365,6 +372,16 @@ public class ProblemManager {
                     "'''";
         }
 
+    }
+
+    public List<ProblemFullScreenListVO> getFullScreenProblemList(Long tid,Long cid) throws StatusForbiddenException, StatusFailException, StatusAccessDeniedException {
+        if(tid != null) {
+            return trainingManager.getProblemFullScreenList(tid);
+        } else if(cid != null && cid != 0) {
+            return contestManager.getContestFullScreenProblemList(cid);
+        } else {
+            throw new StatusFailException("请求参数错误：tid或cid不能为空");
+        }
     }
 
 }

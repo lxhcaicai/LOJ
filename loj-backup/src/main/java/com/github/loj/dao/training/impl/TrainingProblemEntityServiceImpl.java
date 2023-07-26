@@ -7,6 +7,7 @@ import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.mapper.TrainingProblemMapper;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.training.TrainingProblem;
+import com.github.loj.pojo.vo.ProblemFullScreenListVO;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -60,5 +61,10 @@ public class TrainingProblemEntityServiceImpl extends ServiceImpl<TrainingProble
         }
 
         return judgeEntityService.count(judgeQueryWrapper);
+    }
+
+    @Override
+    public List<ProblemFullScreenListVO> getTrainingFullScreenProblemList(Long tid) {
+        return trainingProblemMapper.getTrainingFullScreenProblemList(tid);
     }
 }

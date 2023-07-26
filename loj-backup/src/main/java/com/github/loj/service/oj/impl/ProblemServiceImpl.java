@@ -1,6 +1,7 @@
 package com.github.loj.service.oj.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusAccessDeniedException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
@@ -8,10 +9,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ProblemManager;
 import com.github.loj.pojo.dto.PidListDTO;
-import com.github.loj.pojo.vo.LastAcceptedCodeVO;
-import com.github.loj.pojo.vo.ProblemInfoVO;
-import com.github.loj.pojo.vo.ProblemVO;
-import com.github.loj.pojo.vo.RandomProblemVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.ProblemService;
 import org.springframework.stereotype.Service;
 
@@ -66,5 +64,24 @@ public class ProblemServiceImpl implements ProblemService {
     @Override
     public CommonResult<LastAcceptedCodeVO> getUserLastAcceptedCode(Long pid, Long cid) {
         return CommonResult.successResponse(problemManager.getUserLastAcceptedCode(pid, cid));
+    }
+
+    /**
+     * 获取专注模式页面底部的题目列表
+     * @param tid
+     * @param cid
+     * @return
+     */
+    @Override
+    public CommonResult<List<ProblemFullScreenListVO>> getFullScreenProblemList(Long tid, Long cid) {
+        try {
+            return CommonResult.successResponse(problemManager.getFullScreenProblemList(tid, cid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.ACCESS_DENIED);
+        }
     }
 }

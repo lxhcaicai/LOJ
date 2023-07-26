@@ -92,4 +92,9 @@ public class TrainingValidator {
         }
         return true;
     }
+
+    public void validateTrainingAuth(Training training) throws StatusForbiddenException, StatusAccessDeniedException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        validateTrainingAuth(training, userRolesVo);
+    }
 }
