@@ -7,6 +7,7 @@ import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.TrainingRankVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -90,5 +91,22 @@ public class TrainingController {
     @RequiresAuthentication
     public CommonResult<Void> toRegisterTraining(@RequestBody RegisterTrainingDTO registerTrainingDTO) {
         return trainingService.toRegisterTraining(registerTrainingDTO);
+    }
+
+    /**
+     * 获取训练的排行榜分页
+     * @param tid
+     * @param limit
+     * @param currentPage
+     * @param keyword
+     * @return
+     */
+    @GetMapping("/get-training-rank")
+    @RequiresAuthentication
+    public CommonResult<IPage<TrainingRankVO>> getTrainingRank(@RequestParam(value = "tid", required = true) Long tid,
+                                                               @RequestParam(value = "limit", required = false)Integer limit,
+                                                               @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                               @RequestParam(value = "keyword", required = false) String keyword) {
+        return trainingService.getTrainingRank(tid,limit,currentPage,keyword);
     }
 }

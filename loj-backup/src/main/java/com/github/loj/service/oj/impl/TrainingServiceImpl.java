@@ -10,6 +10,7 @@ import com.github.loj.manager.oj.TrainingManager;
 import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.TrainingRankVO;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.oj.TrainingService;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,19 @@ public class TrainingServiceImpl implements TrainingService {
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<IPage<TrainingRankVO>> getTrainingRank(Long tid, Integer limit, Integer currentPage, String keyword) {
+        try {
+            return CommonResult.successResponse(trainingManager.getTrainingRank(tid, limit, currentPage, keyword));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusAccessDeniedException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.ACCESS_DENIED);
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         }
     }
 }

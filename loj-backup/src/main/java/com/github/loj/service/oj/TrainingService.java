@@ -5,6 +5,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.RegisterTrainingDTO;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.ProblemVO;
+import com.github.loj.pojo.vo.TrainingRankVO;
 import com.github.loj.pojo.vo.TrainingVO;
 
 import java.util.List;
@@ -24,5 +25,7 @@ public interface TrainingService {
     public CommonResult<List<ProblemVO>> getTrainingProblemList(Long tid);
 
     public CommonResult<Void> toRegisterTraining(RegisterTrainingDTO registerTrainingDTO);
+
+    public CommonResult<IPage<TrainingRankVO>> getTrainingRank(Long tid, Integer limit, Integer currentPage, String keyword);
 
 }
