@@ -3,10 +3,9 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
-import com.github.loj.pojo.vo.AccessVO;
-import com.github.loj.pojo.vo.AnnouncementVO;
-import com.github.loj.pojo.vo.ContestVO;
-import com.github.loj.pojo.vo.JudgeVO;
+import com.github.loj.pojo.vo.*;
+
+import java.util.List;
 
 public interface ContestService {
 
@@ -29,5 +28,7 @@ public interface ContestService {
     public CommonResult<IPage<AnnouncementVO>> getContestAnnouncement(Long cid, Integer limit, Integer currentPage);
 
     public CommonResult<AccessVO> getContestAccess(Long cid);
+
+    public CommonResult<List<ContestProblemVO>> getContestProblem(Long cid);
 
 }

@@ -9,6 +9,7 @@ import com.github.loj.dao.common.AnnouncementEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.contest.ContestRegisterEntityService;
+import com.github.loj.dao.group.GroupMemberEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.dto.ContestRankDTO;
@@ -60,6 +61,9 @@ public class ContestManager {
 
     @Autowired
     private ContestRegisterEntityService contestRegisterEntityService;
+
+    @Autowired
+    private GroupMemberEntityService groupMemberEntityService;
 
     public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer status, Integer type, String keyword) {
         // 页数，每页题数若为空，设置默认值
@@ -347,5 +351,50 @@ public class ContestManager {
         AccessVO accessVO = new AccessVO();
         accessVO.setAccess(access);
         return accessVO;
+    }
+
+    public List<ContestProblemVO> getContestProblem(Long cid) throws StatusForbiddenException, StatusFailException {
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(cid);
+
+        // 超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 需要对该比赛做判断，是否处于开始或结束状态才可以获取题目列表，同时若是私有赛需要判断是否已注册（比赛管理员包括超级管理员可以直接获取）
+        contestValidator.validateContestAuth(contest,userRolesVo,isRoot);
+
+        List<ContestProblemVO> contestProblemVOList;
+        boolean isAdmin = isRoot
+                || contest.getAuthor().equals(userRolesVo.getUsername())
+                || (contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()));
+
+        List<String> groupRootUidList = null;
+        if(contest.getIsGroup() && contest.getGid() != null) {
+            groupRootUidList = groupMemberEntityService.getGroupRootUidList(contest.getGid());
+        }
+
+        // 如果比赛开启封榜
+        if(contestValidator.isSealRank(userRolesVo.getUid(), contest, true, isRoot)) {
+            contestProblemVOList = contestProblemEntityService.getContestProblemList(cid,
+                    contest.getStartTime(),
+                    contest.getEndTime(),
+                    contest.getSealRankTime(),
+                    isAdmin,
+                    contest.getAuthor(),
+                    groupRootUidList);
+        } else {
+            contestProblemVOList = contestProblemEntityService.getContestProblemList(cid,
+                    contest.getStartTime(),
+                    contest.getEndTime(),
+                    null,
+                    isAdmin,
+                    contest.getAuthor(),
+                    groupRootUidList);
+        }
+        return contestProblemVOList;
     }
 }

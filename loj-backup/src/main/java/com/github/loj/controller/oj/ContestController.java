@@ -4,14 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
-import com.github.loj.pojo.vo.AccessVO;
-import com.github.loj.pojo.vo.AnnouncementVO;
-import com.github.loj.pojo.vo.ContestVO;
-import com.github.loj.pojo.vo.JudgeVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.ContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author lxhcaicai
@@ -128,5 +127,16 @@ public class ContestController {
     @GetMapping("/get-contest-access")
     public CommonResult<AccessVO> getContestAccess(@RequestParam(value = "cid") Long cid) {
         return contestService.getContestAccess(cid);
+    }
+
+    /**
+     * 获得指定比赛的题目列表
+     * @param cid
+     * @return
+     */
+    @GetMapping("/get-contest-problem")
+    @RequiresAuthentication
+    public CommonResult<List<ContestProblemVO>> getContestProblem(@RequestParam(value = "cid", required = true) Long cid) {
+        return contestService.getContestProblem(cid);
     }
 }
