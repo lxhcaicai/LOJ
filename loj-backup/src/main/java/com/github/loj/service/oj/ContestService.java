@@ -31,4 +31,6 @@ public interface ContestService {
 
     public CommonResult<List<ContestProblemVO>> getContestProblem(Long cid);
 
+    public CommonResult<ProblemInfoVO> getContestProblemDetails(Long cid, String displayId);
+
 }

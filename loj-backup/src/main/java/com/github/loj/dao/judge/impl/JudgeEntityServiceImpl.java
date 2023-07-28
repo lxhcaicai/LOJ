@@ -98,6 +98,11 @@ public class JudgeEntityServiceImpl extends ServiceImpl<JudgeMapper, Judge> impl
         return judgeMapper.getProblemCount(pid,gid);
     }
 
+    @Override
+    public ProblemCountVO getContestProblemCount(Long pid, Long cpid, Long cid, Date startTime, Date sealRankTime, List<String> adminList) {
+        return judgeMapper.getContestProblemCount(pid,cpid, cid, startTime, sealRankTime, adminList);
+    }
+
     private String getProblemTitleByPid(Long pid, List<Problem> problemList, HashMap<Long,String> storeMap) {
         String title = storeMap.get(pid);
         if(title != null) {

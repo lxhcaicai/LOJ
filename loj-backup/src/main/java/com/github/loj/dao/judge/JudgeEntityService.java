@@ -43,4 +43,11 @@ public interface JudgeEntityService extends IService<Judge> {
                                        Boolean completeProblemID);
 
     ProblemCountVO getProblemCount(Long pid, Long gid);
+
+    ProblemCountVO getContestProblemCount(Long pid,
+                                          Long cpid,
+                                          Long cid,
+                                          Date startTime,
+                                          Date sealRankTime,
+                                          List<String> adminList);
 }

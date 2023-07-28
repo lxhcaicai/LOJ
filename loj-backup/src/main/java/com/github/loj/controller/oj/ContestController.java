@@ -139,4 +139,11 @@ public class ContestController {
     public CommonResult<List<ContestProblemVO>> getContestProblem(@RequestParam(value = "cid", required = true) Long cid) {
         return contestService.getContestProblem(cid);
     }
+
+    @GetMapping("/get-contest-problem-details")
+    @RequiresAuthentication
+    public CommonResult<ProblemInfoVO> getContestProblemDetails(@RequestParam(value = "cid", required = false) Long cid,
+                                                                @RequestParam(value = "displayId", required = true) String displayId) {
+        return contestService.getContestProblemDetails(cid, displayId);
+    }
 }

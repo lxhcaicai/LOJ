@@ -5,17 +5,22 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.common.AnnouncementEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.contest.ContestRegisterEntityService;
 import com.github.loj.dao.group.GroupMemberEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
+import com.github.loj.dao.problem.*;
+import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.contest.ContestRegister;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.entity.problem.*;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
@@ -25,10 +30,7 @@ import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +66,27 @@ public class ContestManager {
 
     @Autowired
     private GroupMemberEntityService groupMemberEntityService;
+
+    @Autowired
+    private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private ProblemTagEntityService problemTagEntityService;
+
+    @Autowired
+    private TagEntityService tagEntityService;
+
+    @Autowired
+    private ProblemLanguageEntityService problemLanguageEntityService;
+
+    @Autowired
+    private LanguageEntityService languageEntityService;
+
+    @Autowired
+    private UserInfoEntityService userInfoEntityService;
+
+    @Autowired
+    private CodeTemplateEntityService codeTemplateEntityService;
 
     public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer status, Integer type, String keyword) {
         // 页数，每页题数若为空，设置默认值
@@ -396,5 +419,102 @@ public class ContestManager {
                     groupRootUidList);
         }
         return contestProblemVOList;
+    }
+
+    public ProblemInfoVO getContestProblemDetails(Long cid, String displayId) throws StatusForbiddenException, StatusFailException, StatusNotFoundException {
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(cid);
+
+        // 是否为超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 需要对该比赛做判断，是否处于开始或结束状态才可以获取题目，同时若是私有赛需要判断是否已注册（比赛管理员包括超级管理员可以直接获取）
+        contestValidator.validateContestAuth(contest, userRolesVo, isRoot);
+
+        // 根据cid和displayId获取pid
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        contestProblemQueryWrapper.eq("cid", cid).eq("display_id", displayId);
+        ContestProblem contestProblem = contestProblemEntityService.getOne(contestProblemQueryWrapper);
+
+        if(contestProblem == null) {
+            throw new StatusNotFoundException("该比赛题目不存在");
+        }
+
+        //查询题目详情，题目标签，题目语言，题目做题情况
+        Problem problem = problemEntityService.getById(contestProblem.getPid());
+
+        if(problem.getAuth() == 2) {
+            throw new StatusForbiddenException("该比赛题目当前不可访问！");
+        }
+
+        // 设置比赛题目的标题为设置展示标题
+        problem.setTitle(contestProblem.getDisplayTitle());
+
+        List<Tag> tags = new LinkedList<>();
+
+        if(contest.getStatus().intValue() != Constants.Contest.STATUS_ENDED.getCode()) {
+            problem.setSource(null);
+            problem.setAuth(null);
+            problem.setDifficulty(null);
+            QueryWrapper<ProblemTag> problemTagQueryWrapper = new QueryWrapper<>();
+            problemTagQueryWrapper.eq("pid", contestProblem.getPid());
+            // 获取该题号对应的标签id
+            List<Long> tidList = new LinkedList<>();
+            problemTagEntityService.list(problemTagQueryWrapper).forEach(problemTag -> {
+                tidList.add(problemTag.getTid());
+            });
+            if(tidList.size() != 0) {
+                tags = (List<Tag>) tagEntityService.listByIds(tidList);
+            }
+        }
+
+        // 记录 languageId对应的name
+        HashMap<Long, String> tmpMap = new HashMap<>();
+        // 获取题目提交的代码支持的语言
+        List<String> languageStr = new LinkedList<>();
+        QueryWrapper<ProblemLanguage> problemLanguageQueryWrapper = new QueryWrapper<>();
+        problemLanguageQueryWrapper.eq("pid", contestProblem.getPid()).select("lid");
+        List<Long> lidList = problemLanguageEntityService.list(problemLanguageQueryWrapper)
+                .stream().map(ProblemLanguage::getLid).collect(Collectors.toList());
+        Collection<Language> languages = languageEntityService.listByIds(lidList);
+        languages = languages.stream().sorted(Comparator.comparing(Language::getSeq,Comparator.reverseOrder())
+                .thenComparing(Language::getId))
+                .collect(Collectors.toList());
+        languages.forEach(language -> {
+            languageStr.add(language.getName());
+            tmpMap.put(language.getId(), language.getName());
+        });
+
+        Date sealRankTime = null;
+        //封榜时间除超级管理员和比赛管理员外 其它人不可看到最新数据
+        if(contestValidator.isSealRank(userRolesVo.getUid(), contest, true, isRoot)) {
+            sealRankTime = contest.getSealRankTime();
+        }
+
+        // 筛去 比赛管理员和超级管理员的提交
+        List<String> superAdminUidList = userInfoEntityService.getSuperAdminUidList();
+        superAdminUidList.add(contest.getUid());
+
+        // 获取题目的提交记录
+        ProblemCountVO problemCount = judgeEntityService.getContestProblemCount(contestProblem.getPid(),contestProblem.getId(),
+                contestProblem.getCid(), contest.getStartTime(), sealRankTime, superAdminUidList);
+
+        // 获取题目的代码模板
+        QueryWrapper<CodeTemplate> codeTemplateQueryWrapper = new QueryWrapper<>();
+        codeTemplateQueryWrapper.eq("pid", problem.getId()).eq("status", true);
+        List<CodeTemplate> codeTemplates = codeTemplateEntityService.list(codeTemplateQueryWrapper);
+        HashMap<String, String> langNameAndCode = new HashMap<>();
+        if(codeTemplates.size() > 0) {
+            for(CodeTemplate codeTemplate: codeTemplates) {
+                langNameAndCode.put(tmpMap.get(codeTemplate.getLid()), codeTemplate.getCode());
+            }
+        }
+
+        // 将数据统一写入到一个Vo返回数据实体类中
+        return new ProblemInfoVO(problem, tags, languageStr, problemCount, langNameAndCode);
     }
 }
