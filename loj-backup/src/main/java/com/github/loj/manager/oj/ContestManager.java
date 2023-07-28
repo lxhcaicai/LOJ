@@ -8,15 +8,14 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.common.AnnouncementEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
+import com.github.loj.dao.contest.ContestRegisterEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestRegister;
 import com.github.loj.pojo.entity.judge.Judge;
-import com.github.loj.pojo.vo.AnnouncementVO;
-import com.github.loj.pojo.vo.ContestVO;
-import com.github.loj.pojo.vo.JudgeVO;
-import com.github.loj.pojo.vo.ProblemFullScreenListVO;
+import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
@@ -58,6 +57,9 @@ public class ContestManager {
 
     @Autowired
     private ContestProblemEntityService contestProblemEntityService;
+
+    @Autowired
+    private ContestRegisterEntityService contestRegisterEntityService;
 
     public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer status, Integer type, String keyword) {
         // 页数，每页题数若为空，设置默认值
@@ -319,5 +321,31 @@ public class ContestManager {
             }
         }
         return problemList;
+    }
+
+    public AccessVO getContestAccess(Long cid) throws StatusFailException {
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<ContestRegister> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cid", cid).eq("uid", userRolesVo.getUid());
+        ContestRegister contestRegister = contestRegisterEntityService.getOne(queryWrapper, false);
+
+        boolean access = false;
+        if(contestRegister != null) {
+            access = true;
+            Contest contest = contestEntityService.getById(cid);
+            if(contest == null || !contest.getVisible()) {
+                throw new StatusFailException("对不起，该比赛不存在!");
+            }
+            if(contest.getOpenAccountLimit()
+                    && !contestValidator.validateAccountRule(contest.getAccountLimitRule(), userRolesVo.getUsername())) {
+                access = false;
+                contestRegisterEntityService.removeById(contestRegister.getId());
+            }
+        }
+        AccessVO accessVO = new AccessVO();
+        accessVO.setAccess(access);
+        return accessVO;
     }
 }

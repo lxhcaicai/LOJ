@@ -7,6 +7,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ContestManager;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
@@ -84,6 +85,15 @@ public class ContestServiceImpl implements ContestService {
             return CommonResult.successResponse(contestManager.getContestAnnouncement(cid, limit, currentPage));
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<AccessVO> getContestAccess(Long cid) {
+        try {
+            return CommonResult.successResponse(contestManager.getContestAccess(cid));
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.pojo.vo.JudgeVO;
@@ -116,5 +117,16 @@ public class ContestController {
                                                                       @RequestParam(value = "limit", required = false) Integer limit,
                                                                       @RequestParam(value = "currentPage", required = false) Integer currentPage) {
         return contestService.getContestAnnouncement(cid, limit, currentPage);
+    }
+
+    /**
+     * 获得指定私有比赛的访问权限或保护比赛的提交权限
+     * @param cid
+     * @return
+     */
+    @RequiresAuthentication
+    @GetMapping("/get-contest-access")
+    public CommonResult<AccessVO> getContestAccess(@RequestParam(value = "cid") Long cid) {
+        return contestService.getContestAccess(cid);
     }
 }
