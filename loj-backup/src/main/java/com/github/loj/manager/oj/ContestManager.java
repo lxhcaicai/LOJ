@@ -7,27 +7,23 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.common.AnnouncementEntityService;
-import com.github.loj.dao.contest.ContestAnnouncementEntityService;
-import com.github.loj.dao.contest.ContestEntityService;
-import com.github.loj.dao.contest.ContestProblemEntityService;
-import com.github.loj.dao.contest.ContestRegisterEntityService;
+import com.github.loj.dao.contest.*;
 import com.github.loj.dao.group.GroupMemberEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.*;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.pojo.bo.Pair_;
+import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
-import com.github.loj.pojo.entity.common.ContestAnnouncement;
-import com.github.loj.pojo.entity.contest.Contest;
-import com.github.loj.pojo.entity.contest.ContestProblem;
-import com.github.loj.pojo.entity.contest.ContestRegister;
+import com.github.loj.pojo.entity.contest.*;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.*;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
+import com.github.loj.utils.RedisUtils;
 import com.github.loj.validator.ContestValidator;
 import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
@@ -94,6 +90,12 @@ public class ContestManager {
 
     @Autowired
     private ContestAnnouncementEntityService contestAnnouncementEntityService;
+
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @Autowired
+    private ContestPrintEntityService contestPrintEntityService;
 
 
     public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer status, Integer type, String keyword) {
@@ -550,5 +552,37 @@ public class ContestManager {
         } else {
             return new ArrayList<>();
         }
+    }
+
+    public void submitPrintText(ContestPrintDTO contestPrintDTO) throws StatusForbiddenException, StatusFailException {
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(contestPrintDTO.getCid());
+
+        // 超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 需要对该比赛做判断，是否处于开始或结束状态才可以获取题目，同时若是私有赛需要判断是否已注册（比赛管理员包括超级管理员可以直接获取）
+        contestValidator.validateContestAuth(contest,userRolesVo,isRoot);
+
+        String lockKey = Constants.Account.CONTEST_ADD_PRINT_LOCK.getCode() + userRolesVo.getUid();
+        if(redisUtils.hasKey(lockKey)) {
+            long expire = redisUtils.getExpire(lockKey);
+            throw new StatusForbiddenException("提交打印功能限制，请在" + expire + "秒后再进行提交！");
+        } else {
+            redisUtils.set(lockKey, 1, 30);
+        }
+
+        boolean isOk = contestPrintEntityService.saveOrUpdate(new ContestPrint().setCid(contestPrintDTO.getCid())
+                .setContent(contestPrintDTO.getContent())
+                .setUsername(userRolesVo.getUsername())
+                .setRealname(userRolesVo.getRealname()));
+
+        if(!isOk) {
+            throw new StatusFailException("提交失败");
+        }
+
     }
 }

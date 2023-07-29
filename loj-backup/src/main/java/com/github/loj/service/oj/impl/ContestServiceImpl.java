@@ -7,6 +7,7 @@ import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ContestManager;
+import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
@@ -127,5 +128,17 @@ public class ContestServiceImpl implements ContestService {
     @Override
     public CommonResult<List<Announcement>> getContestUserNotReadAnnouncement(UserReadContestAnnouncementDTO userReadContestAnnouncementDTO) {
         return CommonResult.successResponse(contestManager.getContestUserNotReadAnnouncement(userReadContestAnnouncementDTO));
+    }
+
+    @Override
+    public CommonResult<Void> submitPrintText(ContestPrintDTO contestPrintDTO) {
+        try {
+            contestManager.submitPrintText(contestPrintDTO);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }

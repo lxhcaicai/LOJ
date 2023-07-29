@@ -3,6 +3,7 @@ package com.github.loj.controller.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
@@ -158,5 +159,16 @@ public class ContestController {
     @RequiresAuthentication
     public CommonResult<List<Announcement>> getContestUserNotReadAnnouncement(@RequestBody UserReadContestAnnouncementDTO userReadContestAnnouncementDTO) {
         return contestService.getContestUserNotReadAnnouncement(userReadContestAnnouncementDTO);
+    }
+
+    /**
+     * 提交比赛文本打印内容
+     * @param contestPrintDTO
+     * @return
+     */
+    @PostMapping("/submit-print-text")
+    @RequiresAuthentication
+    public CommonResult<Void> submitPrintText(@RequestBody ContestPrintDTO contestPrintDTO) {
+        return contestService.submitPrintText(contestPrintDTO);
     }
 }
