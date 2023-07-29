@@ -8,6 +8,8 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ContestManager;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
+import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.ContestService;
 import org.springframework.stereotype.Service;
@@ -120,5 +122,10 @@ public class ContestServiceImpl implements ContestService {
         } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
+    }
+
+    @Override
+    public CommonResult<List<Announcement>> getContestUserNotReadAnnouncement(UserReadContestAnnouncementDTO userReadContestAnnouncementDTO) {
+        return CommonResult.successResponse(contestManager.getContestUserNotReadAnnouncement(userReadContestAnnouncementDTO));
     }
 }

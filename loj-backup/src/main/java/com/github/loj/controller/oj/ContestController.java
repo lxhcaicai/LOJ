@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
+import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.*;
 import com.github.loj.service.oj.ContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -145,5 +147,16 @@ public class ContestController {
     public CommonResult<ProblemInfoVO> getContestProblemDetails(@RequestParam(value = "cid", required = false) Long cid,
                                                                 @RequestParam(value = "displayId", required = true) String displayId) {
         return contestService.getContestProblemDetails(cid, displayId);
+    }
+
+    /**
+     * 根据前端传过来的比赛id以及已阅读的公告提示id列表，排除后获取未阅读的公告
+     * @param userReadContestAnnouncementDTO
+     * @return
+     */
+    @PostMapping("/get-contest-not-read-announcement")
+    @RequiresAuthentication
+    public CommonResult<List<Announcement>> getContestUserNotReadAnnouncement(@RequestBody UserReadContestAnnouncementDTO userReadContestAnnouncementDTO) {
+        return contestService.getContestUserNotReadAnnouncement(userReadContestAnnouncementDTO);
     }
 }

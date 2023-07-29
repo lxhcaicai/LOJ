@@ -3,6 +3,8 @@ package com.github.loj.service.oj;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
+import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.*;
 
 import java.util.List;
@@ -32,5 +34,7 @@ public interface ContestService {
     public CommonResult<List<ContestProblemVO>> getContestProblem(Long cid);
 
     public CommonResult<ProblemInfoVO> getContestProblemDetails(Long cid, String displayId);
+
+    public CommonResult<List<Announcement>> getContestUserNotReadAnnouncement(UserReadContestAnnouncementDTO userReadContestAnnouncementDTO);
 
 }

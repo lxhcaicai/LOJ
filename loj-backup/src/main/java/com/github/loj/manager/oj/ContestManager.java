@@ -7,6 +7,7 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.common.AnnouncementEntityService;
+import com.github.loj.dao.contest.ContestAnnouncementEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.contest.ContestRegisterEntityService;
@@ -16,6 +17,9 @@ import com.github.loj.dao.problem.*;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
+import com.github.loj.pojo.entity.common.Announcement;
+import com.github.loj.pojo.entity.common.ContestAnnouncement;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.contest.ContestRegister;
@@ -87,6 +91,10 @@ public class ContestManager {
 
     @Autowired
     private CodeTemplateEntityService codeTemplateEntityService;
+
+    @Autowired
+    private ContestAnnouncementEntityService contestAnnouncementEntityService;
+
 
     public IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Integer status, Integer type, String keyword) {
         // 页数，每页题数若为空，设置默认值
@@ -516,5 +524,31 @@ public class ContestManager {
 
         // 将数据统一写入到一个Vo返回数据实体类中
         return new ProblemInfoVO(problem, tags, languageStr, problemCount, langNameAndCode);
+    }
+
+    public List<Announcement> getContestUserNotReadAnnouncement(UserReadContestAnnouncementDTO userReadContestAnnouncementDTO) {
+        Long cid = userReadContestAnnouncementDTO.getCid();
+        List<Long> readAnnouncementList = userReadContestAnnouncementDTO.getReadAnnouncementList();
+
+        QueryWrapper<ContestAnnouncement> contestAnnouncementQueryWrapper = new QueryWrapper<>();
+        contestAnnouncementQueryWrapper.eq("cid", cid);
+        if(readAnnouncementList != null && readAnnouncementList.size() > 0) {
+            contestAnnouncementQueryWrapper.notIn("aid", readAnnouncementList);
+        }
+
+        List<ContestAnnouncement> announcementList = contestAnnouncementEntityService.list(contestAnnouncementQueryWrapper);
+
+        List<Long> aidList = announcementList
+                .stream()
+                .map(ContestAnnouncement::getAid)
+                .collect(Collectors.toList());
+
+        if(aidList.size() > 0) {
+            QueryWrapper<Announcement> announcementQueryWrapper = new QueryWrapper<>();
+            announcementQueryWrapper.in("id", aidList).orderByDesc("gmt_create");
+            return announcementEntityService.list(announcementQueryWrapper);
+        } else {
+            return new ArrayList<>();
+        }
     }
 }
