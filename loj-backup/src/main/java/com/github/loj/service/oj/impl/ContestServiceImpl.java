@@ -9,6 +9,7 @@ import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ContestManager;
 import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.RegisterContestDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.*;
@@ -139,6 +140,18 @@ public class ContestServiceImpl implements ContestService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> toRegisterContest(RegisterContestDTO registerContestDTO) {
+        try {
+            contestManager.toRegisterContest(registerContestDTO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         }
     }
 }

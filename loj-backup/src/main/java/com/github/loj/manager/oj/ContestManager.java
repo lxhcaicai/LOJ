@@ -15,6 +15,7 @@ import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.RegisterContestDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.entity.contest.*;
@@ -29,6 +30,7 @@ import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -584,5 +586,54 @@ public class ContestManager {
             throw new StatusFailException("提交失败");
         }
 
+    }
+
+    public void toRegisterContest(RegisterContestDTO registerContestDTO) throws StatusFailException, StatusForbiddenException {
+        Long cid = registerContestDTO.getCid();
+        String password = registerContestDTO.getPassword();
+        if (cid == null || StringUtils.isEmpty(password)) {
+            throw new StatusFailException("cid或者password不能为空！");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Contest contest = contestEntityService.getById(cid);
+        if(contest == null || !contest.getVisible()) {
+            throw new StatusFailException("对不起，该比赛不存在!");
+        }
+
+        if(contest.getIsGroup()) {
+            if(!groupValidator.isGroupMember(userRolesVo.getUid(),contest.getGid()) && !isRoot) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
+
+        if (!contest.getPwd().equals(password)) { // 密码不对
+            throw new StatusFailException("比赛密码错误，请重新输入！");
+        }
+
+        // 需要校验当前比赛是否开启账号规则限制，如果有，需要对当前用户的用户名进行验证
+        if(contest.getOpenAccountLimit()
+                && !contestValidator.validateAccountRule(contest.getAccountLimitRule(), userRolesVo.getUsername())) {
+            throw new StatusFailException("对不起！本次比赛只允许特定账号规则的用户参赛！");
+        }
+
+        QueryWrapper<ContestRegister> wrapper = new QueryWrapper<ContestRegister>().eq("cid",cid)
+                .eq("uid", userRolesVo.getUid());
+
+        if(contestRegisterEntityService.getOne(wrapper,false) != null) {
+            throw new StatusFailException("您已注册过该比赛，请勿重复注册！");
+        }
+
+        boolean isOk = contestRegisterEntityService.saveOrUpdate(new ContestRegister()
+                .setCid(cid)
+                .setUid(userRolesVo.getUid()));
+
+        if(!isOk) {
+            throw new StatusFailException("校验比赛密码失败，请稍后再试");
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.RegisterContestDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.*;
@@ -39,4 +40,6 @@ public interface ContestService {
     public CommonResult<List<Announcement>> getContestUserNotReadAnnouncement(UserReadContestAnnouncementDTO userReadContestAnnouncementDTO);
 
     public CommonResult<Void> submitPrintText(ContestPrintDTO contestPrintDTO);
+
+    public CommonResult<Void> toRegisterContest(RegisterContestDTO registerContestDTO);
 }

@@ -5,6 +5,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestPrintDTO;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.dto.RegisterContestDTO;
 import com.github.loj.pojo.dto.UserReadContestAnnouncementDTO;
 import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.*;
@@ -170,5 +171,16 @@ public class ContestController {
     @RequiresAuthentication
     public CommonResult<Void> submitPrintText(@RequestBody ContestPrintDTO contestPrintDTO) {
         return contestService.submitPrintText(contestPrintDTO);
+    }
+
+    /**
+     * 注册比赛
+     * @param registerContestDTO
+     * @return
+     */
+    @PostMapping("/register-contest")
+    @RequiresAuthentication
+    public CommonResult<Void> toRegisterContest(@RequestBody RegisterContestDTO registerContestDTO) {
+        return contestService.toRegisterContest(registerContestDTO);
     }
 }
