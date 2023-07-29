@@ -1,4 +1,4 @@
-package com.github.loj.pojo.entity.common;
+package com.github.loj.pojo.entity.contest;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
