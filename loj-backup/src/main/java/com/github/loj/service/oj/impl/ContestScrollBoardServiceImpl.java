@@ -3,10 +3,12 @@ package com.github.loj.service.oj.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.oj.ContestScrollBoardManager;
 import com.github.loj.pojo.dto.ContestRankDTO;
+import com.github.loj.pojo.vo.ContestOutsideInfoVO;
 import com.github.loj.service.oj.ContestScrollBoardService;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,17 @@ public class ContestScrollBoardServiceImpl implements ContestScrollBoardService 
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<ContestOutsideInfoVO> getContestOutsideInfo(Long cid) {
+        try {
+            return CommonResult.successResponse(contestScrollBoardManager.getContestOutsideInfo(cid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
 }

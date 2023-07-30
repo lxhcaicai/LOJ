@@ -1,11 +1,17 @@
 package com.github.loj.manager.oj;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestProblem;
+import com.github.loj.pojo.vo.ContestOutsideInfoVO;
+import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
@@ -13,6 +19,7 @@ import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -26,6 +33,9 @@ public class ContestScrollBoardManager {
 
     @Autowired
     private ContestRankManager contestRankManager;
+
+    @Autowired
+    private ContestProblemEntityService contestProblemEntityService;
 
     public IPage getContestOutsideScoreboard(ContestRankDTO contestRankDTO) throws StatusFailException, StatusForbiddenException {
 
@@ -114,5 +124,32 @@ public class ContestScrollBoardManager {
                     !forceRefresh,
                     15L);
         }
+    }
+
+    public ContestOutsideInfoVO getContestOutsideInfo(Long cid) throws StatusNotFoundException, StatusForbiddenException {
+        ContestVO  contestInfo = contestEntityService.getContestInfoById(cid);
+
+        if(contestInfo == null) {
+            throw new StatusNotFoundException("访问错误：该比赛不存在！");
+        }
+
+        if(!contestInfo.getOpenRank()) {
+            throw new StatusForbiddenException("本场比赛未开启外榜，禁止访问外榜！");
+        }
+        // 获取本场比赛的状态
+        if(contestInfo.getStatus().equals(Constants.Contest.STATUS_SCHEDULED.getCode())) {
+            throw new StatusForbiddenException("本场比赛正在筹备中，禁止访问外榜！");
+        }
+
+        contestInfo.setNow(new Date());
+        ContestOutsideInfoVO contestOutsideInfoVO = new ContestOutsideInfoVO();
+        contestOutsideInfoVO.setContest(contestInfo);
+
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        contestProblemQueryWrapper.eq("cid", cid).orderByAsc("display_id");
+        List<ContestProblem> contestProblemList = contestProblemEntityService.list(contestProblemQueryWrapper);
+        contestOutsideInfoVO.setProblemList(contestProblemList);
+
+        return contestOutsideInfoVO;
     }
 }
