@@ -3,6 +3,7 @@ package com.github.loj.dao.judge;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.loj.pojo.entity.judge.Judge;
+import com.github.loj.pojo.vo.ContestScrollBoardSubmissionVO;
 import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.pojo.vo.ProblemCountVO;
 
@@ -50,4 +51,6 @@ public interface JudgeEntityService extends IService<Judge> {
                                           Date startTime,
                                           Date sealRankTime,
                                           List<String> adminList);
+
+    public List<ContestScrollBoardSubmissionVO> getContestScrollBoardSubmission(Long cid, List<String> removeUidList);
 }

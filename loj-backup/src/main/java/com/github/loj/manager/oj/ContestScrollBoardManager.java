@@ -1,14 +1,19 @@
 package com.github.loj.manager.oj;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.ContestScrollBoardInfoVO;
+import com.github.loj.pojo.vo.ContestScrollBoardSubmissionVO;
 import com.github.loj.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,6 +36,12 @@ public class ContestScrollBoardManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private ContestCalculateRankManager contestCalculateRankManager;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
 
     public ContestScrollBoardInfoVO getContestScrollBoardInfo(Long cid) throws StatusFailException {
         Contest contest = contestEntityService.getById(cid);
@@ -84,4 +95,40 @@ public class ContestScrollBoardManager {
         return info;
     }
 
+    public List<ContestScrollBoardSubmissionVO> getContestScrollBoardSubmission(Long cid, Boolean removeStar) throws StatusFailException {
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusFailException("比赛不存在 (The contest does not exist)");
+        }
+
+        if(!Objects.equals(contest.getType(), Constants.Contest.TYPE_ACM.getCode())) {
+            throw new StatusFailException("非ACM赛制的比赛无法进行滚榜  (Non - ACM contest board cannot be rolled)");
+        }
+
+        if(!contest.getSealRank()) {
+            throw new StatusFailException("比赛未开启封榜，无法进行滚榜 (The contest has not been closed, and cannot roll)");
+        }
+
+        if(!Objects.equals(contest.getStatus(), Constants.Contest.STATUS_ENDED.getCode())) {
+            throw new StatusFailException("比赛未结束，禁止进行滚榜 (Roll off is prohibited before the contest is over)");
+        }
+
+        List<String> removeUidList = contestCalculateRankManager.getSuperAdminUidList(contest.getGid());
+        if(!removeUidList.contains(contest.getUid())) {
+            removeUidList.add(contest.getUid());
+        }
+        List<ContestScrollBoardSubmissionVO> submissions = judgeEntityService.getContestScrollBoardSubmission(cid,removeUidList);
+        if(removeStar && StrUtil.isNotBlank(contest.getStarAccount())) {
+            JSONObject jsonObject = JSONUtil.parseObj(contest.getStarAccount());
+            List<String> usernameList = jsonObject.get("star_account", List.class);
+            if(!CollectionUtils.isEmpty(usernameList)) {
+                submissions = submissions.stream()
+                        .filter(submission -> !usernameList.contains(submission.getUsername()))
+                        .collect(Collectors.toList());
+            }
+        }
+        return submissions;
+    }
 }

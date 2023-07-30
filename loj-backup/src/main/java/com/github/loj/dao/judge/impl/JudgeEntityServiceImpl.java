@@ -12,6 +12,7 @@ import com.github.loj.mapper.ProblemMapper;
 import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.vo.ContestScrollBoardSubmissionVO;
 import com.github.loj.pojo.vo.JudgeVO;
 import com.github.loj.pojo.vo.ProblemCountVO;
 import com.github.loj.utils.Constants;
@@ -101,6 +102,11 @@ public class JudgeEntityServiceImpl extends ServiceImpl<JudgeMapper, Judge> impl
     @Override
     public ProblemCountVO getContestProblemCount(Long pid, Long cpid, Long cid, Date startTime, Date sealRankTime, List<String> adminList) {
         return judgeMapper.getContestProblemCount(pid,cpid, cid, startTime, sealRankTime, adminList);
+    }
+
+    @Override
+    public List<ContestScrollBoardSubmissionVO> getContestScrollBoardSubmission(Long cid, List<String> removeUidList) {
+        return judgeMapper.getContestScrollBoardSubmission(cid, removeUidList);
     }
 
     private String getProblemTitleByPid(Long pid, List<Problem> problemList, HashMap<Long,String> storeMap) {
