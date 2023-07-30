@@ -2,6 +2,7 @@ package com.github.loj.controller.oj;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.contest.ContestPrint;
 import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.service.oj.ContestAdminService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -31,5 +32,20 @@ public class ContestAdminController {
                                                                @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                                @RequestParam(value = "limit", required = false) Integer limit) {
         return contestAdminService.getContestACInfo(cid,currentPage, limit);
+    }
+
+    /**
+     * 获取比赛提交的的内容
+     * @param cid
+     * @param currentPage
+     * @param limit
+     * @return
+     */
+    @GetMapping("/get-contest-print")
+    @RequiresAuthentication
+    public CommonResult<IPage<ContestPrint>> getContestPrint(@RequestParam("cid") Long cid,
+                                                             @RequestParam(value = "currentPage",required = false) Integer currentPage,
+                                                             @RequestParam(value = "limit", required = false) Integer limit) {
+        return contestAdminService.getContestPrint(cid, currentPage, limit);
     }
 }
