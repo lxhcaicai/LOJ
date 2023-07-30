@@ -5,7 +5,7 @@ import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.vo.ContestOutsideInfoVO;
-import com.github.loj.service.oj.ContestScrollBoardService;
+import com.github.loj.service.oj.ContestScoreboardService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 public class ContestScoreboardController {
 
     @Resource
-    private ContestScrollBoardService contestScrollBoardService;
+    private ContestScoreboardService contestScrollBoardService;
 
     /**
      * 提供比赛外榜排名数据

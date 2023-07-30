@@ -5,7 +5,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.vo.ContestOutsideInfoVO;
 
-public interface ContestScrollBoardService {
+public interface ContestScoreboardService {
 
     public CommonResult<IPage> getContestOutsideScoreboard(ContestRankDTO contestRankDTO);
 

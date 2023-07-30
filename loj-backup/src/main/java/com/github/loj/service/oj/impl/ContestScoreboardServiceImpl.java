@@ -6,19 +6,19 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
-import com.github.loj.manager.oj.ContestScrollBoardManager;
+import com.github.loj.manager.oj.ContestScoreboardManager;
 import com.github.loj.pojo.dto.ContestRankDTO;
 import com.github.loj.pojo.vo.ContestOutsideInfoVO;
-import com.github.loj.service.oj.ContestScrollBoardService;
+import com.github.loj.service.oj.ContestScoreboardService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
 @Service
-public class ContestScrollBoardServiceImpl implements ContestScrollBoardService {
+public class ContestScoreboardServiceImpl implements ContestScoreboardService {
 
     @Resource
-    private ContestScrollBoardManager contestScrollBoardManager;
+    private ContestScoreboardManager contestScrollBoardManager;
 
     @Override
     public CommonResult<IPage> getContestOutsideScoreboard(ContestRankDTO contestRankDTO) {
