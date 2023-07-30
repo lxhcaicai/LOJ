@@ -651,4 +651,56 @@ public class JudgeManager {
         }
         return judge;
     }
+
+    /**
+     * 需要检查是否为封榜，是否可以查询结果，避免有人恶意查询
+     * @param submitIdListDTO
+     * @return
+     * @throws StatusNotFoundException
+     */
+    public HashMap<Long,Object> checkContestJudgeResult(SubmitIdListDTO submitIdListDTO) throws StatusNotFoundException {
+        if(submitIdListDTO.getCid() == null) {
+            throw new StatusNotFoundException("查询比赛id不能为空");
+        }
+
+        if(CollectionUtils.isEmpty(submitIdListDTO.getSubmitIds())) {
+            return new HashMap<>();
+        }
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root"); // 是否为超级管理员
+
+
+        Contest contest = contestEntityService.getById(submitIdListDTO.getCid());
+
+        boolean isContestAdmin = isRoot
+                || userRolesVo.getUid().equals(contest.getUid())
+                || (contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()));
+
+        // 如果是封榜时间且不是比赛管理员和超级管理员
+        boolean isSealRank = contestValidator.isSealRank(userRolesVo.getUid(), contest, true, isRoot);
+
+        QueryWrapper<Judge> queryWrapper = new QueryWrapper<>();
+        // lambada表达式过滤掉code
+        queryWrapper.select(Judge.class, info -> !info.getColumn().equals("code"))
+                .in("submit_id", submitIdListDTO.getSubmitIds())
+                .eq("cid", submitIdListDTO.getCid())
+                .between(isSealRank, "submit_time", contest.getStartTime(), contest.getSealRankTime());
+        List<Judge> judgeList = judgeEntityService.list(queryWrapper);
+        HashMap<Long,Object> result = new HashMap<>();
+        for(Judge judge: judgeList) {
+            judge.setCode(null);
+            judge.setDisplayPid(null);
+            judge.setErrorMessage(null);
+            judge.setVjudgeUsername(null);
+            judge.setVjudgeSubmitId(null);
+            judge.setVjudgePassword(null);
+            if(!judge.getUid().equals(userRolesVo.getUid()) && !isContestAdmin) {
+                judge.setTime(null);
+                judge.setMemory(null);
+                judge.setLength(null);
+            }
+        }
+        return result;
+    }
 }

@@ -42,4 +42,6 @@ public interface JudgeService {
     public CommonResult<HashMap<Long,Object>> checkCommonJudgeResult(SubmitIdListDTO submitIdListDTO);
 
     public CommonResult<Judge> resubmit(Long submitId);
+
+    public CommonResult<HashMap<Long,Object>> checkContestJudgeResult(SubmitIdListDTO submitIdListDTO);
 }

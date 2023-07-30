@@ -128,4 +128,13 @@ public class JudgeServiceImpl implements JudgeService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
+
+    @Override
+    public CommonResult<HashMap<Long, Object>> checkContestJudgeResult(SubmitIdListDTO submitIdListDTO) {
+        try {
+            return CommonResult.successResponse(judgeManager.checkContestJudgeResult(submitIdListDTO));
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
 }

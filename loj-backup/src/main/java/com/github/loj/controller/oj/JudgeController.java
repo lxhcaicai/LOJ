@@ -132,4 +132,15 @@ public class JudgeController {
     public CommonResult<Judge> resubmit(@RequestParam("submitId") Long submitId) {
         return judgeService.resubmit(submitId);
     }
+
+    /**
+     * 需要检查是否为封榜，是否可以查询结果，避免有人恶意查询
+     * @param submitIdListDTO
+     * @return
+     */
+    @RequestMapping(value = "/check-contest-submission-status", method = RequestMethod.POST)
+    @RequiresAuthentication
+    public CommonResult<HashMap<Long,Object>> checkContestJudgeResult(@RequestBody SubmitIdListDTO submitIdListDTO) {
+        return judgeService.checkContestJudgeResult(submitIdListDTO);
+    }
 }
