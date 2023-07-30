@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/api")
 @AnonApi
-public class ContestScrollBoardController {
+public class ContestScoreboardController {
 
     @Resource
     private ContestScrollBoardService contestScrollBoardService;
