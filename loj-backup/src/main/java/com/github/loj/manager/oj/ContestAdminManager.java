@@ -3,10 +3,12 @@ package com.github.loj.manager.oj;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestPrintEntityService;
 import com.github.loj.dao.contest.ContestRecordEntityService;
+import com.github.loj.pojo.dto.CheckACDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestPrint;
 import com.github.loj.pojo.entity.contest.ContestRecord;
@@ -96,5 +98,29 @@ public class ContestAdminManager {
                 .orderByDesc("gmt_create");
 
         return contestPrintEntityService.page(contestPrintIPage, contestPrintQueryWrapper);
+    }
+
+    public void checkContestACInfo(CheckACDTO checkACDTO) throws StatusForbiddenException, StatusFailException {
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(checkACDTO.getCid());
+
+        // 超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if(!isRoot
+                && !contest.getUid().equals(userRolesVo.getUid())
+                && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = contestRecordEntityService.updateById(
+                new ContestRecord().setChecked(checkACDTO.getChecked()).setId(checkACDTO.getId()));
+
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
     }
 }

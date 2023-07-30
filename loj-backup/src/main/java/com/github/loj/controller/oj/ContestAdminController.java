@@ -2,15 +2,13 @@ package com.github.loj.controller.oj;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.CheckACDTO;
 import com.github.loj.pojo.entity.contest.ContestPrint;
 import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.service.oj.ContestAdminService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -47,5 +45,16 @@ public class ContestAdminController {
                                                              @RequestParam(value = "currentPage",required = false) Integer currentPage,
                                                              @RequestParam(value = "limit", required = false) Integer limit) {
         return contestAdminService.getContestPrint(cid, currentPage, limit);
+    }
+
+    /**
+     * 比赛管理员确定该次提交的ac情况
+     * @param checkACDTO
+     * @return
+     */
+    @PutMapping("/check-contest-ac-info")
+    @RequiresAuthentication
+    public CommonResult<Void> checkContestACInfo(@RequestBody CheckACDTO checkACDTO) {
+        return contestAdminService.checkContestACInfo(checkACDTO);
     }
 }
