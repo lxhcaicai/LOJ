@@ -18,12 +18,12 @@ import javax.annotation.Resource;
 public class ContestScoreboardServiceImpl implements ContestScoreboardService {
 
     @Resource
-    private ContestScoreboardManager contestScrollBoardManager;
+    private ContestScoreboardManager contestScoreboardManager;
 
     @Override
     public CommonResult<IPage> getContestOutsideScoreboard(ContestRankDTO contestRankDTO) {
         try {
-            return CommonResult.successResponse(contestScrollBoardManager.getContestOutsideScoreboard(contestRankDTO));
+            return CommonResult.successResponse(contestScoreboardManager.getContestOutsideScoreboard(contestRankDTO));
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
@@ -34,7 +34,7 @@ public class ContestScoreboardServiceImpl implements ContestScoreboardService {
     @Override
     public CommonResult<ContestOutsideInfoVO> getContestOutsideInfo(Long cid) {
         try {
-            return CommonResult.successResponse(contestScrollBoardManager.getContestOutsideInfo(cid));
+            return CommonResult.successResponse(contestScoreboardManager.getContestOutsideInfo(cid));
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusNotFoundException e) {

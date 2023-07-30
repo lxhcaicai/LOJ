@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 public class ContestScoreboardController {
 
     @Resource
-    private ContestScoreboardService contestScrollBoardService;
+    private ContestScoreboardService contestScoreboardService;
 
     /**
      * 提供比赛外榜排名数据
@@ -25,7 +25,7 @@ public class ContestScoreboardController {
      */
     @PostMapping("/get-contest-outside-scoreboard")
     public CommonResult<IPage> getContestOutsideScoreboard(@RequestBody ContestRankDTO contestRankDTO) {
-        return contestScrollBoardService.getContestOutsideScoreboard(contestRankDTO);
+        return contestScoreboardService.getContestOutsideScoreboard(contestRankDTO);
     }
 
     /**
@@ -35,6 +35,6 @@ public class ContestScoreboardController {
      */
     @GetMapping("/get-contest-outsize-info")
     public CommonResult<ContestOutsideInfoVO> getContestOutsideInfo(@RequestParam(value = "cid", required = false) Long cid) {
-        return contestScrollBoardService.getContestOutsideInfo(cid);
+        return contestScoreboardService.getContestOutsideInfo(cid);
     }
 }
