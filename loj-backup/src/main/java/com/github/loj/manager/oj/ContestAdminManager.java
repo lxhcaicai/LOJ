@@ -123,4 +123,26 @@ public class ContestAdminManager {
             throw new StatusFailException("修改失败");
         }
     }
+
+    public void checkContestPrintStatus(Long id, Long cid) throws StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 获取本场比赛的状态
+        Contest contest = contestEntityService.getById(cid);
+
+        // 超级管理员或者该比赛的创建者，则为比赛管理者
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if(!isRoot
+                && !contest.getUid().equals(userRolesVo.getUid())
+                && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = contestPrintEntityService.updateById(new ContestPrint().setId(id).setStatus(1));
+
+        if(!isOk) {
+            throw new StatusFailException("修改失败！");
+        }
+    }
 }

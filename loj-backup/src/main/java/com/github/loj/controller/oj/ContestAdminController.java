@@ -57,4 +57,17 @@ public class ContestAdminController {
     public CommonResult<Void> checkContestACInfo(@RequestBody CheckACDTO checkACDTO) {
         return contestAdminService.checkContestACInfo(checkACDTO);
     }
+
+    /**
+     * 更新该打印为确定状态
+     * @param id
+     * @param cid
+     * @return
+     */
+    @PutMapping("/check-contest-print-status")
+    @RequiresAuthentication
+    public CommonResult<Void> checkContestPrintStatus(@RequestParam("id") Long id,
+                                                      @RequestParam("cid") Long cid) {
+        return contestAdminService.checkContestPrintStatus(id,cid);
+    }
 }

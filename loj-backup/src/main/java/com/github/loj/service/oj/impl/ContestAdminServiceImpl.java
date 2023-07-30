@@ -49,4 +49,16 @@ public class ContestAdminServiceImpl implements ContestAdminService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> checkContestPrintStatus(Long id, Long cid) {
+        try {
+            contestAdminManager.checkContestPrintStatus(id, cid);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

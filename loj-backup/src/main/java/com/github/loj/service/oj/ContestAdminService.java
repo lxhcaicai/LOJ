@@ -13,4 +13,6 @@ public interface ContestAdminService {
     public CommonResult<IPage<ContestPrint>> getContestPrint(Long cid, Integer currentPage, Integer limit);
 
     public CommonResult<Void> checkContestACInfo(CheckACDTO checkACDTO);
+
+    public CommonResult<Void> checkContestPrintStatus(Long id, Long cid);
 }
