@@ -56,4 +56,9 @@ public class HomeServiceImpl implements HomeService {
     public CommonResult<SubmissionStatisticsVO> getLastWeekSubmissionStatistics(Boolean forceRefresh) {
         return CommonResult.successResponse(homeManager.getLastWeekSubmissionStatistics(forceRefresh));
     }
+
+    @Override
+    public CommonResult<List<HashMap<String, Object>>> getRecentOtherContest() {
+        return CommonResult.successResponse(homeManager.getRecentOtherContest());
+    }
 }

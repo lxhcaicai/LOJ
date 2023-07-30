@@ -307,4 +307,15 @@ public class HomeManager {
 
         return submissionStatisticsVO;
     }
+
+    /**
+     * 获取最近其他OJ的比赛信息列表
+     * @return
+     */
+    @Deprecated
+    public List<HashMap<String,Object>> getRecentOtherContest() {
+        String redisKey = Constants.Schedule.RECENT_OTHER_CONTEST.getCode();
+        // 从redis获取比赛列表
+        return (List<HashMap<String, Object>>) redisUtils.get(redisKey);
+    }
 }

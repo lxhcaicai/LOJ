@@ -27,4 +27,7 @@ public interface HomeService {
     public CommonResult<IPage<AnnouncementVO>> getCommonAnnouncement(Integer limit, Integer currentPage);
 
     public CommonResult<SubmissionStatisticsVO> getLastWeekSubmissionStatistics(Boolean forceRefresh);
+
+    @Deprecated
+    public CommonResult<List<HashMap<String,Object>>> getRecentOtherContest();
 }

@@ -97,4 +97,13 @@ public class HomeController {
         return homeService.getLastWeekSubmissionStatistics(forceRefresh);
     }
 
+    /**
+     * 获取最近其他OJ的比赛信息列表 (不适用了)
+     * @return
+     */
+    @GetMapping("/get-recent-other-contest")
+    public CommonResult<List<HashMap<String,Object>>>  getRecentOtherContest() {
+        return homeService.getRecentOtherContest();
+    }
+
 }
