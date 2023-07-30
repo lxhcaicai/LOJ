@@ -9,10 +9,12 @@ import com.github.loj.dao.contest.ContestRecordEntityService;
 import com.github.loj.dao.group.GroupMemberEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.entity.group.GroupMember;
 import com.github.loj.pojo.vo.ACMContestRankVO;
 import com.github.loj.pojo.vo.ContestAwardConfigVO;
 import com.github.loj.pojo.vo.ContestRecordVO;
+import com.github.loj.pojo.vo.OIContestRankVO;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.RedisUtils;
 import org.springframework.stereotype.Component;
@@ -373,5 +375,238 @@ public class ContestCalculateRankManager {
             }
         }
         return queue;
+    }
+
+    /**
+     * @param isOpenSealRank  是否是查询封榜后的数据
+     * @param removeStar      是否需要移除打星队伍
+     * @param contest         比赛实体信息
+     * @param currentUserId   当前查看榜单的用户uuid,不为空则将该数据复制一份放置列表最前
+     * @param concernedList   关注的用户（uuid）列表
+     * @param externalCidList 榜单额外显示比赛列表
+     * @param useCache        是否对初始排序计算的结果进行缓存
+     * @param cacheTime       缓存的时间 单位秒
+     * @MethodName calcOIRank
+     * @Return
+     */
+    public List<OIContestRankVO> calcOIRank(boolean isOpenSealRank,
+                                            boolean removeStar,
+                                            Contest contest,
+                                            String currentUserId,
+                                            List<String> concernedList,
+                                            List<Integer> externalCidList,
+                                            boolean useCache,
+                                            Long cacheTime) {
+
+        List<OIContestRankVO>  orderResultList;
+        if(useCache) {
+            String key = Constants.Contest.CONTEST_RANK_CAL_RESULT_CACHE.getName() + "_" + contest.getId();
+            orderResultList = (List<OIContestRankVO>) redisUtils.get(key);
+            if(orderResultList == null) {
+                orderResultList = getOIOrderRank(contest, externalCidList, isOpenSealRank);
+                redisUtils.set(key, orderResultList, cacheTime);
+            }
+        } else {
+            orderResultList = getOIOrderRank(contest, externalCidList, isOpenSealRank);
+        }
+        // 需要打星的用户名列表
+        HashMap<String,Boolean> startAccountMap = starAccountToMap(contest.getStarAccount());
+
+        Queue<ContestAwardConfigVO> awardConfigVoList = null;
+        boolean isNeedSetAward = contest.getAwardType() != null && contest.getAwardType() > 0;
+        if(removeStar) {
+            // 如果选择了移除打星队伍，同时该用户属于打星队伍，则将其移除
+            orderResultList.removeIf(acmContestRankVo -> startAccountMap.containsKey(acmContestRankVo.getUsername()));
+            if(isNeedSetAward) {
+                awardConfigVoList = getContestAwardConfigList(contest.getAwardConfig(), contest.getAwardType(), orderResultList.size());
+            }
+        } else {
+            if(isNeedSetAward) {
+                if(contest.getAwardType() == 1) {
+                    long count = orderResultList.stream().filter(e -> !startAccountMap.containsKey(e.getUsername())).count();
+                    awardConfigVoList = getContestAwardConfigList(contest.getAwardConfig(), contest.getAwardType(), (int) count);
+                } else {
+                    awardConfigVoList = getContestAwardConfigList(contest.getAwardConfig(), contest.getAwardType(), orderResultList.size());
+                }
+            }
+        }
+
+        // 记录当前用户排名数据和关注列表的用户排名数据
+        List<OIContestRankVO> topOIRankVoList = new ArrayList<>();
+        boolean needAddConcernedUser = false;
+        if(!CollectionUtils.isEmpty(concernedList)) {
+            needAddConcernedUser = true;
+            // 移除关注列表与当前用户重复
+            concernedList.remove(currentUserId);
+        }
+
+        int rankNum = 1;
+        OIContestRankVO lastOIRankVo = null;
+        ContestAwardConfigVO configVO = null;
+        int len = orderResultList.size();
+        for(int i = 0; i < len; i ++) {
+            OIContestRankVO currentOIRankVo = orderResultList.get(i);
+            if(!removeStar && startAccountMap.containsKey(currentOIRankVo.getUsername())) {
+                // 打星队伍排名为-1
+                currentOIRankVo.setRank(-1);
+                currentOIRankVo.setIsWinAward(false);
+            } else {
+                if(rankNum == 1) {
+                    currentOIRankVo.setRank(rankNum);
+                } else {
+                    // 当前用户的程序总运行时间和总得分跟前一个用户一样的话，同时前一个不应该为打星用户，排名则一样
+                    if(lastOIRankVo.getTotalScore().equals(currentOIRankVo.getTotalScore())
+                            && lastOIRankVo.getTotalTime().equals(currentOIRankVo.getTotalTime())) {
+                        currentOIRankVo.setRank(lastOIRankVo.getRank());
+                    } else {
+                        currentOIRankVo.setRank(rankNum);
+                    }
+                }
+
+                if(isNeedSetAward && currentOIRankVo.getTotalScore() > 0) {
+                    if(concernedList == null || configVO.getNum() == 0) {
+                        if(!awardConfigVoList.isEmpty()) {
+                            configVO = awardConfigVoList.poll();
+                            currentOIRankVo.setAwardName(configVO.getName());
+                            currentOIRankVo.setAwardBackground(configVO.getBackground());
+                            currentOIRankVo.setAwardColor(configVO.getColor());
+                            currentOIRankVo.setIsWinAward(true);
+                            configVO.setNum(configVO.getNum() - 1);
+                        } else {
+                            isNeedSetAward = false;
+                            currentOIRankVo.setIsWinAward(false);
+                        }
+                    } else {
+                        currentOIRankVo.setAwardName(configVO.getName());
+                        currentOIRankVo.setAwardBackground(configVO.getBackground());
+                        currentOIRankVo.setAwardColor(configVO.getColor());
+                        currentOIRankVo.setIsWinAward(true);
+                        configVO.setNum(configVO.getNum() - 1);
+                    }
+                } else {
+                    currentOIRankVo.setIsWinAward(false);
+                }
+                lastOIRankVo = currentOIRankVo;
+                rankNum ++;
+            }
+            // 默认当前请求用户的排名显示在最顶行
+            if(!StringUtils.isEmpty(currentUserId)
+                    && currentOIRankVo.getUid().equals(currentUserId)) {
+                topOIRankVoList.add(0, currentOIRankVo);
+            }
+            // 需要添加关注用户
+            if(needAddConcernedUser) {
+                if(concernedList.contains(currentOIRankVo.getUid())) {
+                    topOIRankVoList.add(currentOIRankVo);
+                }
+            }
+        }
+        topOIRankVoList.addAll(orderResultList);
+        return topOIRankVoList;
+    }
+
+    private List<OIContestRankVO> getOIOrderRank(Contest contest, List<Integer> externalCidList, Boolean isOpenSealRank) {
+        List<ContestRecordVO> oiContestRecord = contestRecordEntityService.getOIContestRecord(contest, externalCidList, isOpenSealRank);
+
+        List<String> superAdminUidList = getSuperAdminUidList(contest.getGid());
+
+        List<OIContestRankVO> result = new ArrayList<>();
+
+        HashMap<String,Integer> uidMapIndex = new HashMap<>();
+
+        HashMap<String, HashMap<String, Integer>> uidMapTime = new HashMap<>();
+
+        boolean isHighestRankScore = Constants.Contest.OI_RANK_HIGHEST_SCORE.getCode().equals(contest.getOiRankScoreType());
+
+        int index = 0;
+
+        for(ContestRecordVO contestRecord: oiContestRecord) {
+
+            if(superAdminUidList.contains(contestRecord.getUid())) {
+                continue;
+            }
+
+            if(contestRecord.getStatus().equals(Constants.Contest.RECORD_AC.getCode())) {
+                HashMap<String,Integer> pidMapTime = uidMapTime.get(contestRecord.getUid());
+                if(pidMapTime != null) {
+                    Integer useTime = pidMapTime.get(contestRecord.getDisplayId());
+
+                    if(useTime != null) {
+                        if(useTime > contestRecord.getUseTime()) {
+                            pidMapTime.put(contestRecord.getDisplayId(), contestRecord.getUseTime());
+                        }
+                    } else {
+                        pidMapTime.put(contestRecord.getDisplayId(), contestRecord.getUseTime());
+                    }
+                } else {
+                    HashMap<String,Integer> tmp = new HashMap<>();
+                    tmp.put(contestRecord.getDisplayId(), contestRecord.getUseTime());
+                    uidMapTime.put(contestRecord.getUid(), tmp);
+                }
+            }
+
+            OIContestRankVO oiContestRankVo;
+
+            if(!uidMapIndex.containsKey(contestRecord.getUid())) {// 如果该用户信息没还记录
+                // 初始化参数
+                oiContestRankVo = new OIContestRankVO();
+                oiContestRankVo.setRealname(contestRecord.getRealname())
+                        .setUid(contestRecord.getUid())
+                        .setUsername(contestRecord.getUsername())
+                        .setSchool(contestRecord.getSchool())
+                        .setAvatar(contestRecord.getAvatar())
+                        .setGender(contestRecord.getGender())
+                        .setNickname(contestRecord.getNickname())
+                        .setTotalScore(0);
+
+                HashMap<String,Integer> submissionInfo = new HashMap<>();
+                oiContestRankVo.setSubmissionInfo(submissionInfo);
+
+                result.add(oiContestRankVo);
+                uidMapIndex.put(contestRecord.getUid(),index);
+                index ++;
+            } else {
+                oiContestRankVo = result.get(uidMapIndex.get(contestRecord.getUid()));// 根据记录的index进行获取
+            }
+
+            // 记录总分
+            HashMap<String, Integer> submissionInfo = oiContestRankVo.getSubmissionInfo();
+            Integer score = submissionInfo.get(contestRecord.getDisplayId());
+            if(isHighestRankScore) {
+                if(score == null) {
+                    oiContestRankVo.setTotalScore(oiContestRankVo.getTotalScore() + contestRecord.getScore());
+                    submissionInfo.put(contestRecord.getDisplayId(), contestRecord.getScore());
+                }
+            } else {
+                if(contestRecord.getScore() != null) { // 为了避免同个提交时间的重复计算
+                    if(score != null) {
+                        oiContestRankVo.setTotalScore(oiContestRankVo.getTotalScore() - score + contestRecord.getScore());
+                    } else {
+                        oiContestRankVo.setTotalScore(oiContestRankVo.getTotalScore() + contestRecord.getScore());
+                    }
+                }
+                submissionInfo.put(contestRecord.getDisplayId(), contestRecord.getScore());
+            }
+        }
+
+        for (OIContestRankVO oiContestRankVO: result) {
+            HashMap<String, Integer> pidMapTime = uidMapTime.get(oiContestRankVO.getUid());
+            int sumTime = 0;
+            if(pidMapTime != null) {
+                for(String key: pidMapTime.keySet()) {
+                    Integer time = pidMapTime.get(key);
+                    sumTime += time == null?0:time;
+                }
+            }
+            oiContestRankVO.setTimeInfo(pidMapTime);
+            oiContestRankVO.setTotalTime(sumTime);
+        }
+
+        // 根据总得分进行降序,再根据总时耗升序排序
+        List<OIContestRankVO> orderResultList = result.stream()
+                .sorted(Comparator.comparing(OIContestRankVO::getTotalScore, Comparator.reverseOrder())
+                        .thenComparing(OIContestRankVO::getTotalTime, Comparator.naturalOrder()))
+                .collect(Collectors.toList());
+        return orderResultList;
     }
 }

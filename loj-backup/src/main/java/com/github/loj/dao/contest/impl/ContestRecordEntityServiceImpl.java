@@ -8,8 +8,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.loj.dao.contest.ContestRecordEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.mapper.ContestRecordMapper;
+import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.vo.ContestRecordVO;
+import com.github.loj.utils.Constants;
+import com.github.loj.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,6 +31,9 @@ public class ContestRecordEntityServiceImpl extends ServiceImpl<ContestRecordMap
 
     @Autowired
     private UserInfoEntityService userInfoEntityService;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     @Override
     public List<ContestRecordVO> getACMContestRecord(String contestCreatorUid, Long cid, List<Integer> externalCidList, Date startTime) {
@@ -92,5 +98,59 @@ public class ContestRecordEntityServiceImpl extends ServiceImpl<ContestRecordMap
         page.setRecords(pageList);
 
         return page;
+    }
+
+    @Override
+    public List<ContestRecordVO> getOIContestRecord(Contest contest, List<Integer> externalCidList, Boolean isOpenSealRank) {
+        String oiRankScoreType = contest.getOiRankScoreType();
+        Long cid = contest.getId();
+        String contestCreatorUid = contest.getUid();
+
+        if(!isOpenSealRank) {
+            // 封榜解除 获取最新数据
+            // 获取每个用户每道题最近一次提交
+            Long endTime = contest.getDuration();
+            if(Objects.equals(Constants.Contest.OI_RANK_RECENT_SCORE.getName(),oiRankScoreType)) {
+                return contestRecordMapper.getOIContestRecordByRecentSubmission(cid,
+                        externalCidList,
+                        contestCreatorUid,
+                        false,
+                        null,
+                        endTime);
+            } else {
+                return contestRecordMapper.getOIContestRecordByHighestSubmission(cid,
+                        externalCidList,
+                        contestCreatorUid,
+                        false,
+                        null,
+                        endTime);
+            }
+        } else {
+            String key = Constants.Contest.OI_CONTEST_RANK_CACHE.getName() +"_" + oiRankScoreType + "_" + cid;
+            List<ContestRecordVO> oiContestRecordList = (List<ContestRecordVO>) redisUtils.get(key);
+            if(oiContestRecordList == null) {
+                Long sealTime = DateUtil.between(contest.getStartTime(), contest.getSealRankTime(), DateUnit.SECOND);
+                if(sealTime > 0) {
+                    sealTime --;
+                }
+                if(Objects.equals(Constants.Contest.OI_RANK_RECENT_SCORE.getName(), oiRankScoreType)) {
+                    oiContestRecordList = contestRecordMapper.getOIContestRecordByRecentSubmission(cid,
+                            externalCidList,
+                            contestCreatorUid,
+                            true,
+                            sealTime,
+                            null);
+                } else {
+                    oiContestRecordList = contestRecordMapper.getOIContestRecordByHighestSubmission(cid,
+                            externalCidList,
+                            contestCreatorUid,
+                            true,
+                            sealTime,
+                            null);
+                }
+                redisUtils.set(key, oiContestRecordList, 2 * 3600);
+            }
+            return oiContestRecordList;
+        }
     }
 }
