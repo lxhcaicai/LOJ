@@ -1,8 +1,10 @@
 package com.github.loj.service.msg.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.msg.UserMessageManager;
+import com.github.loj.pojo.vo.UserMsgVO;
 import com.github.loj.pojo.vo.UserUnreadMsgCountVO;
 import com.github.loj.service.msg.UserMessageService;
 import org.springframework.stereotype.Service;
@@ -32,5 +34,10 @@ public class UserMessageServiceImpl implements UserMessageService {
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }
+    }
+
+    @Override
+    public CommonResult<IPage<UserMsgVO>> getCommentMsg(Integer limit, Integer currentPage) {
+        return CommonResult.successResponse(userMessageManager.getCommentMsg(limit, currentPage));
     }
 }

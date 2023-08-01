@@ -22,7 +22,7 @@ public class UserMsgVO {
     private String action;
 
     @ApiModelProperty(value = "消息来源id，讨论id或比赛id")
-    private String sourceId;
+    private Integer sourceId;
 
     @ApiModelProperty(value = "事件源类型：'Discussion'、'Contest'等")
     private String sourceType;

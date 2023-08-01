@@ -1,13 +1,12 @@
 package com.github.loj.controller.msg;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.vo.UserMsgVO;
 import com.github.loj.pojo.vo.UserUnreadMsgCountVO;
 import com.github.loj.service.msg.UserMessageService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -44,6 +43,19 @@ public class UserMessageController {
     public CommonResult<Void> cleanMsg(@RequestParam("type") String type,
                                        @RequestParam(value = "id", required = false) Long id) {
         return userMessageService.cleanMsg(type, id);
+    }
+
+    /**
+     * 获取评论我的讨论贴的消息，按未读的在前、时间晚的在前进行排序
+     * @param limit
+     * @param currentPage
+     * @return
+     */
+    @GetMapping("/comment")
+    @RequiresAuthentication
+    public CommonResult<IPage<UserMsgVO>> getCommentMsg(@RequestParam(value = "limit", required = false) Integer limit,
+                                                        @RequestParam(value = "currentPage", required = false) Integer currentPage) {
+        return userMessageService.getCommentMsg(limit, currentPage);
     }
 
 }
