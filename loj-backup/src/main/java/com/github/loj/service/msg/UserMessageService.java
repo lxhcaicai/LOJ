@@ -17,4 +17,6 @@ public interface UserMessageService {
 
     public CommonResult<IPage<UserMsgVO>> getCommentMsg(Integer limit, Integer currentPage);
 
+    public CommonResult<IPage<UserMsgVO>> getReplyMsg(Integer limit, Integer currentPage);
+
 }

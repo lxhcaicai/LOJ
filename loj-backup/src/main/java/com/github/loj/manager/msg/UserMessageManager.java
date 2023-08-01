@@ -235,6 +235,20 @@ public class UserMessageManager {
         return userMsgList;
     }
 
+    public IPage<UserMsgVO> getReplyMsg(Integer limit, Integer currentPage) {
+        // 页数，每页题数若为空，设置默认值
+        if(currentPage == null || currentPage < 1) {
+            currentPage = 1;
+        }
+        if(limit == null || limit < 1) {
+            limit = 5;
+        }
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        return getUserMsgList(userRolesVo.getUid(), "Reply", limit, currentPage);
+    }
+
 
     @Async
     public void updateUserMsgRead(IPage<UserMsgVO> userMsgList) {

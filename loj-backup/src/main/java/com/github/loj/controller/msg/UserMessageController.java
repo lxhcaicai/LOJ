@@ -58,4 +58,10 @@ public class UserMessageController {
         return userMessageService.getCommentMsg(limit, currentPage);
     }
 
+    @GetMapping("reply")
+    public CommonResult<IPage<UserMsgVO>> getReplyMsg(@RequestParam(value = "limit", required = false) Integer limit,
+                                                      @RequestParam(value = "currentPage", required = false) Integer currentPage) {
+        return userMessageService.getReplyMsg(limit, currentPage);
+    }
+
 }
