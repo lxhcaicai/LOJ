@@ -59,9 +59,22 @@ public class UserMessageController {
     }
 
     @GetMapping("reply")
+    @RequiresAuthentication
     public CommonResult<IPage<UserMsgVO>> getReplyMsg(@RequestParam(value = "limit", required = false) Integer limit,
                                                       @RequestParam(value = "currentPage", required = false) Integer currentPage) {
         return userMessageService.getReplyMsg(limit, currentPage);
     }
 
+    /**
+     * 获取点赞我的的消息，按未读的在前、时间晚的在前进行排序
+     * @param limit
+     * @param currentPage
+     * @return
+     */
+    @GetMapping("/like")
+    @RequiresAuthentication
+    public CommonResult<IPage<UserMsgVO>> getLikeMsg(@RequestParam(value = "limit", required = false) Integer limit,
+                                                     @RequestParam(value = "currentPage", required = false) Integer currentPage) {
+        return userMessageService.getLikeMsg(limit, currentPage);
+    }
 }
