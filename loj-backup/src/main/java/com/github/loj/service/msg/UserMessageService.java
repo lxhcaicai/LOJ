@@ -11,4 +11,6 @@ public interface UserMessageService {
 
     public CommonResult<UserUnreadMsgCountVO> getUnreadMsgCount();
 
+    public CommonResult<Void> cleanMsg(String type, Long id);
+
 }

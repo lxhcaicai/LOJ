@@ -1,5 +1,6 @@
 package com.github.loj.service.msg.impl;
 
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.msg.UserMessageManager;
 import com.github.loj.pojo.vo.UserUnreadMsgCountVO;
@@ -21,5 +22,15 @@ public class UserMessageServiceImpl implements UserMessageService {
     @Override
     public CommonResult<UserUnreadMsgCountVO> getUnreadMsgCount() {
         return CommonResult.successResponse(userMessageManager.getUnreadMsgCount());
+    }
+
+    @Override
+    public CommonResult<Void> cleanMsg(String type, Long id) {
+        try {
+            userMessageManager.cleanMsg(type, id);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }
