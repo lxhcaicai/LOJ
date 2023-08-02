@@ -37,4 +37,12 @@ public class AdminNoticeController {
 
         return adminNoticeService.addSysNotice(adminSysNotice);
     }
+
+    @PutMapping("/notice")
+    @RequiresAuthentication
+    @RequiresRoles("root")
+    public CommonResult<Void> updateSysNotice(@RequestBody AdminSysNotice adminSysNotice) {
+
+        return adminNoticeService.updateSysNotice(adminSysNotice);
+    }
 }

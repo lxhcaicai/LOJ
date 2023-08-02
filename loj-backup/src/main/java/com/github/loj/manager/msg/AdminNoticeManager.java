@@ -55,7 +55,7 @@ public class AdminNoticeManager {
         }
     }
 
-    public void updatSysNotice(AdminSysNotice adminSysNotice) throws StatusFailException {
+    public void updateSysNotice(AdminSysNotice adminSysNotice) throws StatusFailException {
         boolean isOk = adminSysNoticeEntityService.saveOrUpdate(adminSysNotice);
         if(!isOk) {
             throw new StatusFailException("更新失败");
