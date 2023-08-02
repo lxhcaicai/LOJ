@@ -21,7 +21,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public CommonResult<Session> getRecentSession() {
-        return null;
+        return CommonResult.successResponse(dashboardManager.getRecentSession());
     }
 
     @Override
