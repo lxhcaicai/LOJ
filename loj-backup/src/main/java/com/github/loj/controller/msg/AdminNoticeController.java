@@ -45,4 +45,12 @@ public class AdminNoticeController {
 
         return adminNoticeService.updateSysNotice(adminSysNotice);
     }
+
+    @DeleteMapping("/notice")
+    @RequiresAuthentication
+    @RequiresRoles("root")
+    public CommonResult<Void> deleteSysNotice(@RequestParam("id") Long id) {
+        return adminNoticeService.deleteSysNotice(id);
+    }
+
 }

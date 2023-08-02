@@ -11,4 +11,6 @@ public interface AdminNoticeService {
     public CommonResult<Void> addSysNotice(AdminSysNotice adminSysNotice);
 
     public CommonResult<Void> updateSysNotice(AdminSysNotice adminSysNotice);
+
+    public CommonResult<Void> deleteSysNotice(Long id);
 }

@@ -41,4 +41,14 @@ public class AdminNoticeServiceImpl implements AdminNoticeService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteSysNotice(Long id) {
+        try {
+            adminNoticeManager.deleteSysNotice(id);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
