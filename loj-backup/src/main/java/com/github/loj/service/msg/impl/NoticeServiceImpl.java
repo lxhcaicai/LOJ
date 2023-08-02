@@ -18,4 +18,9 @@ public class NoticeServiceImpl implements NoticeService {
     public CommonResult<IPage<SysMsgVO>> getSysNotice(Integer limit, Integer currentPage) {
         return CommonResult.successResponse(noticeManager.getSysNotice(limit, currentPage));
     }
+
+    @Override
+    public CommonResult<IPage<SysMsgVO>> getMineNotice(Integer limit, Integer currentPage) {
+        return CommonResult.successResponse(noticeManager.getMineNotice(limit, currentPage));
+    }
 }

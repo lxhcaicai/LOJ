@@ -25,4 +25,11 @@ public class NoticeController {
                                                       @RequestParam(value = "currentPage", required = false) Integer currentPage) {
         return noticeService.getSysNotice(limit, currentPage);
     }
+
+    @GetMapping(value = "/mine")
+    @RequiresAuthentication
+    public CommonResult<IPage<SysMsgVO>> getMineNotice(@RequestParam(value = "limit",required = false)  Integer limit,
+                                                       @RequestParam(value = "currentPage", required = false) Integer currentPage) {
+        return noticeService.getMineNotice(limit,currentPage);
+    }
 }

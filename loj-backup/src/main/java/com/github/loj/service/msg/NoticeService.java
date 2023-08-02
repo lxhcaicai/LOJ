@@ -6,4 +6,6 @@ import com.github.loj.pojo.vo.SysMsgVO;
 
 public interface NoticeService {
     public CommonResult<IPage<SysMsgVO>> getSysNotice(Integer limit, Integer currentPage);
+
+    public CommonResult<IPage<SysMsgVO>> getMineNotice(Integer limit,Integer currentPage);
 }
