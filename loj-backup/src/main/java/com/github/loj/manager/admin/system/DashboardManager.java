@@ -1,6 +1,9 @@
 package com.github.loj.manager.admin.system;
 
+import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.user.SessionEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.pojo.entity.user.Session;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxhcaicai
@@ -23,6 +27,12 @@ public class DashboardManager {
     @Autowired
     private SessionEntityService sessionEntityService;
 
+    @Autowired
+    private ContestEntityService contestEntityService;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
+
     public Session getRecentSession() {
         // 需要获取一下该token对应用户的数据
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
@@ -33,5 +43,15 @@ public class DashboardManager {
         } else {
             return sessionList.get(0);
         }
+    }
+
+    public Map<Object,Object> getDashboardInfo() {
+        int userNum = userInfoEntityService.count();
+        int recentContestNum =  contestEntityService.getWithinNext14DaysContests().size();
+        int todayJudgeNum = judgeEntityService.getTodayJudgeNum();
+        return MapUtil.builder()
+                .put("userNum", userNum)
+                .put("recentContestNum", recentContestNum)
+                .put("todayJudgeNum", todayJudgeNum).map();
     }
 }

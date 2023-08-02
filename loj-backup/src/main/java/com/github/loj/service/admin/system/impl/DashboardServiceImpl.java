@@ -26,6 +26,6 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public CommonResult<Map<Object, Object>> getDashboardInfo() {
-        return null;
+        return CommonResult.successResponse(dashboardManager.getDashboardInfo());
     }
 }

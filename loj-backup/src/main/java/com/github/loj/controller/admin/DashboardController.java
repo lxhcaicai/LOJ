@@ -7,9 +7,12 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 /**
  * @author lxhcaicai
@@ -27,5 +30,13 @@ public class DashboardController {
     @RequiresRoles(value = {"root","admin","problem_admin"}, logical = Logical.OR)
     public CommonResult<Session> getRecentSession() {
         return dashboardService.getRecentSession();
+    }
+
+    @GetMapping("/get-dashboard-info")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical = Logical.OR)
+    public CommonResult<Map<Object,Object>> getDashboardInfo() {
+
+        return dashboardService.getDashboardInfo();
     }
 }

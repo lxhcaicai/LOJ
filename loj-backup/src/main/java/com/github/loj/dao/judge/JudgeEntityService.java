@@ -53,4 +53,6 @@ public interface JudgeEntityService extends IService<Judge> {
                                           List<String> adminList);
 
     public List<ContestScrollBoardSubmissionVO> getContestScrollBoardSubmission(Long cid, List<String> removeUidList);
+
+    public int getTodayJudgeNum();
 }

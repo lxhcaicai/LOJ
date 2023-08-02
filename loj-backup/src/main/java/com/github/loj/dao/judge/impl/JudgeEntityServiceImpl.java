@@ -109,6 +109,11 @@ public class JudgeEntityServiceImpl extends ServiceImpl<JudgeMapper, Judge> impl
         return judgeMapper.getContestScrollBoardSubmission(cid, removeUidList);
     }
 
+    @Override
+    public int getTodayJudgeNum() {
+        return judgeMapper.getTodayJudgeNum();
+    }
+
     private String getProblemTitleByPid(Long pid, List<Problem> problemList, HashMap<Long,String> storeMap) {
         String title = storeMap.get(pid);
         if(title != null) {
