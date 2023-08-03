@@ -5,6 +5,7 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.discussion.DiscussionEntityService;
 import com.github.loj.dao.discussion.DiscussionReportEntityService;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.DiscussionReport;
 import com.github.loj.pojo.vo.DiscussionReportVO;
 import com.github.loj.shiro.AccountProfile;
 import lombok.extern.slf4j.Slf4j;
@@ -43,5 +44,12 @@ public class AdminDiscussionManager {
 
     public IPage<DiscussionReportVO> getDiscussionReport(Integer limit, Integer currentPage) {
         return discussionReportEntityService.getDiscussionReportList(limit, currentPage);
+    }
+
+    public void updateDiscussionReport(DiscussionReport discussionReport) throws StatusFailException {
+        boolean isOk = discussionReportEntityService.updateById(discussionReport);
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
     }
 }

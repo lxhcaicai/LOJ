@@ -3,6 +3,7 @@ package com.github.loj.controller.admin;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.entity.discussion.DiscussionReport;
 import com.github.loj.pojo.vo.DiscussionReportVO;
 import com.github.loj.service.admin.discussion.AdminDiscussionService;
 import org.apache.shiro.authz.annotation.Logical;
@@ -39,5 +40,12 @@ public class AdminDiscussionController {
     public CommonResult<IPage<DiscussionReportVO>> getDiscussionReport(@RequestParam(value = "limit", defaultValue = "10") Integer limit,
                                                                        @RequestParam(value = "currentPage", defaultValue = "1") Integer currentPage) {
         return adminDiscussionService.getDiscussionReport(limit, currentPage);
+    }
+
+    @PutMapping("/discussion-report")
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical = Logical.OR)
+    @RequiresAuthentication
+    public CommonResult<Void> updateDiscussionReport(@RequestBody DiscussionReport discussionReport) {
+        return adminDiscussionService.updateDiscussionReport(discussionReport);
     }
 }
