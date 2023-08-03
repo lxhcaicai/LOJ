@@ -1,8 +1,11 @@
 package com.github.loj.manager.admin.discussion;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.discussion.DiscussionEntityService;
+import com.github.loj.dao.discussion.DiscussionReportEntityService;
 import com.github.loj.pojo.entity.discussion.Discussion;
+import com.github.loj.pojo.vo.DiscussionReportVO;
 import com.github.loj.shiro.AccountProfile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -17,6 +20,9 @@ public class AdminDiscussionManager {
 
     @Autowired
     private DiscussionEntityService discussionEntityService;
+
+    @Autowired
+    private DiscussionReportEntityService discussionReportEntityService;
 
     public void updateDiscussion(Discussion discussion) throws StatusFailException {
         boolean isOk = discussionEntityService.updateById(discussion);
@@ -33,5 +39,9 @@ public class AdminDiscussionManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         log.info("[{}],[{}],didList:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_Discussion", "Delete", didList, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
+
+    public IPage<DiscussionReportVO> getDiscussionReport(Integer limit, Integer currentPage) {
+        return discussionReportEntityService.getDiscussionReportList(limit, currentPage);
     }
 }
