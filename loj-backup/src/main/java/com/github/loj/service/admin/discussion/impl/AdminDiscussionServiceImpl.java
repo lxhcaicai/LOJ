@@ -9,6 +9,8 @@ import com.github.loj.service.admin.discussion.AdminDiscussionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AdminDiscussionServiceImpl implements AdminDiscussionService {
 
@@ -19,6 +21,16 @@ public class AdminDiscussionServiceImpl implements AdminDiscussionService {
     public CommonResult<Void> updateDiscussion(Discussion discussion) {
         try {
             adminDiscussionManager.updateDiscussion(discussion);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> removeDiscussion(List<Integer> didList) {
+        try {
+            adminDiscussionManager.removeDiscussion(didList);
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
