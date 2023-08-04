@@ -34,4 +34,11 @@ public class AdminTagManager {
         }
         return tag;
     }
+
+    public void updateTag(Tag tag) throws StatusFailException {
+        boolean isOk = tagEntityService.updateById(tag);
+        if(!isOk) {
+            throw new StatusFailException("更新失败");
+        }
+    }
 }

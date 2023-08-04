@@ -5,4 +5,6 @@ import com.github.loj.pojo.entity.problem.Tag;
 
 public interface AdminTagService {
     public CommonResult<Tag> addTag(Tag tag);
+
+    public CommonResult<Void> updateTag(Tag tag);
 }
