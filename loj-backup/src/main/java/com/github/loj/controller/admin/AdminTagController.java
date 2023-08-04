@@ -31,4 +31,11 @@ public class AdminTagController {
         return adminTagService.updateTag(tag);
     }
 
+    @DeleteMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","problem_admin"},logical = Logical.OR)
+    public CommonResult<Void> deleteTag(@RequestParam("tid") Long tid) {
+        return adminTagService.deleteTag(tid);
+    }
+
 }

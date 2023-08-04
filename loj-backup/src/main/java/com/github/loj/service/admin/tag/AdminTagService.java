@@ -7,4 +7,6 @@ public interface AdminTagService {
     public CommonResult<Tag> addTag(Tag tag);
 
     public CommonResult<Void> updateTag(Tag tag);
+
+    public CommonResult<Void> deleteTag(Long tid);
 }

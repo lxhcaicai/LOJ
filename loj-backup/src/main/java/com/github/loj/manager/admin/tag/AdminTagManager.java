@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.problem.TagEntityService;
 import com.github.loj.pojo.entity.problem.Tag;
+import com.github.loj.shiro.AccountProfile;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,5 +42,15 @@ public class AdminTagManager {
         if(!isOk) {
             throw new StatusFailException("更新失败");
         }
+    }
+
+    public void deleteTag(Long tid) throws StatusFailException {
+        boolean isOk = tagEntityService.removeById(tid);
+        if(!isOk) {
+            throw new StatusFailException("删除失败");
+        }
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],tid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Tag", "Delete", tid, userRolesVo.getUid(), userRolesVo.getUsername());
     }
 }
