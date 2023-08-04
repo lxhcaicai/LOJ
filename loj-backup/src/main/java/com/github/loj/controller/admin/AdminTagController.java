@@ -47,4 +47,11 @@ public class AdminTagController {
         return adminTagService.getTagClassification(oj);
     }
 
+    @PostMapping("/classification")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","problem_admin"},logical = Logical.OR)
+    public CommonResult<TagClassification> addTagClassification(@RequestBody TagClassification tagClassification) {
+        return adminTagService.addTagClassification(tagClassification);
+    }
+
 }

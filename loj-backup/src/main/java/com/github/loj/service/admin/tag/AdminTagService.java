@@ -14,4 +14,6 @@ public interface AdminTagService {
     public CommonResult<Void> deleteTag(Long tid);
 
     public CommonResult<List<TagClassification>> getTagClassification(String oj);
+
+    public CommonResult<TagClassification> addTagClassification(TagClassification tagClassification);
 }

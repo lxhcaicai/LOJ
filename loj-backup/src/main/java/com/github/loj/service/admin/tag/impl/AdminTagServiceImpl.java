@@ -49,4 +49,13 @@ public class AdminTagServiceImpl implements AdminTagService {
     public CommonResult<List<TagClassification>> getTagClassification(String oj) {
         return CommonResult.successResponse(adminTagManager.getTagClassification(oj));
     }
+
+    @Override
+    public CommonResult<TagClassification> addTagClassification(TagClassification tagClassification) {
+        try {
+            return CommonResult.successResponse(adminTagManager.addTagClassification(tagClassification));
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
