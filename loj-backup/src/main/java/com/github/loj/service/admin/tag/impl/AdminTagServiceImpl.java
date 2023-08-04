@@ -4,9 +4,12 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.admin.tag.AdminTagManager;
 import com.github.loj.pojo.entity.problem.Tag;
+import com.github.loj.pojo.entity.problem.TagClassification;
 import com.github.loj.service.admin.tag.AdminTagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AdminTagServiceImpl implements AdminTagService {
@@ -40,5 +43,10 @@ public class AdminTagServiceImpl implements AdminTagService {
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }
+    }
+
+    @Override
+    public CommonResult<List<TagClassification>> getTagClassification(String oj) {
+        return CommonResult.successResponse(adminTagManager.getTagClassification(oj));
     }
 }

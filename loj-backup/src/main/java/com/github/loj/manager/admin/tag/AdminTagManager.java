@@ -2,13 +2,17 @@ package com.github.loj.manager.admin.tag;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.dao.problem.TagClassificationEntityService;
 import com.github.loj.dao.problem.TagEntityService;
 import com.github.loj.pojo.entity.problem.Tag;
+import com.github.loj.pojo.entity.problem.TagClassification;
 import com.github.loj.shiro.AccountProfile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Slf4j(topic = "loj")
@@ -16,6 +20,9 @@ public class AdminTagManager {
 
     @Autowired
     private TagEntityService tagEntityService;
+
+    @Autowired
+    private TagClassificationEntityService tagClassificationEntityService;
 
     public Tag addTag(Tag tag) throws StatusFailException {
 
@@ -52,5 +59,16 @@ public class AdminTagManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         log.info("[{}],[{}],tid:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_Tag", "Delete", tid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
+
+    public List<TagClassification> getTagClassification(String oj) {
+        oj = oj.toUpperCase();
+        if(oj.equals("ALL")) {
+            return tagClassificationEntityService.list();
+        } else {
+            QueryWrapper<TagClassification> tagClassificationQueryWrapper = new QueryWrapper<>();
+            tagClassificationQueryWrapper.eq("oj",oj).orderByAsc("`rank`");
+            return tagClassificationEntityService.list(tagClassificationQueryWrapper);
+        }
     }
 }
