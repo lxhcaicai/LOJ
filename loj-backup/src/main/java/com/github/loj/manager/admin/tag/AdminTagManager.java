@@ -94,4 +94,14 @@ public class AdminTagManager {
             throw new StatusFailException("更新失败");
         }
     }
+
+    public void deleteTagClassification(Long tcid) throws StatusFailException {
+        boolean isOk = tagClassificationEntityService.removeById(tcid);
+        if(!isOk) {
+            throw new StatusFailException("删除失败");
+        }
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],tcid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Tag_Classification", "Delete", tcid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
 }

@@ -18,4 +18,6 @@ public interface AdminTagService {
     public CommonResult<TagClassification> addTagClassification(TagClassification tagClassification);
 
     public CommonResult<Void> updateTagClassification(TagClassification tagClassification);
+
+    public CommonResult<Void> deleteTagClassification(Long tcid);
 }

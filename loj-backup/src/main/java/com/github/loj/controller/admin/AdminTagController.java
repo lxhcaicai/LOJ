@@ -61,4 +61,11 @@ public class AdminTagController {
         return adminTagService.updateTagClassification(tagClassification);
     }
 
+    @DeleteMapping("/classification")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","problem_admin"},logical = Logical.OR)
+    public CommonResult<Void> deleteTagClassification(@RequestParam("tid") Long tcid) {
+        return adminTagService.deleteTagClassification(tcid);
+    }
+
 }

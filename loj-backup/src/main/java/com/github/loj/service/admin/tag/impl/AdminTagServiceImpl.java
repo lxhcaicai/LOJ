@@ -68,4 +68,14 @@ public class AdminTagServiceImpl implements AdminTagService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteTagClassification(Long tcid) {
+        try {
+            adminTagManager.deleteTagClassification(tcid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
