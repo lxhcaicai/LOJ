@@ -58,4 +58,14 @@ public class AdminTagServiceImpl implements AdminTagService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> updateTagClassification(TagClassification tagClassification) {
+        try {
+            adminTagManager.updateTagClassification(tagClassification);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

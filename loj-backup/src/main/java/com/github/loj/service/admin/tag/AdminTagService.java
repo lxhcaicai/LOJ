@@ -16,4 +16,6 @@ public interface AdminTagService {
     public CommonResult<List<TagClassification>> getTagClassification(String oj);
 
     public CommonResult<TagClassification> addTagClassification(TagClassification tagClassification);
+
+    public CommonResult<Void> updateTagClassification(TagClassification tagClassification);
 }

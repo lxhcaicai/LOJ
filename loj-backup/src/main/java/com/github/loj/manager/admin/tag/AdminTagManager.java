@@ -87,4 +87,11 @@ public class AdminTagManager {
         }
         return tagClassification;
     }
+
+    public void updateTagClassification(TagClassification tagClassification) throws StatusFailException {
+        boolean isOk = tagClassificationEntityService.updateById(tagClassification);
+        if(!isOk) {
+            throw new StatusFailException("更新失败");
+        }
+    }
 }
