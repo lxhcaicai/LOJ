@@ -1,15 +1,19 @@
 package com.github.loj.manager.admin.contest;
 
+import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
@@ -19,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,6 +42,9 @@ public class AdminContestProblemManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
 
 
     public HashMap<String, Object> getProblemList(Integer limit, Integer currentPage, String keyword,
@@ -146,6 +154,37 @@ public class AdminContestProblemManager {
             return problem;
         } else {
             throw new StatusFailException("查询失败！");
+        }
+    }
+
+    public void deleteProblem(Long pid, Long cid) {
+        //  比赛id不为null，表示就是从比赛列表移除而已
+        if(cid != null) {
+            QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+            contestProblemQueryWrapper.eq("cid", cid).eq("pid", pid);
+            contestProblemEntityService.remove(contestProblemQueryWrapper);
+
+            // 把该题目在比赛的提交全部删掉
+            UpdateWrapper<Judge> judgeUpdateWrapper = new UpdateWrapper<>();
+            judgeUpdateWrapper.eq("cid", cid).eq("pid", pid);
+            judgeEntityService.remove(judgeUpdateWrapper);
+
+            // 获取当前登录的用户
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+            log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Contest", "Remove_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
+        } else {
+            /**
+             *  problem的id为其他表的外键的表中的对应数据都会被一起删除！
+             */
+            problemEntityService.removeById(pid);
+            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+
+            // 获取当前登录的用户
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+            log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Contest", "Delete_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
         }
     }
 }

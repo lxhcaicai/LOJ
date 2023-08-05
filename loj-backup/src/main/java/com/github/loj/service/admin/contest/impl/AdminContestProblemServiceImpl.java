@@ -36,4 +36,10 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteProblem(Long pid, Long cid) {
+        adminContestProblemManager.deleteProblem(pid, cid);
+        return CommonResult.successResponse();
+    }
 }

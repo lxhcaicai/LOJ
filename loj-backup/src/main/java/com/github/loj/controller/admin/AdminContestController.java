@@ -112,4 +112,13 @@ public class AdminContestController {
     public CommonResult<Problem> getProblem(@RequestParam("pid") Long pid, HttpServletRequest request) {
         return adminContestProblemService.getProblem(pid);
     }
+
+    @DeleteMapping("/problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","problem_admin"}, logical =  Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Void> deleteProblem(@RequestParam("pid") Long pid,
+                                            @RequestParam(value = "cid", required = false) Long cid) {
+        return adminContestProblemService.deleteProblem(pid, cid);
+    }
 }

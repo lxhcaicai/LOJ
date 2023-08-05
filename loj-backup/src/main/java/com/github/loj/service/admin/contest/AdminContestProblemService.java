@@ -11,4 +11,6 @@ public interface AdminContestProblemService {
                                                                Long cid, Integer problemType, String oj);
 
     public CommonResult<Problem> getProblem(Long pid);
+
+    public CommonResult<Void> deleteProblem(Long pid, Long cid);
 }
