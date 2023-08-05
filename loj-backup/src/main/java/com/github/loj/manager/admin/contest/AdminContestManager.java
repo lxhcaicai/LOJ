@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.common.exception.StatusSystemErrorException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestRegisterEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
@@ -181,5 +182,22 @@ public class AdminContestManager {
         } else {
             throw new StatusFailException("修改失败");
         }
+    }
+
+    public void cloneContest(Long cid) throws StatusSystemErrorException {
+        Contest contest = contestEntityService.getById(cid);
+        if(contest == null) {
+            throw new StatusSystemErrorException("该比赛不存在，无法克隆！");
+        }
+        // 获取当前登录的用户
+        UserRolesVO userRolesVO = (UserRolesVO) SecurityUtils.getSubject().getSession().getAttribute("userInfo");
+        contest.setUid(userRolesVO.getUid())
+                .setAuthor(userRolesVO.getUsername())
+                .setSource(cid.intValue())
+                .setId(null)
+                .setGmtCreate(null)
+                .setGmtModified(null);
+        contest.setTitle(contest.getTitle() + "[Cloned]");
+        contestEntityService.save(contest);
     }
 }

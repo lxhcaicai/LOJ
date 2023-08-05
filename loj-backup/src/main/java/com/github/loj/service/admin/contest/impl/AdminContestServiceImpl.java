@@ -3,6 +3,7 @@ package com.github.loj.service.admin.contest.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.common.exception.StatusSystemErrorException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.admin.contest.AdminContestManager;
@@ -65,6 +66,16 @@ public class AdminContestServiceImpl implements AdminContestService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> cloneContest(Long cid) {
+        try {
+            adminContestManager.cloneContest(cid);
+            return CommonResult.successResponse();
+        } catch (StatusSystemErrorException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
         }
     }
 }

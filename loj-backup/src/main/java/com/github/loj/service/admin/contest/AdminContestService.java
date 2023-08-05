@@ -17,4 +17,6 @@ public interface AdminContestService {
 
     public CommonResult<Void> updateContest(AdminContestVO adminContestVO);
 
+    public CommonResult<Void> cloneContest(Long cid);
+
 }

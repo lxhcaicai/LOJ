@@ -63,4 +63,11 @@ public class AdminContestController {
     public CommonResult<Void> updateContest(@RequestBody AdminContestVO adminContestVO) {
         return adminContestService.updateContest(adminContestVO);
     }
+
+    @GetMapping("/clone")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    public CommonResult<Void> cloneContest(@RequestParam("cid") Long cid) {
+        return adminContestService.cloneContest(cid);
+    }
 }
