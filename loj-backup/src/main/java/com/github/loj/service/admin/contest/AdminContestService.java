@@ -11,4 +11,6 @@ public interface AdminContestService {
 
     public CommonResult<AdminContestVO> getContest(Long cid);
 
+    public CommonResult<Void> deleteContest(Long cid);
+
 }

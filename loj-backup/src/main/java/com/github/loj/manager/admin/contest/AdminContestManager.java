@@ -13,12 +13,14 @@ import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.pojo.vo.ContestAwardConfigVO;
 import com.github.loj.pojo.vo.UserRolesVO;
+import com.github.loj.shiro.AccountProfile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.ServletException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,5 +92,16 @@ public class AdminContestManager {
             }
         }
         return adminContestVO;
+    }
+
+    public void  deleteContest(Long cid) throws StatusFailException {
+        boolean isOk = contestEntityService.removeById(cid);
+
+        if(!isOk) {
+            throw new StatusFailException("删除失败");
+        }
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],cid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Contest", "Delete", cid, userRolesVo.getUid(), userRolesVo.getUsername());
     }
 }

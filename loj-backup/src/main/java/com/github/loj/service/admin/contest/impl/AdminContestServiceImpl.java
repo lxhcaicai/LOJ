@@ -35,4 +35,14 @@ public class AdminContestServiceImpl implements AdminContestService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteContest(Long cid) {
+        try {
+            adminContestManager.deleteContest(cid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

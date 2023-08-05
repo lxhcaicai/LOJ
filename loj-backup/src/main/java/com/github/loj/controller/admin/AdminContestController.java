@@ -9,10 +9,7 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/contest")
@@ -36,5 +33,17 @@ public class AdminContestController {
     @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
     public CommonResult<AdminContestVO> getContest(@RequestParam("cid") Long cid) {
         return adminContestService.getContest(cid);
+    }
+
+    /**
+     * 只有超级管理员能删除比赛
+     * @param cid
+     * @return
+     */
+    @DeleteMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = "root")
+    public CommonResult<Void> deleteContest(@RequestParam("cid") Long cid) {
+        return adminContestService.deleteContest(cid);
     }
 }
