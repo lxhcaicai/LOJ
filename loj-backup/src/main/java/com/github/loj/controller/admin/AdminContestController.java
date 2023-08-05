@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.vo.AdminContestVO;
+import com.github.loj.service.admin.contest.AdminContestProblemService;
 import com.github.loj.service.admin.contest.AdminContestService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -12,12 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequestMapping("/api/admin/contest")
 public class AdminContestController {
 
     @Autowired
     private AdminContestService adminContestService;
+
+    @Autowired
+    private AdminContestProblemService adminContestProblemService;
 
     @GetMapping("/get-contest-list")
     @RequiresAuthentication
@@ -79,5 +85,22 @@ public class AdminContestController {
                                                    @RequestParam(value = "visible", required = true) Boolean visible) {
 
         return adminContestService.changeContestVisible(cid,uid, visible);
+    }
+
+    /**
+     * 以下为比赛的题目的增删改查操作接口
+     */
+    @GetMapping("/get-problem-list")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<HashMap<String,Object>> getProblemList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                               @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                               @RequestParam(value = "keyword", required = false) String keyword,
+                                                               @RequestParam(value = "cid", required = true) Long cid,
+                                                               @RequestParam(value = "problemType", required = false) Integer problemType,
+                                                               @RequestParam(value = "oj", required = false) String oj) {
+
+        return  adminContestProblemService.getProblemList(limit,currentPage, keyword,cid,problemType,oj);
     }
 }
