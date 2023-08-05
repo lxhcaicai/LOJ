@@ -9,6 +9,7 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -53,5 +54,13 @@ public class AdminContestController {
     public CommonResult<Void> addContest(@RequestBody AdminContestVO adminContestVO) {
 
         return adminContestService.addContest(adminContestVO);
+    }
+
+    @PutMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Void> updateContest(@RequestBody AdminContestVO adminContestVO) {
+        return adminContestService.updateContest(adminContestVO);
     }
 }

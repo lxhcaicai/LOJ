@@ -4,16 +4,20 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.contest.ContestRegisterEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestRegister;
 import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.pojo.vo.ContestAwardConfigVO;
 import com.github.loj.pojo.vo.UserRolesVO;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
 import com.github.loj.validator.ContestValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -21,10 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.ServletException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Slf4j(topic = "loj")
@@ -35,6 +39,9 @@ public class AdminContestManager {
 
     @Autowired
     private ContestValidator contestValidator;
+
+    @Autowired
+    private ContestRegisterEntityService contestRegisterEntityService;
 
     public IPage<Contest> getContestList(Integer limit, Integer currentPage, String keyword) {
 
@@ -132,6 +139,47 @@ public class AdminContestManager {
         boolean isOk = contestEntityService.save(contest);
         if(!isOk) { // 删除失败
             throw new StatusFailException("添加失败");
+        }
+    }
+
+    public void updateContest(AdminContestVO adminContestVO) throws StatusForbiddenException, StatusFailException {
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 是否为超级管理员
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 只有超级管理员和比赛拥有者才能操作
+        if(!isRoot && !userRolesVo.getUid().equals(adminContestVO.getUid())) {
+            throw new StatusForbiddenException("对不起，你无权限操作！");
+        }
+
+        Contest contest = BeanUtil.copyProperties(adminContestVO,Contest.class, "starAccount");
+
+        JSONObject accountJson = new JSONObject();
+        accountJson.set("start_account", adminContestVO.getStarAccount());
+        contest.setStarAccount(accountJson.toString());
+
+        if(adminContestVO.getAwardType() != null && adminContestVO.getAwardType() != 0) {
+            List<ContestAwardConfigVO> awardConfigList = adminContestVO.getAwardConfigList();
+            awardConfigList.sort(Comparator.comparing(ContestAwardConfigVO::getPriority));
+            JSONObject awardConfigJson = new JSONObject();
+            awardConfigJson.set("config", awardConfigList);
+            contest.setAwardConfig(accountJson.toString());
+        }
+
+        Contest oldContest = contestEntityService.getById(contest.getId());
+        boolean isOk = contestEntityService.saveOrUpdate(contest);
+        if(isOk) {
+            if(!contest.getAuth().equals(Constants.Contest.AUTH_PUBLIC.getCode())) {
+                if(!Objects.equals(oldContest.getPwd(), contest.getPwd())) {
+                    UpdateWrapper<ContestRegister> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.eq("cid", contest.getId());
+                    contestRegisterEntityService.remove(updateWrapper);
+                }
+            }
+        } else {
+            throw new StatusFailException("修改失败");
         }
     }
 }

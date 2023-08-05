@@ -15,4 +15,6 @@ public interface AdminContestService {
 
     public CommonResult<Void> addContest(AdminContestVO adminContestVO);
 
+    public CommonResult<Void> updateContest(AdminContestVO adminContestVO);
+
 }
