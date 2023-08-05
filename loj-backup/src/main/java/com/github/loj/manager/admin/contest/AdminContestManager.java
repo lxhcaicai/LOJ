@@ -1,14 +1,26 @@
 package com.github.loj.manager.admin.contest;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.vo.AdminContestVO;
+import com.github.loj.pojo.vo.ContestAwardConfigVO;
+import com.github.loj.pojo.vo.UserRolesVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Slf4j(topic = "loj")
@@ -37,5 +49,46 @@ public class AdminContestManager {
         }
         queryWrapper.eq("is_group", false).orderByAsc("start_time");
         return contestEntityService.page(iPage,queryWrapper);
+    }
+
+    public AdminContestVO getContest(Long cid) throws StatusFailException, StatusForbiddenException {
+
+        Contest contest = contestEntityService.getById(cid);
+        if(contest == null) { // 查询不存在
+            throw new StatusFailException("查询失败：该比赛不存在,请检查参数cid是否准确！");
+        }
+        // 获取当前登录的用户
+        UserRolesVO userRolesVO = (UserRolesVO) SecurityUtils.getSubject().getSession().getAttribute("userInfo");
+
+        // 是否为超级管理员
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 只有超级管理员和比赛拥有者才能操作
+        if(!isRoot && !userRolesVO.getUid().equals(contest.getUid())) {
+            throw new StatusForbiddenException("对不起，你无权限操作！");
+        }
+        AdminContestVO adminContestVO = BeanUtil.copyProperties(contest, AdminContestVO.class, "starAccount");
+        if(StringUtils.isEmpty(contest.getStarAccount())) {
+            adminContestVO.setStarAccount(new ArrayList<>());
+        } else {
+            try {
+                JSONObject jsonObject = JSONUtil.parseObj(contest.getStarAccount());
+                List<String> starAccont = jsonObject.get("star_account", List.class);
+                adminContestVO.setStarAccount(starAccont);
+            } catch (Exception e) {
+                adminContestVO.setStarAccount(new ArrayList<>());
+            }
+        }
+
+        if(contest.getAwardType() != null && contest.getAwardType() != 0) {
+            try {
+                JSONObject jsonObject = JSONUtil.parseObj(contest.getAwardConfig());
+                List<ContestAwardConfigVO> awardConfigList = jsonObject.get("config",List.class);
+                adminContestVO.setAwardConfigList(awardConfigList);
+            } catch (Exception e) {
+                adminContestVO.setAwardConfigList(new ArrayList<>());
+            }
+        }
+        return adminContestVO;
     }
 }

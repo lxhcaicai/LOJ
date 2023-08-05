@@ -3,6 +3,7 @@ package com.github.loj.controller.admin;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.service.admin.contest.AdminContestService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -28,5 +29,12 @@ public class AdminContestController {
                                                        @RequestParam(value = "keyword", required = false) String keyword) {
 
         return adminContestService.getContestList(limit,currentPage,keyword);
+    }
+
+    @GetMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    public CommonResult<AdminContestVO> getContest(@RequestParam("cid") Long cid) {
+        return adminContestService.getContest(cid);
     }
 }
