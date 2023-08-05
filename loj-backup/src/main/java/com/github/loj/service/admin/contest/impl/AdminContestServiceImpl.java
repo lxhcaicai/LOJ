@@ -78,4 +78,16 @@ public class AdminContestServiceImpl implements AdminContestService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
         }
     }
+
+    @Override
+    public CommonResult<Void> changeContestVisible(Long cid, String uid, Boolean visible) {
+        try {
+            adminContestManager.changeContestVisible(cid,uid,visible);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

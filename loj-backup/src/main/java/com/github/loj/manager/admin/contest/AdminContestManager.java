@@ -200,4 +200,24 @@ public class AdminContestManager {
         contest.setTitle(contest.getTitle() + "[Cloned]");
         contestEntityService.save(contest);
     }
+
+    public void changeContestVisible(Long cid, String uid, Boolean visible) throws StatusForbiddenException, StatusFailException {
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        // 是否为超级管理员
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        // 只有超级管理员和比赛拥有者才能操作
+        if(!isRoot && !userRolesVo.getUid().equals(uid)) {
+            throw new StatusForbiddenException("对不起，你无权限操作！");
+        }
+
+        boolean isOk = contestEntityService.saveOrUpdate(new Contest().setId(cid).setVisible(visible));
+
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+        log.info("[{}],[{}],value:[{}],cid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Contest", "Change_Visible", visible, cid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
 }

@@ -19,4 +19,6 @@ public interface AdminContestService {
 
     public CommonResult<Void> cloneContest(Long cid);
 
+    public CommonResult<Void> changeContestVisible(Long cid, String uid, Boolean visible);
+
 }

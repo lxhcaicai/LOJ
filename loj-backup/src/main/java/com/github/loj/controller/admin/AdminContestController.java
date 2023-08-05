@@ -70,4 +70,14 @@ public class AdminContestController {
     public CommonResult<Void> cloneContest(@RequestParam("cid") Long cid) {
         return adminContestService.cloneContest(cid);
     }
+
+    @PutMapping("/change-contest-visible")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    public CommonResult<Void> changeContestVisible(@RequestParam(value = "cid", required = false) Long cid,
+                                                   @RequestParam(value = "uid", required = false) String uid,
+                                                   @RequestParam(value = "visible", required = true) Boolean visible) {
+
+        return adminContestService.changeContestVisible(cid,uid, visible);
+    }
 }
