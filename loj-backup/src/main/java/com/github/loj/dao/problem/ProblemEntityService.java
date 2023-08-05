@@ -2,6 +2,7 @@ package com.github.loj.dao.problem;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.ProblemVO;
 
@@ -15,4 +16,6 @@ public interface ProblemEntityService extends IService<Problem> {
 
     Page<ProblemVO> getProblemList(int limit, int currentPage, Long pid, String title,
                                    Integer difficulty, List<Long> tid, String oj);
+
+    boolean adminAddProblem(ProblemDTO problemDTO);
 }

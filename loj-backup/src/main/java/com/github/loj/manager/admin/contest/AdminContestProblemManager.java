@@ -1,6 +1,7 @@
 package com.github.loj.manager.admin.contest;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -11,6 +12,7 @@ import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.judge.Judge;
@@ -24,10 +26,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -185,6 +184,25 @@ public class AdminContestProblemManager {
 
             log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
                     "Admin_Contest", "Delete_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
+        }
+    }
+
+    public Map<Object,Object> addProblem(ProblemDTO problemDTO) throws StatusFailException {
+
+        QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("problem_id", problemDTO.getProblem().getProblemId().toUpperCase());
+        Problem problem = problemEntityService.getOne(queryWrapper);
+        if(problem != null) {
+            throw new StatusFailException("该题目的Problem ID已存在，请更换！");
+        }
+        // 设置为比赛题目
+        problemDTO.getProblem().setAuth(3);
+        boolean isOk = problemEntityService.adminAddProblem(problemDTO);
+        if(isOk) {// 添加成功
+            // 顺便返回新的题目id，好下一步添加外键操作
+            return MapUtil.builder().put("pid", problemDTO.getProblem().getId()).map();
+        } else {
+            throw new StatusFailException("添加失败");
         }
     }
 }

@@ -5,12 +5,14 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.service.admin.contest.AdminContestProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AdminContestProblemServiceImpl implements AdminContestProblemService {
@@ -41,5 +43,15 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
     public CommonResult<Void> deleteProblem(Long pid, Long cid) {
         adminContestProblemManager.deleteProblem(pid, cid);
         return CommonResult.successResponse();
+    }
+
+    @Override
+    public CommonResult<Map<Object, Object>> addProblem(ProblemDTO problemDTO) {
+        try {
+            Map<Object,Object> problemMap = adminContestProblemManager.addProblem(problemDTO);
+            return CommonResult.successResponse(problemMap);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }

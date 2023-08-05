@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.AdminContestVO;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/contest")
@@ -120,5 +122,13 @@ public class AdminContestController {
     public CommonResult<Void> deleteProblem(@RequestParam("pid") Long pid,
                                             @RequestParam(value = "cid", required = false) Long cid) {
         return adminContestProblemService.deleteProblem(pid, cid);
+    }
+
+    @PostMapping("/problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","problem_admin"}, logical =  Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Map<Object,Object>> addProblem(@RequestBody ProblemDTO problemDTO) {
+        return adminContestProblemService.addProblem(problemDTO);
     }
 }
