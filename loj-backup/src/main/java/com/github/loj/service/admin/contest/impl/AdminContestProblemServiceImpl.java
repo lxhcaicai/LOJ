@@ -1,7 +1,11 @@
 package com.github.loj.service.admin.contest.impl;
 
+import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.service.admin.contest.AdminContestProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,5 +23,17 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
 
         HashMap<String,Object> problemList = adminContestProblemManager.getProblemList(limit,currentPage,keyword, cid,problemType, oj);
         return CommonResult.successResponse(problemList);
+    }
+
+    @Override
+    public CommonResult<Problem> getProblem(Long pid) {
+        try {
+            Problem problem = adminContestProblemManager.getProblem(pid);
+            return CommonResult.successResponse(problem);
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }

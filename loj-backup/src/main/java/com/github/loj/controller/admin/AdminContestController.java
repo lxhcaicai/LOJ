@@ -3,6 +3,7 @@ package com.github.loj.controller.admin;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.service.admin.contest.AdminContestProblemService;
 import com.github.loj.service.admin.contest.AdminContestService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 
 @RestController
@@ -102,5 +104,12 @@ public class AdminContestController {
                                                                @RequestParam(value = "oj", required = false) String oj) {
 
         return  adminContestProblemService.getProblemList(limit,currentPage, keyword,cid,problemType,oj);
+    }
+
+    @GetMapping("/problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    public CommonResult<Problem> getProblem(@RequestParam("pid") Long pid, HttpServletRequest request) {
+        return adminContestProblemService.getProblem(pid);
     }
 }
