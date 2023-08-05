@@ -46,4 +46,12 @@ public class AdminContestController {
     public CommonResult<Void> deleteContest(@RequestParam("cid") Long cid) {
         return adminContestService.deleteContest(cid);
     }
+
+    @PostMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical =  Logical.OR)
+    public CommonResult<Void> addContest(@RequestBody AdminContestVO adminContestVO) {
+
+        return adminContestService.addContest(adminContestVO);
+    }
 }

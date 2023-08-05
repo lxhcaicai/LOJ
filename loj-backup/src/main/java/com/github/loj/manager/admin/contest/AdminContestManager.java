@@ -14,6 +14,7 @@ import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.pojo.vo.ContestAwardConfigVO;
 import com.github.loj.pojo.vo.UserRolesVO;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.validator.ContestValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -30,6 +32,9 @@ public class AdminContestManager {
 
     @Autowired
     private ContestEntityService contestEntityService;
+
+    @Autowired
+    private ContestValidator contestValidator;
 
     public IPage<Contest> getContestList(Integer limit, Integer currentPage, String keyword) {
 
@@ -103,5 +108,30 @@ public class AdminContestManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         log.info("[{}],[{}],cid:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_Contest", "Delete", cid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
+
+    public void addContest(AdminContestVO adminContestVO) throws StatusFailException {
+        contestValidator.validateContest(adminContestVO);
+
+        Contest contest = BeanUtil.copyProperties(adminContestVO, Contest.class, "starAccount");
+        JSONObject accountJson = new JSONObject();
+        if(adminContestVO.getSealRank() == null) {
+            accountJson.set("star_account", new ArrayList<>());
+        } else {
+            accountJson.set("star_account", adminContestVO.getStarAccount());
+        }
+        contest.setStarAccount(accountJson.toString());
+
+        if(adminContestVO.getAwardType() != null && adminContestVO.getAwardType() != 0) {
+            JSONObject awardConfigJson = new JSONObject();
+            List<ContestAwardConfigVO> awardConfigList = adminContestVO.getAwardConfigList();
+            awardConfigList.sort(Comparator.comparing(ContestAwardConfigVO::getPriority));
+            awardConfigJson.set("config", awardConfigList);
+            contest.setAwardConfig(awardConfigJson.toString());
+        }
+        boolean isOk = contestEntityService.save(contest);
+        if(!isOk) { // 删除失败
+            throw new StatusFailException("添加失败");
+        }
     }
 }

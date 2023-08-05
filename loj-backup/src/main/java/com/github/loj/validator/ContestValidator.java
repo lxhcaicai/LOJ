@@ -7,6 +7,7 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.contest.ContestRegisterEntityService;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestRegister;
+import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author lxhcaicai
@@ -28,6 +30,9 @@ public class ContestValidator {
 
     @Autowired
     private GroupValidator groupValidator;
+
+    @Autowired
+    private CommonValidator commonValidator;
 
     public boolean isSealRank(String uid, Contest contest, Boolean forceRefresh, Boolean isRoot) {
         if(!contest.getSealRank()) {
@@ -134,6 +139,29 @@ public class ContestValidator {
             }
         }
 
+     }
+
+     public void validateContest(AdminContestVO adminContestVO) throws StatusFailException {
+         commonValidator.validateContent(adminContestVO.getTitle(), "比赛标题", 500);
+         commonValidator.validateContentLength(adminContestVO.getDescription(), "比赛描述", 65535);
+
+         if(!Objects.equals(Constants.Contest.TYPE_OI.getCode(), adminContestVO.getType())
+                && !Objects.equals(Constants.Contest.TYPE_ACM.getCode(), adminContestVO.getType())) {
+             throw new StatusFailException("比赛的赛制必须为ACM(0)、OI(1)！");
+         }
+
+         if(Objects.equals(Constants.Contest.TYPE_OI.getCode(), adminContestVO.getType())) {
+             if(!Objects.equals(Constants.Contest.OI_RANK_RECENT_SCORE.getName(), adminContestVO.getOiRankScoreType())
+                    && !Objects.equals(Constants.Contest.OI_RANK_HIGHEST_SCORE.getName(), adminContestVO.getOiRankScoreType())) {
+                 throw new StatusFailException("OI比赛排行榜得分类型必须为最近得分(Recent)、最高得分(Highest)！");
+             }
+         }
+
+         if(!Objects.equals(Constants.Contest.AUTH_PUBLIC.getCode(), adminContestVO.getAuth())
+                && !Objects.equals(Constants.Contest.AUTH_PRIVATE.getCode(), adminContestVO.getAuth())
+                && !Objects.equals(Constants.Contest.AUTH_PROTECT.getCode(), adminContestVO.getAuth())) {
+             throw new StatusFailException("比赛的权限必须为公开赛(0)、私有赛(1)、保护赛(2)！");
+         }
      }
 
 }

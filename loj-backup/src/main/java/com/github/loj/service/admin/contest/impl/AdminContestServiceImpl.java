@@ -45,4 +45,14 @@ public class AdminContestServiceImpl implements AdminContestService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> addContest(AdminContestVO adminContestVO) {
+        try {
+            adminContestManager.addContest(adminContestVO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
