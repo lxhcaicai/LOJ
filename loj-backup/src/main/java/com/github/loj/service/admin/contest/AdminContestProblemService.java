@@ -2,6 +2,7 @@ package com.github.loj.service.admin.contest;
 
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
 
 import java.util.HashMap;
@@ -19,4 +20,6 @@ public interface AdminContestProblemService {
     public CommonResult<Map<Object,Object>> addProblem(ProblemDTO problemDTO);
 
     public CommonResult<Void> updateProblem(ProblemDTO problemDTO);
+
+    public CommonResult<ContestProblem> getContestProblem(Long cid, Long pid);
 }

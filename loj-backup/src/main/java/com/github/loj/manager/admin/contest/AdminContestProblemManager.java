@@ -236,4 +236,14 @@ public class AdminContestProblemManager {
         }
 
     }
+
+    public ContestProblem getContestProblem(Long cid, Long pid) throws StatusFailException {
+        QueryWrapper<ContestProblem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cid", cid).eq("pid", pid);
+        ContestProblem contestProblem = contestProblemEntityService.getOne(queryWrapper);
+        if(contestProblem == null) {
+            throw new StatusFailException("查询失败");
+        }
+        return contestProblem;
+    }
 }

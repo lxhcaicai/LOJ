@@ -6,6 +6,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
 import com.github.loj.pojo.dto.ProblemDTO;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.service.admin.contest.AdminContestProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,16 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<ContestProblem> getContestProblem(Long cid, Long pid) {
+        try {
+            ContestProblem contestProblem = adminContestProblemManager.getContestProblem(cid, pid);
+            return CommonResult.successResponse(contestProblem);
+        } catch (StatusFailException e) {
+            return CommonResult.successResponse(e.getMessage());
         }
     }
 }

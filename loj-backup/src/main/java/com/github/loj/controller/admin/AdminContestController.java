@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.service.admin.contest.AdminContestProblemService;
@@ -138,5 +139,13 @@ public class AdminContestController {
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Void> updateProblem(@RequestBody ProblemDTO problemDTO) {
         return adminContestProblemService.updateProblem(problemDTO);
+    }
+
+    @GetMapping("/contest-problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<ContestProblem> getContestProblem(@RequestParam(value = "cid", required = true) Long cid,
+                                                          @RequestParam(value = "pid", required = true) Long pid) {
+        return adminContestProblemService.getContestProblem(cid,pid);
     }
 }
