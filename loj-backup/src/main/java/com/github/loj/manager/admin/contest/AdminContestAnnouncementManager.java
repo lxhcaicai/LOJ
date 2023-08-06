@@ -50,4 +50,11 @@ public class AdminContestAnnouncementManager {
             throw new StatusFailException("添加失败");
         }
     }
+
+    public void updateAnnouncement(AnnouncementDTO announcementDTO) throws StatusFailException {
+        boolean isOk = announcementEntityService.saveOrUpdate(announcementDTO.getAnnouncement());
+        if(!isOk) {
+            throw new StatusFailException("更新失败！");
+        }
+    }
 }

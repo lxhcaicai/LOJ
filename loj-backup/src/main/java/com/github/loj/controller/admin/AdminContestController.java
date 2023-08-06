@@ -195,4 +195,11 @@ public class AdminContestController {
     public CommonResult<Void> addAnnouncement(@RequestBody AnnouncementDTO announcementDTO) {
         return adminContestAnnouncementService.addAnnouncement(announcementDTO);
     }
+
+    @PutMapping("/announcement")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> updateAnnouncement(@RequestBody AnnouncementDTO announcementDTO) {
+        return adminContestAnnouncementService.updateAnnouncement(announcementDTO);
+    }
 }

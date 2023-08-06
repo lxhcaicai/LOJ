@@ -12,4 +12,6 @@ public interface AdminContestAnnouncementService {
     public CommonResult<Void> deleteAnnouncement(Long aid);
 
     public CommonResult<Void> addAnnouncement(AnnouncementDTO announcementDTO);
+
+    public  CommonResult<Void> updateAnnouncement(AnnouncementDTO announcementDTO);
 }

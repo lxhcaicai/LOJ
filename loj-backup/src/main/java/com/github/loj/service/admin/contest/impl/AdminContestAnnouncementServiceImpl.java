@@ -41,4 +41,14 @@ public class AdminContestAnnouncementServiceImpl implements AdminContestAnnounce
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> updateAnnouncement(AnnouncementDTO announcementDTO) {
+        try {
+            adminContestAnnouncementManager.updateAnnouncement(announcementDTO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
