@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
@@ -154,5 +155,12 @@ public class AdminContestController {
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<ContestProblem> setContestProblem(@RequestBody ContestProblem contestProblem) {
         return adminContestProblemService.setContestProblem(contestProblem);
+    }
+
+    @PostMapping("/contest-problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> addProblemFromPublic(@RequestBody ContestProblemDTO contestProblemDTO) {
+        return adminContestProblemService.addProblemFromPublic(contestProblemDTO);
     }
 }

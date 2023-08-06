@@ -1,6 +1,7 @@
 package com.github.loj.service.admin.contest;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
@@ -24,4 +25,6 @@ public interface AdminContestProblemService {
     public CommonResult<ContestProblem> getContestProblem(Long cid, Long pid);
 
     public CommonResult<ContestProblem> setContestProblem(ContestProblem contestProblem);
+
+    public CommonResult<Void> addProblemFromPublic(ContestProblemDTO contestProblemDTO);
 }

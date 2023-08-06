@@ -5,6 +5,7 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
@@ -82,6 +83,16 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
     public CommonResult<ContestProblem> setContestProblem(ContestProblem contestProblem) {
         try {
             return CommonResult.successResponse(adminContestProblemManager.setContestProblem(contestProblem));
+        } catch (StatusFailException e) {
+            return CommonResult.successResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addProblemFromPublic(ContestProblemDTO contestProblemDTO) {
+        try {
+            adminContestProblemManager.addProblemFromPublic(contestProblemDTO);
+            return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.successResponse(e.getMessage());
         }

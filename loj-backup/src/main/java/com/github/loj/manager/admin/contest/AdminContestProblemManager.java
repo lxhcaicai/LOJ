@@ -12,6 +12,7 @@ import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -260,5 +262,42 @@ public class AdminContestProblemManager {
         } else {
             throw new StatusFailException("更新失败");
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addProblemFromPublic(ContestProblemDTO contestProblemDTO) throws StatusFailException {
+
+        Long pid = contestProblemDTO.getPid();
+        Long cid = contestProblemDTO.getCid();
+        String displayId = contestProblemDTO.getDisplayId();
+
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        contestProblemQueryWrapper.eq("cid", cid)
+                .and(wrapper -> wrapper.eq("pid", pid)
+                        .or()
+                        .eq("display_id", displayId));
+        ContestProblem contestProblem = contestProblemEntityService.getOne(contestProblemQueryWrapper,false);
+        if(contestProblem != null) {
+            throw new StatusFailException("添加失败，该题目已添加或者题目的比赛展示ID已存在！");
+        }
+
+        // 比赛中题目显示默认为原标题
+        Problem problem = problemEntityService.getById(pid);
+        String displayName = problem.getTitle();
+
+        // 修改成比赛题目
+        boolean updateProblem = problemEntityService.saveOrUpdate(problem.setAuth(3));
+
+        boolean isOk = contestProblemEntityService.saveOrUpdate(new ContestProblem()
+                .setCid(cid).setPid(pid).setDisplayTitle(displayName).setDisplayId(displayId));
+
+        if(!isOk || !updateProblem) {
+            throw new StatusFailException("添加失败");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Contest", "Add_Public_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
     }
 }
