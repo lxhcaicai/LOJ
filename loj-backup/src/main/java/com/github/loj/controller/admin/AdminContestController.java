@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.AnnouncementDTO;
 import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
@@ -186,5 +187,12 @@ public class AdminContestController {
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<Void> deleteAnnouncement(@RequestParam("aid") Long aid) {
         return adminContestAnnouncementService.deleteAnnouncement(aid);
+    }
+
+    @PostMapping("/announcement")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> addAnnouncement(@RequestBody AnnouncementDTO announcementDTO) {
+        return adminContestAnnouncementService.addAnnouncement(announcementDTO);
     }
 }
