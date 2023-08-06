@@ -1,6 +1,7 @@
 package com.github.loj.service.admin.contest.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.admin.contest.AdminContestAnnouncementManager;
 import com.github.loj.pojo.vo.AnnouncementVO;
@@ -18,5 +19,15 @@ public class AdminContestAnnouncementServiceImpl implements AdminContestAnnounce
     public CommonResult<IPage<AnnouncementVO>> getAnnouncementList(Integer limit, Integer currentPage, Long cid) {
         IPage<AnnouncementVO>  announcementList = adminContestAnnouncementManager.getAnnouncementList(limit, currentPage, cid);
         return CommonResult.successResponse(announcementList);
+    }
+
+    @Override
+    public CommonResult<Void> deleteAnnouncement(Long aid) {
+        try {
+            adminContestAnnouncementManager.deleteAnnouncement(aid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }

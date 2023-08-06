@@ -180,4 +180,11 @@ public class AdminContestController {
                                                                    @RequestParam(value = "cid", required = false) Long cid) {
         return adminContestAnnouncementService.getAnnouncementList(limit, currentPage, cid);
     }
+
+    @DeleteMapping("/announcement")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> deleteAnnouncement(@RequestParam("aid") Long aid) {
+        return adminContestAnnouncementService.deleteAnnouncement(aid);
+    }
 }

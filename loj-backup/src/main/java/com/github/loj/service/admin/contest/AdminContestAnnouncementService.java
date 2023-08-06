@@ -6,6 +6,7 @@ import com.github.loj.pojo.vo.AnnouncementVO;
 
 public interface AdminContestAnnouncementService {
 
-    CommonResult<IPage<AnnouncementVO>> getAnnouncementList(Integer limit, Integer currentPage, Long cid);
+    public CommonResult<IPage<AnnouncementVO>> getAnnouncementList(Integer limit, Integer currentPage, Long cid);
 
+    public CommonResult<Void> deleteAnnouncement(Long aid);
 }

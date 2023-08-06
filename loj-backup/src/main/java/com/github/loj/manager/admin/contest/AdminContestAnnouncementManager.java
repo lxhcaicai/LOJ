@@ -1,6 +1,7 @@
 package com.github.loj.manager.admin.contest;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.common.AnnouncementEntityService;
 import com.github.loj.pojo.vo.AnnouncementVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,5 +23,12 @@ public class AdminContestAnnouncementManager {
             limit = 10;
         }
         return announcementEntityService.getContestAnnouncement(cid, false, limit, currentPage);
+    }
+
+    public void deleteAnnouncement(Long aid) throws StatusFailException {
+        boolean isOk = announcementEntityService.removeById(aid);
+        if(!isOk) {
+            throw new StatusFailException("删除失败！");
+        }
     }
 }
