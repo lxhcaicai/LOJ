@@ -54,4 +54,16 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> updateProblem(ProblemDTO problemDTO) {
+        try {
+            adminContestProblemManager.updateProblem(problemDTO);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

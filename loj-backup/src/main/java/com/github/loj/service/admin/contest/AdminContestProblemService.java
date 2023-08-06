@@ -17,4 +17,6 @@ public interface AdminContestProblemService {
     public CommonResult<Void> deleteProblem(Long pid, Long cid);
 
     public CommonResult<Map<Object,Object>> addProblem(ProblemDTO problemDTO);
+
+    public CommonResult<Void> updateProblem(ProblemDTO problemDTO);
 }

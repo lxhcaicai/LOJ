@@ -126,9 +126,17 @@ public class AdminContestController {
 
     @PostMapping("/problem")
     @RequiresAuthentication
-    @RequiresRoles(value = {"root","problem_admin"}, logical =  Logical.OR)
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Map<Object,Object>> addProblem(@RequestBody ProblemDTO problemDTO) {
         return adminContestProblemService.addProblem(problemDTO);
+    }
+
+    @PutMapping("/problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Void> updateProblem(@RequestBody ProblemDTO problemDTO) {
+        return adminContestProblemService.updateProblem(problemDTO);
     }
 }

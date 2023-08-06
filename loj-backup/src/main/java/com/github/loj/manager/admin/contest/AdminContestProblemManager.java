@@ -205,4 +205,35 @@ public class AdminContestProblemManager {
             throw new StatusFailException("添加失败");
         }
     }
+
+    public void updateProblem(ProblemDTO problemDTO) throws StatusForbiddenException, StatusFailException {
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        // 只有超级管理员和题目管理员、题目创建者才能操作
+        if(!isRoot && ! isProblemAdmin && !userRolesVo.getUsername().equals(problemDTO.getProblem().getAuthor())) {
+            throw new StatusForbiddenException("对不起，你无权限修改题目！");
+        }
+
+        QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("problem_id", problemDTO.getProblem().getProblemId().toUpperCase());
+        Problem problem = problemEntityService.getOne(queryWrapper);
+
+        // 如果problem_id不是原来的且已存在该problem_id，则修改失败！
+        if(problem != null && problem.getId().intValue() != problemDTO.getProblem().getId()) {
+            throw new StatusFailException("当前的Problem ID 已被使用，请重新更换新的！");
+        }
+
+        // 记录修改题目的用户
+        problemDTO.getProblem().setModifiedUser(userRolesVo.getUsername());
+
+        boolean isOk = problemEntityService.adminUpdateProblem(problemDTO);
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+
+    }
 }

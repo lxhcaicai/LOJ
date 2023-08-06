@@ -34,9 +34,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -247,6 +245,287 @@ public class ProblemEntityServiceImpl extends ServiceImpl<ProblemMapper, Problem
 
         if(addCasesToProblemResult && addLangToProblemResult
                 && addTagsToProblemResult && addProblemCodeTemplate) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean adminUpdateProblem(ProblemDTO problemDTO) {
+
+        Problem problem = problemDTO.getProblem();
+        if(Constants.JudgeMode.DEFAULT.getMode().equals(problemDTO.getJudgeMode())) {
+            problem.setSpjCode(null).setSpjLanguage(null);
+        }
+
+        String ojName = "ME";
+        if(problem.getIsRemote()) {
+            String problemId = problem.getProblemId();
+            ojName = problemId.split("-")[0];
+        }
+
+        /**
+         *  problem_id唯一性检查
+         */
+        String problemId= problem.getProblemId().toUpperCase();
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.eq("problem_id", problemId);
+        Problem existedProblem = problemMapper.selectOne(problemQueryWrapper);
+
+        problem.setProblemId(problem.getProblemId().toUpperCase());
+        if(problem.getIsGroup() == null) {
+            problem.setIsGroup(false);
+        }
+        // 后面许多表的更新或删除需要用到题目id
+        long pid = problemDTO.getProblem().getId();
+
+        if (existedProblem != null && existedProblem.getId() != pid) {
+            throw new RuntimeException("The problem_id [" + problemId + "] already exists. Do not reuse it!");
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("pid", pid);
+        //查询出原来题目的关联表数据
+        List<ProblemLanguage> oldProblemLanguages = (List<ProblemLanguage>) problemLanguageEntityService.listByMap(map);
+        List<ProblemCase> oldProblemCases = (List<ProblemCase>) problemCaseEntityService.listByMap(map);
+        List<CodeTemplate> oldProblemTemplate = (List<CodeTemplate>) codeTemplateEntityService.listByMap(map);
+        List<ProblemTag> oldProblemTags = (List<ProblemTag>) problemTagEntityService.listByMap(map);
+
+        Map<Long, Integer> mapOldPT = new HashMap<>();
+        Map<Long, Integer> mapOldPL = new HashMap<>();
+        Map<Integer, Integer> mapOldPCT = new HashMap<>();
+        List<Long> needDeleteProblemCases = new LinkedList<>();
+        HashMap<Long, ProblemCase> oldProblemMap = new HashMap<>();
+
+        // 登记一下原有的tag的id
+        oldProblemTags.stream().forEach(problemTag -> {
+            mapOldPT.put(problemTag.getTid(),0);
+        });
+        // 登记一下原有的language的id
+        oldProblemLanguages.stream().forEach(problemLanguage -> {
+            mapOldPL.put(problemLanguage.getLid(), 0);
+        });
+        // 登记一下原有的codeTemplate的id
+        oldProblemTemplate.stream().forEach(codeTemplate -> {
+            mapOldPCT.put(codeTemplate.getId(), 0);
+        });
+        // 登记一下原有的case的id
+        oldProblemCases.stream().forEach(problemCase ->{
+            needDeleteProblemCases.add(problemCase.getId());
+            oldProblemMap.put(problemCase.getId(),problemCase);
+        });
+
+        // 与前端上传的数据进行对比，添加或删除！
+        /**
+         * 处理tag表与problem_tag表的删除与更新
+         */
+        List<ProblemTag> problemTagList = new LinkedList<>();
+        for(Tag tag: problemDTO.getTags()) {
+            if(tag.getId() == null) {
+                tag.setOj(ojName);
+                boolean addTagResult = tagEntityService.save(tag);
+                if(addTagResult) {
+                    problemTagList.add(new ProblemTag()
+                            .setPid(pid).setTid(tag.getId()));
+                }
+                // 已存在tag 但是新添加的
+            } else if(mapOldPT.getOrDefault(tag.getId(), null) == null) {
+                problemTagList.add(new ProblemTag()
+                        .setTid(tag.getId()).setPid(pid));
+            } else { // 已有主键的需要记录一下，若原先在problem_tag有的，现在不见了，表明需要删除
+                mapOldPT.put(tag.getId(), 1); // 更新记录，说明该tag未删除
+            }
+        }
+
+        // 放入需要删除的tagId列表
+        List<Long> needDeleteTids = new LinkedList<>();
+        for(Long key:mapOldPT.keySet()) {
+            if(mapOldPT.get(key) == 0) { // 记录表中没有更新原来的存在Tid，则表明该tag已不被该problem使用
+                needDeleteTids.add(key);
+            }
+        }
+        boolean deleteTagsFromProblemResult = true;
+        if(needDeleteTids.size() > 0) {
+            QueryWrapper<ProblemTag> tagWrapper = new QueryWrapper<>();
+            tagWrapper.eq("pid", pid).in("tid", needDeleteTids);
+            // 执行批量删除操作
+            deleteTagsFromProblemResult = problemTagEntityService.remove(tagWrapper);
+        }
+        // 执行批量插入操作
+        boolean addTagsToProblemResult = true;
+        if (problemTagList.size() > 0) {
+            addTagsToProblemResult = problemTagEntityService.saveOrUpdateBatch(problemTagList);
+        }
+
+        /**
+         * 处理code_template表
+         */
+        boolean deleteTemplate = true;
+        boolean saveOrUpdateCodeTemplate = true;
+        for(CodeTemplate codeTemplate: problemDTO.getCodeTemplates()) {
+            if(codeTemplate.getId() != null) {
+                mapOldPCT.put(codeTemplate.getId(), 1);
+            }
+        }
+        // 需要删除的模板
+        List<Integer> needDeleteCTs = new LinkedList<>();
+        for (Integer key : mapOldPCT.keySet()) {
+            if (mapOldPCT.get(key) == 0) {
+                needDeleteCTs.add(key);
+            }
+        }
+        if(needDeleteCTs.size() > 0) {
+            deleteTemplate = codeTemplateEntityService.removeByIds(needDeleteCTs);
+        }
+        if(problemDTO.getCodeTemplates().size() > 0) {
+            saveOrUpdateCodeTemplate = codeTemplateEntityService.saveOrUpdateBatch(problemDTO.getCodeTemplates());
+        }
+
+        /**
+         *  处理problem_language表的更新与删除
+         */
+
+        // 根据上传来的language列表的每一个name字段查询对应的language表的id，更新problem_language
+        //构建problem_language实体列表
+        List<ProblemLanguage> problemLanguageList = new LinkedList<>();
+        for(Language language: problemDTO.getLanguages()) { // 遍历插入
+            if(mapOldPL.get(language.getId()) != null) { // 如果记录中有，则表式该language原来已有选中。
+                mapOldPL.put(language.getId(), 1); // 记录一下，新数据也有该language
+            } else { // 没有记录，则表明为新添加的language
+                problemLanguageList.add(new ProblemLanguage().setLid(language.getId()).setPid(pid));
+            }
+        }
+
+        // 放入需要删除的languageId列表
+        List<Long> needDeleteLids = new LinkedList<>();
+        for(Long key: mapOldPL.keySet()) {
+            if(mapOldPL.get(key) == 0) {
+                needDeleteLids.add(key);
+            }
+        }
+        boolean deleteLanguagesFromProblemResult = true;
+        if(needDeleteLids.size() > 0) {
+            QueryWrapper<ProblemLanguage> langWrapper = new QueryWrapper<>();
+            langWrapper.eq("pid",pid).in("lid",needDeleteLids);
+            // 执行批量删除操作
+            deleteLanguagesFromProblemResult = problemLanguageEntityService.remove(langWrapper);
+        }
+        // 执行批量添加操作
+        boolean addLanguagesToProblemResult = true;
+        if(problemLanguageList.size() > 0) {
+            addLanguagesToProblemResult = problemLanguageEntityService.saveOrUpdateBatch(problemLanguageList);
+        }
+
+        /**
+         *  处理problem_case表的增加与删除
+         */
+
+        boolean checkProblemCase = true;
+
+        if(!problem.getIsRemote() && problemDTO.getSamples().size() > 0) {
+            // 新增加的case列表
+            List<ProblemCase> newProblemCaseList = new LinkedList<>();
+            // 需要修改的case列表
+            List<ProblemCase> needUpdateProblemCaseList = new LinkedList<>();
+            // 遍历上传的case列表，如果还存在，则从需要删除的测试样例列表移除该id
+            for (ProblemCase problemCase: problemDTO.getSamples()) {
+                if(problemCase.getId() != null) {// 已存在的case
+                    needDeleteProblemCases.remove(problemCase.getId());
+                    // 跟原先的数据做对比，如果变动 则加入需要修改的case列表
+                    ProblemCase oldProblemCase = oldProblemMap.get(problemCase.getId());
+                    if(!Objects.equals(oldProblemCase.getInput(), problemCase.getInput())
+                            || !Objects.equals(oldProblemCase.getOutput(), problemCase.getOutput())) {
+                        needUpdateProblemCaseList.add(problemCase);
+                    } else if(problem.getType().intValue() == Constants.Contest.TYPE_OI.getCode()) {
+                        // 分数变动 或者 subtask分组编号变更
+                        if(!Objects.equals(oldProblemCase.getScore(), problemCase.getScore())
+                                || !Objects.equals(oldProblemCase.getGroupNum(), problemCase.getGroupNum())) {
+                            needUpdateProblemCaseList.add(problemCase);
+                        }
+                    }
+                } else {
+                    newProblemCaseList.add(problemCase.setPid(pid));
+                }
+            }
+
+            // 设置oi总分数，根据每个测试点的加和
+            if(problem.getType().intValue() == Constants.Contest.TYPE_OI.getCode()) {
+                int sumScore = calProblemTotalScore(problem.getJudgeCaseMode(), problemDTO.getSamples());
+                problem.setIoScore(sumScore);
+            }
+            // 执行批量删除操作
+            boolean deleteCasesFromProblemResult = true;
+            if (needDeleteProblemCases.size() > 0) {
+                deleteCasesFromProblemResult = problemCaseEntityService.removeByIds(needDeleteProblemCases);
+            }
+            // 执行批量添加操作
+            boolean addCasesToProblemResult = true;
+            if (newProblemCaseList.size() > 0) {
+                addCasesToProblemResult = problemCaseEntityService.saveBatch(newProblemCaseList);
+            }
+            // 执行批量修改操作
+            boolean updateCasesToProblemResult = true;
+            if (needUpdateProblemCaseList.size() > 0) {
+                updateCasesToProblemResult = problemCaseEntityService.saveOrUpdateBatch(needUpdateProblemCaseList);
+            }
+            checkProblemCase = addCasesToProblemResult && deleteCasesFromProblemResult && updateCasesToProblemResult;
+
+            // 只要有新添加，修改，删除，或者变更judgeCaseMode 都需要更新版本号 同时更新测试数据
+            String caseVersion = String.valueOf(System.currentTimeMillis());
+            String testcaseDir = problemDTO.getUploadTestcaseDir();
+            if(needDeleteProblemCases.size() > 0 || newProblemCaseList.size() > 0
+                    || needUpdateProblemCaseList.size() > 0 || !StringUtils.isEmpty(testcaseDir)
+                    || (problemDTO.getChangeModeCode() != null && problemDTO.getChangeJudgeCaseMode())) {
+                // 如果是选择上传测试文件的，则需要遍历对应文件夹，读取数据，写入数据库,先前的题目数据一并清空。
+                problem.setCaseVersion(caseVersion);
+                if(problemDTO.getIsUploadTestCase()) {
+                    // 获取代理bean对象执行异步方法===》根据测试文件初始info
+                    applicationContext.getBean(ProblemEntityServiceImpl.class)
+                            .initUploadTestCase(problemDTO.getJudgeMode(),
+                                    problem.getJudgeCaseMode(),
+                                    caseVersion,
+                                    pid,
+                                    testcaseDir,
+                                    problemDTO.getSamples());
+                } else {
+                    applicationContext.getBean(ProblemEntityServiceImpl.class)
+                            .initHandTestCase(problemDTO.getJudgeMode(),
+                                    problem.getJudgeCaseMode(),
+                                    problem.getCaseVersion(),
+                                    pid,
+                                    problemDTO.getSamples());
+                }
+            }
+            // 变化成spj或interactive或者取消 同时更新测试数据
+            else if(problemDTO.getChangeModeCode() != null && problemDTO.getChangeModeCode()) {
+                problem.setCaseVersion(caseVersion);
+                if(problemDTO.getIsUploadTestCase()) {
+                    // 获取代理bean对象执行异步方法===》根据测试文件初始info
+                    applicationContext.getBean(ProblemEntityServiceImpl.class)
+                            .initUploadTestCase(problemDTO.getJudgeMode(),
+                                    problem.getJudgeCaseMode(),
+                                    caseVersion,
+                                    pid,
+                                    null,
+                                    problemDTO.getSamples());
+                } else {
+                    applicationContext.getBean(ProblemEntityServiceImpl.class)
+                            .initHandTestCase(problemDTO.getJudgeMode(),
+                                    problem.getJudgeCaseMode(),
+                                    problem.getCaseVersion(),
+                                    pid,
+                                    problemDTO.getSamples());
+                }
+            }
+        }
+
+        // 更新problem表
+        boolean problemUpdateResult = problemMapper.updateById(problem) == 1;
+
+        if(problemUpdateResult && checkProblemCase && deleteLanguagesFromProblemResult && deleteTagsFromProblemResult
+            && addLanguagesToProblemResult && addTagsToProblemResult && deleteTemplate && saveOrUpdateCodeTemplate) {
             return true;
         } else {
             return false;

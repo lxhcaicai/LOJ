@@ -18,4 +18,6 @@ public interface ProblemEntityService extends IService<Problem> {
                                    Integer difficulty, List<Long> tid, String oj);
 
     boolean adminAddProblem(ProblemDTO problemDTO);
+
+    boolean adminUpdateProblem(ProblemDTO problemDTO);
 }
