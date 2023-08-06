@@ -77,4 +77,13 @@ public class AdminContestProblemServiceImpl implements AdminContestProblemServic
             return CommonResult.successResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<ContestProblem> setContestProblem(ContestProblem contestProblem) {
+        try {
+            return CommonResult.successResponse(adminContestProblemManager.setContestProblem(contestProblem));
+        } catch (StatusFailException e) {
+            return CommonResult.successResponse(e.getMessage());
+        }
+    }
 }

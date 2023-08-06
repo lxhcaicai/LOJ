@@ -148,4 +148,11 @@ public class AdminContestController {
                                                           @RequestParam(value = "pid", required = true) Long pid) {
         return adminContestProblemService.getContestProblem(cid,pid);
     }
+
+    @PutMapping("/contest-problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<ContestProblem> setContestProblem(@RequestBody ContestProblem contestProblem) {
+        return adminContestProblemService.setContestProblem(contestProblem);
+    }
 }

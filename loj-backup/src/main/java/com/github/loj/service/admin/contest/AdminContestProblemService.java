@@ -22,4 +22,6 @@ public interface AdminContestProblemService {
     public CommonResult<Void> updateProblem(ProblemDTO problemDTO);
 
     public CommonResult<ContestProblem> getContestProblem(Long cid, Long pid);
+
+    public CommonResult<ContestProblem> setContestProblem(ContestProblem contestProblem);
 }

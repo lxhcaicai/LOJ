@@ -1,12 +1,16 @@
 package com.github.loj.dao.contest.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.loj.dao.contest.ContestProblemEntityService;
+import com.github.loj.dao.contest.ContestRecordEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.mapper.ContestProblemMapper;
 import com.github.loj.pojo.entity.contest.ContestProblem;
+import com.github.loj.pojo.entity.contest.ContestRecord;
 import com.github.loj.pojo.vo.ContestProblemVO;
 import com.github.loj.pojo.vo.ProblemFullScreenListVO;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -27,6 +31,9 @@ public class ContestProblemEntityServiceImpl extends ServiceImpl<ContestProblemM
     @Resource
     private UserInfoEntityService userInfoEntityService;
 
+    @Resource
+    private ContestRecordEntityService contestRecordEntityService;
+
     @Override
     public List<ProblemFullScreenListVO> getContestFullScreenProblemList(Long cid) {
         return contestProblemMapper.getContestFullScreenProblemList(cid);
@@ -43,5 +50,15 @@ public class ContestProblemEntityServiceImpl extends ServiceImpl<ContestProblemM
         }
 
         return contestProblemMapper.getContestProblemList(cid,startTime,endTime, sealTime, isAdmin, superAdminUidList);
+    }
+
+    @Async
+    @Override
+    public void syncContestRecord(Long pid, Long cid, String displayId) {
+        UpdateWrapper<ContestRecord> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("pid", pid)
+                .eq("cid", cid)
+                .set("display_id", displayId);
+        contestRecordEntityService.update(updateWrapper);
     }
 }

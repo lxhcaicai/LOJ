@@ -22,4 +22,6 @@ public interface ContestProblemEntityService extends IService<ContestProblem> {
                                                  Boolean isAdmin,
                                                  String contestAuthorUid,
                                                  List<String> groupRootUidList);
+
+    void syncContestRecord(Long pid,Long cid,String displayId);
 }

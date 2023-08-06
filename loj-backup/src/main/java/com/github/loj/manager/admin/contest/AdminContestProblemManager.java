@@ -246,4 +246,19 @@ public class AdminContestProblemManager {
         }
         return contestProblem;
     }
+
+    public ContestProblem setContestProblem(ContestProblem contestProblem) throws StatusFailException {
+        boolean isOk = contestProblemEntityService.saveOrUpdate(contestProblem);
+        if(!isOk) {
+            contestProblemEntityService.syncContestRecord(contestProblem.getPid(), contestProblem.getCid(), contestProblem.getDisplayId());
+            // 获取当前登录的用户
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+            log.info("[{}],[{}],cid:[{}],ContestProblem:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Contest", "Update_Problem", contestProblem.getCid(), contestProblem, userRolesVo.getUid(), userRolesVo.getUsername());
+
+            return contestProblem;
+        } else {
+            throw new StatusFailException("更新失败");
+        }
+    }
 }
