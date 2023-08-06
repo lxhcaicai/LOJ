@@ -8,6 +8,8 @@ import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.AdminContestVO;
+import com.github.loj.pojo.vo.AnnouncementVO;
+import com.github.loj.service.admin.contest.AdminContestAnnouncementService;
 import com.github.loj.service.admin.contest.AdminContestProblemService;
 import com.github.loj.service.admin.contest.AdminContestService;
 import org.apache.shiro.authz.annotation.Logical;
@@ -30,6 +32,9 @@ public class AdminContestController {
 
     @Autowired
     private AdminContestProblemService adminContestProblemService;
+
+    @Autowired
+    private AdminContestAnnouncementService adminContestAnnouncementService;
 
     @GetMapping("/get-contest-list")
     @RequiresAuthentication
@@ -162,5 +167,17 @@ public class AdminContestController {
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<Void> addProblemFromPublic(@RequestBody ContestProblemDTO contestProblemDTO) {
         return adminContestProblemService.addProblemFromPublic(contestProblemDTO);
+    }
+
+    /**
+     * 以下处理比赛公告的操作请求
+     */
+    @GetMapping("/announcement")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<IPage<AnnouncementVO>> getAnnouncementList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                                   @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                                   @RequestParam(value = "cid", required = false) Long cid) {
+        return adminContestAnnouncementService.getAnnouncementList(limit, currentPage, cid);
     }
 }
