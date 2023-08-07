@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.EmailConfigDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
 import com.github.loj.service.admin.system.ConfigService;
 import org.apache.shiro.authz.annotation.Logical;
@@ -51,4 +52,9 @@ public class ConfigController {
         return configService.setWebConfig(config);
     }
 
+    @RequiresPermissions("system_info_admin")
+    @GetMapping("/get-email-config")
+    public CommonResult<EmailConfigDTO> getEmailConfig() {
+        return configService.getEmailConfig();
+    }
 }

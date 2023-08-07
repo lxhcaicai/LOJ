@@ -9,6 +9,7 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.WebConfig;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.pojo.dto.EmailConfigDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
 import com.github.loj.pojo.entity.common.File;
 import lombok.extern.slf4j.Slf4j;
@@ -155,5 +156,17 @@ public class ConfigManager {
         if(!isOk) {
             throw new StatusFailException("修改失败");
         }
+    }
+
+    public EmailConfigDTO getEmailConfig() {
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+        return EmailConfigDTO.builder()
+                .emailUsername(webConfig.getEmailUsername())
+                .emailPassword(webConfig.getEmailPassword())
+                .emailHost(webConfig.getEmailHost())
+                .emailPort(webConfig.getEmailPort())
+                .emailBGImg(webConfig.getEmailBGImg())
+                .emailSsl(webConfig.getEmailSsl())
+                .build();
     }
 }
