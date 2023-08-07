@@ -20,4 +20,6 @@ public interface ConfigService {
     public CommonResult<Void> setWebConfig(WebConfigDTO config);
 
     public CommonResult<EmailConfigDTO> getEmailConfig();
+
+    public CommonResult<Void> setEmailConfig(EmailConfigDTO config);
 }

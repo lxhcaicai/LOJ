@@ -169,4 +169,30 @@ public class ConfigManager {
                 .emailSsl(webConfig.getEmailSsl())
                 .build();
     }
+
+    public void setEmailConfig(EmailConfigDTO config) throws StatusFailException {
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+        if(!StringUtils.isEmpty(config.getEmailHost())) {
+            webConfig.setEmailHost(config.getEmailHost());
+        }
+        if(!StringUtils.isEmpty(config.getEmailPassword())) {
+            webConfig.setEmailPassword(config.getEmailPassword());
+        }
+        if(config.getEmailPort() != null) {
+            webConfig.setEmailPort(config.getEmailPort());
+        }
+        if (!StringUtils.isEmpty(config.getEmailUsername())) {
+            webConfig.setEmailUsername(config.getEmailUsername());
+        }
+        if (!StringUtils.isEmpty(config.getEmailBGImg())) {
+            webConfig.setEmailBGImg(config.getEmailBGImg());
+        }
+        if (config.getEmailSsl() != null) {
+            webConfig.setEmailSsl(config.getEmailSsl());
+        }
+        boolean isOk = nacosSwitchConfig.publishWebConfig();
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+    }
 }

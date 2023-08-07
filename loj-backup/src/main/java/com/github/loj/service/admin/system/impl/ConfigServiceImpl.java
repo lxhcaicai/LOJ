@@ -56,4 +56,14 @@ public class ConfigServiceImpl implements ConfigService {
     public CommonResult<EmailConfigDTO> getEmailConfig() {
         return CommonResult.successResponse(configManager.getEmailConfig());
     }
+
+    @Override
+    public CommonResult<Void> setEmailConfig(EmailConfigDTO config) {
+        try {
+            configManager.setEmailConfig(config);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

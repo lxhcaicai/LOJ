@@ -57,4 +57,10 @@ public class ConfigController {
     public CommonResult<EmailConfigDTO> getEmailConfig() {
         return configService.getEmailConfig();
     }
+
+    @RequiresPermissions("system_info_admin")
+    @PutMapping("/set-email-config")
+    public CommonResult<Void> setEmailConfig(@RequestBody EmailConfigDTO config) {
+        return configService.setEmailConfig(config);
+    }
 }
