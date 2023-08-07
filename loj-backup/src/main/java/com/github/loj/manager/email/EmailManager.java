@@ -200,4 +200,37 @@ public class EmailManager {
             log.error("用户修改邮箱的邮件任务发生异常------------>{}", e.getMessage());
         }
     }
+
+    /**
+     * 超级管理员后台修改邮件系统配置后发送的测试邮箱可用性的测试邮件。
+     * @param email
+     */
+    @Async
+    public void testEmail(String email) {
+        JavaMailSenderImpl mailSender = getMailSender();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage,
+                    true);
+            // 设置渲染到html页面对应的值
+            Context context = new Context();
+            WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+            context.setVariable(Constants.Email.OJ_NAME.name(), UnicodeUtil.toString(webConfig.getName()));
+            context.setVariable(Constants.Email.OJ_SHORT_NAME.name(), UnicodeUtil.toString(webConfig.getShortName()));
+            context.setVariable(Constants.Email.OJ_URL.name(), webConfig.getBaseUrl());
+            context.setVariable(Constants.Email.EMAIL_BACKGROUND_IMG.name(), webConfig.getBaseUrl());
+
+            //利用模板引擎加载html文件进行渲染并生成对应的字符串
+            String emailContent = templateEngine.process("emailTemplate_testEmail", context);
+
+            mimeMessageHelper.setSubject(UnicodeUtil.toString(webConfig.getShortName()) + "的测试邮件");
+
+            mimeMessageHelper.setText(emailContent,true);
+            mimeMessageHelper.setTo(email);
+            mimeMessageHelper.setFrom(webConfig.getEmailUsername());
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            log.error("超级管理员重置邮件系统配置的测试邮箱可用性的任务发生异常------------>{}", e.getMessage());
+        }
+    }
 }

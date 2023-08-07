@@ -1,6 +1,7 @@
 package com.github.loj.manager.admin.system;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.Validator;
 import cn.hutool.core.text.UnicodeUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -9,7 +10,9 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.WebConfig;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.manager.email.EmailManager;
 import com.github.loj.pojo.dto.EmailConfigDTO;
+import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
 import com.github.loj.pojo.entity.common.File;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,9 @@ public class ConfigManager {
 
     @Autowired
     private FileEntityService fileEntityService;
+
+    @Autowired
+    private EmailManager emailManager;
 
     @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
@@ -193,6 +199,19 @@ public class ConfigManager {
         boolean isOk = nacosSwitchConfig.publishWebConfig();
         if(!isOk) {
             throw new StatusFailException("修改失败");
+        }
+    }
+
+    public void testEmail(TestEmailDTO testEmailDTO) throws StatusFailException {
+        String email = testEmailDTO.getEmail();
+        if(StringUtils.isEmpty(email)) {
+            throw new StatusFailException("测试的邮箱不能为空！");
+        }
+        boolean isEmail = Validator.isEmail(email);
+        if(isEmail) {
+            emailManager.testEmail(email);
+        } else {
+            throw new StatusFailException("测试的邮箱格式不正确！");
         }
     }
 }

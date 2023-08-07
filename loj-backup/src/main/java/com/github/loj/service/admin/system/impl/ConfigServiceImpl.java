@@ -5,6 +5,7 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.admin.system.ConfigManager;
 import com.github.loj.pojo.dto.EmailConfigDTO;
+import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
 import com.github.loj.service.admin.system.ConfigService;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,16 @@ public class ConfigServiceImpl implements ConfigService {
     public CommonResult<Void> setEmailConfig(EmailConfigDTO config) {
         try {
             configManager.setEmailConfig(config);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> testEmail(TestEmailDTO testEmailDTO) {
+        try {
+            configManager.testEmail(testEmailDTO);
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
