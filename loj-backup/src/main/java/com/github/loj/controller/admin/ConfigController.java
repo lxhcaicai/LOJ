@@ -8,10 +8,7 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -45,6 +42,13 @@ public class ConfigController {
     public CommonResult<Void> deleteHomeCarousel(@RequestParam("id") Long id) {
 
         return configService.deleteHomeCarousel(id);
+    }
+
+    @RequiresPermissions("system_info_admin")
+    @PutMapping("/set-web-config")
+    public CommonResult<Void> setWebConfig(@RequestBody WebConfigDTO config) {
+
+        return configService.setWebConfig(config);
     }
 
 }

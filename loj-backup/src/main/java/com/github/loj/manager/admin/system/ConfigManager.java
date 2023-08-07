@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedList;
@@ -117,6 +118,42 @@ public class ConfigManager {
             FileUtil.del(imgFile.getFilePath());
         } else {
             throw new StatusFailException("删除失败");
+        }
+    }
+
+    public void setWebConfig(WebConfigDTO config) throws StatusFailException {
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+
+        if(StringUtils.isEmpty(config.getBaseUrl())) {
+            webConfig.setBaseUrl(config.getBaseUrl());
+        }
+        if (!StringUtils.isEmpty(config.getName())) {
+            webConfig.setName(config.getName());
+        }
+        if (!StringUtils.isEmpty(config.getShortName())) {
+            webConfig.setShortName(config.getShortName());
+        }
+        if (!StringUtils.isEmpty(config.getDescription())) {
+            webConfig.setDescription(config.getDescription());
+        }
+        if(config.getRegister() != null) {
+            webConfig.setRegister(config.getRegister());
+        }
+        if (!StringUtils.isEmpty(config.getRecordName())) {
+            webConfig.setRecordName(config.getRecordName());
+        }
+        if (!StringUtils.isEmpty(config.getRecordUrl())) {
+            webConfig.setRecordUrl(config.getRecordUrl());
+        }
+        if (!StringUtils.isEmpty(config.getProjectName())) {
+            webConfig.setProjectName(config.getProjectName());
+        }
+        if (!StringUtils.isEmpty(config.getProjectUrl())) {
+            webConfig.setProjectUrl(config.getProjectUrl());
+        }
+        boolean isOk = nacosSwitchConfig.publishWebConfig();
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
         }
     }
 }

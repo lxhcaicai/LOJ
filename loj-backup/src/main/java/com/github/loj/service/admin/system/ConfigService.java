@@ -15,4 +15,6 @@ public interface ConfigService {
     public CommonResult<WebConfigDTO> getWebConfig();
 
     public CommonResult<Void> deleteHomeCarousel(Long id);
+
+    public CommonResult<Void> setWebConfig(WebConfigDTO config);
 }

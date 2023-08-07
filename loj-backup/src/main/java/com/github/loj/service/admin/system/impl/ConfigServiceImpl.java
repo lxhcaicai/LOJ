@@ -40,4 +40,14 @@ public class ConfigServiceImpl implements ConfigService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> setWebConfig(WebConfigDTO config) {
+        try {
+            configManager.setWebConfig(config);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
