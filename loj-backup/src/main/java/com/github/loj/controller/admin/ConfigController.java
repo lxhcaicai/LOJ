@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.DBAndRedisConfigDTO;
 import com.github.loj.pojo.dto.EmailConfigDTO;
 import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
@@ -69,5 +70,11 @@ public class ConfigController {
     @PostMapping("/test-email")
     public CommonResult<Void> testEmail(@RequestBody TestEmailDTO testEmailDTO) {
         return configService.testEmail(testEmailDTO);
+    }
+
+    @RequiresPermissions("system_info_admin")
+    @PostMapping("/get-db-and-redis-config")
+    public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig() {
+        return configService.getDBAndRedisConfig();
     }
 }

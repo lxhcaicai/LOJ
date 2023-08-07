@@ -4,6 +4,7 @@ import cn.hutool.json.JSONObject;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.admin.system.ConfigManager;
+import com.github.loj.pojo.dto.DBAndRedisConfigDTO;
 import com.github.loj.pojo.dto.EmailConfigDTO;
 import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
@@ -76,5 +77,10 @@ public class ConfigServiceImpl implements ConfigService {
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
         }
+    }
+
+    @Override
+    public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig() {
+        return CommonResult.successResponse(configManager.getDBAndRedisConfig());
     }
 }

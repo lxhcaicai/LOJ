@@ -2,6 +2,7 @@ package com.github.loj.service.admin.system;
 
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.DBAndRedisConfigDTO;
 import com.github.loj.pojo.dto.EmailConfigDTO;
 import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
@@ -25,4 +26,6 @@ public interface ConfigService {
     public CommonResult<Void> setEmailConfig(EmailConfigDTO config);
 
     public CommonResult<Void> testEmail(TestEmailDTO testEmailDTO);
+
+    public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig();
 }

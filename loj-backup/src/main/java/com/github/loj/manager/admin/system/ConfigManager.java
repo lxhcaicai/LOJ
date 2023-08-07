@@ -11,10 +11,12 @@ import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.WebConfig;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.manager.email.EmailManager;
+import com.github.loj.pojo.dto.DBAndRedisConfigDTO;
 import com.github.loj.pojo.dto.EmailConfigDTO;
 import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.vo.ConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,9 @@ import java.util.List;
 @Component
 @Slf4j(topic = "loj")
 public class ConfigManager {
+
+    @Autowired
+    private ConfigVO configVo;
 
     @Autowired
     private DiscoveryClient discoveryClient;
@@ -213,5 +218,18 @@ public class ConfigManager {
         } else {
             throw new StatusFailException("测试的邮箱格式不正确！");
         }
+    }
+
+    public DBAndRedisConfigDTO getDBAndRedisConfig() {
+        return DBAndRedisConfigDTO.builder()
+                .dbName(configVo.getMysqlDBName())
+                .dbHost(configVo.getMysqlHost())
+                .dbPort(configVo.getMysqlPort())
+                .dbUsername(configVo.getMysqlUsername())
+                .dbPassword(configVo.getMysqlPassword())
+                .redisHost(configVo.getRedisHost())
+                .redisPort(configVo.getMysqlPort())
+                .redisPassword(configVo.getRedisPassword())
+                .build();
     }
 }
