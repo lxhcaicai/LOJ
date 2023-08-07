@@ -1,12 +1,16 @@
 package com.github.loj.manager.admin.system;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.UnicodeUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.system.oshi.OshiUtil;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.WebConfig;
+import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.pojo.dto.WebConfigDTO;
+import com.github.loj.pojo.entity.common.File;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +28,9 @@ public class ConfigManager {
 
     @Autowired
     private DiscoveryClient discoveryClient;
+
+    @Autowired
+    private FileEntityService fileEntityService;
 
     @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
@@ -97,5 +104,19 @@ public class ConfigManager {
                 .projectName(UnicodeUtil.toString(webConfig.getProjectName()))
                 .projectUrl(UnicodeUtil.toString(webConfig.getRecordUrl()))
                 .build();
+    }
+
+    public void deleteHomeCarousel(Long id) throws StatusFailException {
+
+        File imgFile = fileEntityService.getById(id);
+        if(imgFile == null) {
+            throw new StatusFailException("文件id错误，图片不存在");
+        }
+        boolean isOk = fileEntityService.removeById(id);
+        if(isOk) {
+            FileUtil.del(imgFile.getFilePath());
+        } else {
+            throw new StatusFailException("删除失败");
+        }
     }
 }

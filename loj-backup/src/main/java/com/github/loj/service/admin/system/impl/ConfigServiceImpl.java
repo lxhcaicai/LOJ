@@ -1,6 +1,7 @@
 package com.github.loj.service.admin.system.impl;
 
 import cn.hutool.json.JSONObject;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.admin.system.ConfigManager;
 import com.github.loj.pojo.dto.WebConfigDTO;
@@ -28,5 +29,15 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     public CommonResult<WebConfigDTO> getWebConfig() {
         return CommonResult.successResponse(configManager.getWebConfig());
+    }
+
+    @Override
+    public CommonResult<Void> deleteHomeCarousel(Long id) {
+        try {
+            configManager.deleteHomeCarousel(id);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
     }
 }

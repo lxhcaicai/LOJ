@@ -13,4 +13,6 @@ public interface ConfigService {
     public CommonResult<List<JSONObject>> getJudgeServiceInfo();
 
     public CommonResult<WebConfigDTO> getWebConfig();
+
+    public CommonResult<Void> deleteHomeCarousel(Long id);
 }
