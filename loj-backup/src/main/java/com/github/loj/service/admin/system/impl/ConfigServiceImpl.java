@@ -7,6 +7,7 @@ import com.github.loj.service.admin.system.ConfigService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class ConfigServiceImpl implements ConfigService {
@@ -16,5 +17,10 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     public CommonResult<JSONObject> getServiceInfo() {
         return CommonResult.successResponse(configManager.getServiceInfo());
+    }
+
+    @Override
+    public CommonResult<List<JSONObject>> getJudgeServiceInfo() {
+        return CommonResult.successResponse(configManager.getJudgeServiceInfo());
     }
 }

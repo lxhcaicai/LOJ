@@ -11,6 +11,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @Component
@@ -25,6 +26,9 @@ public class ConfigManager {
 
     @Value("${spring.application.name}")
     private String currentServiceName;
+
+    @Value("${service-url.name}")
+    private String judgeServiceName;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -55,5 +59,21 @@ public class ConfigManager {
         result.put("backupPercentCpuLoad", percentCpuLoad);
         result.put("backupPercentMemoryLoad", percentMemoryLoad);
         return result;
+    }
+
+    public List<JSONObject>  getJudgeServiceInfo() {
+        List<JSONObject> serviceInfoList = new LinkedList<>();
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances(judgeServiceName);
+        for(ServiceInstance serviceInstance: serviceInstances) {
+            try {
+                String result = restTemplate.getForObject(serviceInstance.getUri() + "/get-sys-config", String.class);
+                JSONObject jsonObject = JSONUtil.parseObj(result);
+                jsonObject.put("service", serviceInstance);
+                serviceInfoList.add(jsonObject);
+            } catch (Exception e) {
+                log.error("[Admin Dashboard] get judge service info error, uri={}, error={}", serviceInstance.getUri(), e);
+            }
+        }
+        return serviceInfoList;
     }
 }
