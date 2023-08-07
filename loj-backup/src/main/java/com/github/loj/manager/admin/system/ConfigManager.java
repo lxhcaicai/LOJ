@@ -1,8 +1,12 @@
 package com.github.loj.manager.admin.system;
 
+import cn.hutool.core.text.UnicodeUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.system.oshi.OshiUtil;
+import com.github.loj.config.NacosSwitchConfig;
+import com.github.loj.config.WebConfig;
+import com.github.loj.pojo.dto.WebConfigDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +24,9 @@ public class ConfigManager {
 
     @Autowired
     private DiscoveryClient discoveryClient;
+
+    @Autowired
+    private NacosSwitchConfig nacosSwitchConfig;
 
     @Value("${spring.cloud.nacos.url}")
     private String NACOS_URL;
@@ -75,5 +82,20 @@ public class ConfigManager {
             }
         }
         return serviceInfoList;
+    }
+
+    public WebConfigDTO getWebConfig() {
+        WebConfig webConfig = nacosSwitchConfig.getWebConfig();
+        return WebConfigDTO.builder()
+                .baseUrl(UnicodeUtil.toString(webConfig.getBaseUrl()))
+                .name(UnicodeUtil.toString(webConfig.getName()))
+                .shortName(UnicodeUtil.toString(webConfig.getShortName()))
+                .description(UnicodeUtil.toString(webConfig.getDescription()))
+                .register(webConfig.getRegister())
+                .recordName(UnicodeUtil.toString(webConfig.getRecordName()))
+                .recordUrl(UnicodeUtil.toString(webConfig.getRecordUrl()))
+                .projectName(UnicodeUtil.toString(webConfig.getProjectName()))
+                .projectUrl(UnicodeUtil.toString(webConfig.getRecordUrl()))
+                .build();
     }
 }
