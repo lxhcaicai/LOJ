@@ -95,4 +95,14 @@ public class ConfigServiceImpl implements ConfigService {
     public CommonResult<SwitchConfigDTO> getSwitchConfig() {
         return CommonResult.successResponse(configManager.getSwitchConfig());
     }
+
+    @Override
+    public CommonResult<Void> setSwitchConfig(SwitchConfigDTO config) {
+        try {
+            configManager.setSwitchConfig(config);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

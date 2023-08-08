@@ -29,4 +29,6 @@ public interface ConfigService {
     public CommonResult<Void> setDBAndRedisConfig(DBAndRedisConfigDTO config);
 
     public CommonResult<SwitchConfigDTO> getSwitchConfig();
+
+    public CommonResult<Void> setSwitchConfig(SwitchConfigDTO config);
 }

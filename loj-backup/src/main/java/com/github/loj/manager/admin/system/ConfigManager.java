@@ -10,28 +10,31 @@ import cn.hutool.system.oshi.OshiUtil;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.SwitchConfig;
 import com.github.loj.config.WebConfig;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.judge.RemoteJudgeAccountEntityService;
 import com.github.loj.manager.email.EmailManager;
 import com.github.loj.pojo.dto.*;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.entity.judge.RemoteJudgeAccount;
 import com.github.loj.pojo.vo.ConfigVO;
 import com.github.loj.utils.ConfigUtils;
+import com.github.loj.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Component
 @Slf4j(topic = "loj")
@@ -45,6 +48,9 @@ public class ConfigManager {
 
     @Autowired
     private FileEntityService fileEntityService;
+
+    @Autowired
+    private RemoteJudgeAccountEntityService remoteJudgeAccountEntityService;
 
     @Autowired
     private EmailManager emailManager;
@@ -326,5 +332,140 @@ public class ConfigManager {
         SwitchConfigDTO switchConfigDTO = new SwitchConfigDTO();
         BeanUtil.copyProperties(switchConfig, switchConfigDTO);
         return switchConfigDTO;
+    }
+
+    public void setSwitchConfig(SwitchConfigDTO config) throws StatusFailException {
+
+        SwitchConfig switchConfig = nacosSwitchConfig.getSwitchConfig();
+
+        if(config.getOpenPublicDiscussion() != null) {
+            switchConfig.setOpenPublicDiscussion(config.getOpenPublicDiscussion());
+        }
+        if (config.getOpenGroupDiscussion() != null) {
+            switchConfig.setOpenGroupDiscussion(config.getOpenGroupDiscussion());
+        }
+        if (config.getOpenContestComment() != null) {
+            switchConfig.setOpenContestComment(config.getOpenContestComment());
+        }
+        if (config.getOpenPublicJudge() != null) {
+            switchConfig.setOpenPublicJudge(config.getOpenPublicJudge());
+        }
+        if (config.getOpenGroupJudge() != null) {
+            switchConfig.setOpenGroupJudge(config.getOpenGroupJudge());
+        }
+        if (config.getOpenContestJudge() != null) {
+            switchConfig.setOpenContestJudge(config.getOpenContestJudge());
+        }
+        if (config.getHideNonContestSubmissionCode() != null) {
+            switchConfig.setHideNonContestSubmissionCode(config.getHideNonContestSubmissionCode());
+        }
+        if (config.getDefaultCreateDiscussionACInitValue() != null) {
+            switchConfig.setDefaultCreateDiscussionACInitValue(config.getDefaultCreateDiscussionACInitValue());
+        }
+        if (config.getDefaultCreateDiscussionDailyLimit() != null) {
+            switchConfig.setDefaultCreateDiscussionDailyLimit(config.getDefaultCreateDiscussionDailyLimit());
+        }
+        if (config.getDefaultCreateCommentACInitValue() != null) {
+            switchConfig.setDefaultCreateCommentACInitValue(config.getDefaultCreateCommentACInitValue());
+        }
+
+        if(config.getDefaultSubmitInterval() != null) {
+            if(config.getDefaultSubmitInterval() >= 0) {
+                switchConfig.setDefaultSubmitInterval(config.getDefaultSubmitInterval());
+            } else {
+                switchConfig.setDefaultSubmitInterval(0);
+            }
+        }
+
+        if(config.getDefaultCreateGroupACInitValue() != null) {
+            switchConfig.setDefaultCreateGroupACInitValue(config.getDefaultCreateGroupACInitValue());
+        }
+
+        if(config.getDefaultCreateGroupDailyLimit() != null) {
+            switchConfig.setDefaultCreateGroupDailyLimit(config.getDefaultCreateGroupDailyLimit());
+        }
+
+        if (config.getDefaultCreateGroupLimit() != null) {
+            switchConfig.setDefaultCreateGroupLimit(config.getDefaultCreateGroupLimit());
+        }
+
+        if(checkListDiff(config.getCfUsernameList(),switchConfig.getCfUsernameList()) ||
+                checkListDiff(config.getCfPasswordList(), switchConfig.getCfPasswordList())) {
+            switchConfig.setCfUsernameList(config.getCfUsernameList());
+            switchConfig.setCfPasswordList(config.getCfPasswordList());
+            changeRemoteJudgeAccount(config.getCfUsernameList(),
+                    config.getCfPasswordList(),
+                    Constants.RemoteOJ.CODEFORCES.getName());
+        }
+
+        if (checkListDiff(config.getPojUsernameList(), switchConfig.getPojUsernameList()) ||
+                checkListDiff(config.getPojPasswordList(), switchConfig.getPojPasswordList())) {
+            switchConfig.setPojUsernameList(config.getPojUsernameList());
+            switchConfig.setPojPasswordList(config.getPojPasswordList());
+            changeRemoteJudgeAccount(config.getPojUsernameList(),
+                    config.getPojPasswordList(),
+                    Constants.RemoteOJ.POJ.getName());
+        }
+
+        if (checkListDiff(config.getSpojUsernameList(), switchConfig.getSpojUsernameList()) ||
+                checkListDiff(config.getSpojPasswordList(), switchConfig.getSpojPasswordList())) {
+            switchConfig.setSpojUsernameList(config.getSpojUsernameList());
+            switchConfig.setSpojPasswordList(config.getSpojPasswordList());
+            changeRemoteJudgeAccount(config.getSpojUsernameList(),
+                    config.getSpojPasswordList(),
+                    Constants.RemoteOJ.SPOJ.getName());
+        }
+
+        if (checkListDiff(config.getAtcoderUsernameList(), switchConfig.getAtcoderUsernameList()) ||
+                checkListDiff(config.getAtcoderPasswordList(), switchConfig.getAtcoderPasswordList())) {
+            switchConfig.setAtcoderUsernameList(config.getAtcoderUsernameList());
+            switchConfig.setAtcoderPasswordList(config.getAtcoderPasswordList());
+            changeRemoteJudgeAccount(config.getAtcoderUsernameList(),
+                    config.getAtcoderPasswordList(),
+                    Constants.RemoteOJ.ATCODER.getName());
+        }
+
+        boolean isOk = nacosSwitchConfig.publishSwitchConfig();
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+    }
+
+    private boolean checkListDiff(List<String> list1, List<String> list2) {
+        if(list1.size() != list2.size()) {
+            return true;
+        }
+        return !list1.toString().equals(list2.toString());
+    }
+
+    private void changeRemoteJudgeAccount(List<String> usernameList,
+                                          List<String> passwordList,
+                                          String oj) {
+        if(CollectionUtils.isEmpty(usernameList) || CollectionUtils.isEmpty(passwordList) || usernameList.size() != passwordList.size()) {
+            log.error("[Change by Switch] [{}]: There is no account or password configured for remote judge, " +
+                            "username list:{}, password list:{}", oj, Arrays.toString(usernameList.toArray()),
+                    Arrays.toString(passwordList.toArray()));
+        }
+
+        QueryWrapper<RemoteJudgeAccount> remoteJudgeAccountQueryWrapper = new QueryWrapper<>();
+        remoteJudgeAccountQueryWrapper.eq("oj", oj);
+
+        List<RemoteJudgeAccount> newRemoteJudgeAccountList = new ArrayList<>();
+
+        for(int i = 0; i < usernameList.size(); i ++) {
+            newRemoteJudgeAccountList.add(new RemoteJudgeAccount()
+                    .setUsername(usernameList.get(i))
+                    .setPassword(passwordList.get(i))
+                    .setStatus(true)
+                    .setVersion(0L)
+                    .setOj(oj));
+        }
+
+        if(newRemoteJudgeAccountList.size() > 0) {
+            boolean addOk = remoteJudgeAccountEntityService.saveOrUpdateBatch(newRemoteJudgeAccountList);
+            if(!addOk) {
+                log.error("Remote judge initialization failed. Failed to add account for: [{}]. Please check the configuration file and restart!", oj);
+            }
+        }
     }
 }
