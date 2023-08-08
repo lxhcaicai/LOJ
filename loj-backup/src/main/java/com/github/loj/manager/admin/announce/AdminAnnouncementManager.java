@@ -3,6 +3,7 @@ package com.github.loj.manager.admin.announce;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.common.AnnouncementEntityService;
+import com.github.loj.pojo.entity.common.Announcement;
 import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.shiro.AccountProfile;
 import lombok.extern.slf4j.Slf4j;
@@ -38,5 +39,12 @@ public class AdminAnnouncementManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         log.info("[{}],[{}],id:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_Announcement", "Delete", aid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
+
+    public void addAnnouncement(Announcement announcement) throws StatusFailException {
+        boolean isOk = announcementEntityService.save(announcement);
+        if(!isOk) {
+            throw new StatusFailException("添加失败");
+        }
     }
 }
