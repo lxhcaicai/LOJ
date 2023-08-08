@@ -7,10 +7,7 @@ import com.github.loj.service.admin.announcement.AdminAnnouncementService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiresAuthentication
@@ -25,5 +22,11 @@ public class AnnouncementController {
     public CommonResult<IPage<AnnouncementVO>> getAnnouncementList(@RequestParam(value = "limit", required = false) Integer limit,
                                                                    @RequestParam(value = "currentPage", required = false) Integer currentPage){
         return adminAnnouncementService.getAnnouncementList(limit, currentPage);
+    }
+
+    @DeleteMapping("/announcement")
+    @RequiresPermissions("announcement_admin")
+    public CommonResult<Void> deleteAnnouncement(@RequestParam("aid") Long aid) {
+        return adminAnnouncementService.deleteAnnouncement(aid);
     }
 }
