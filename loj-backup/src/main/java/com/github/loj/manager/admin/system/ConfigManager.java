@@ -1,5 +1,6 @@
 package com.github.loj.manager.admin.system;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.text.UnicodeUtil;
@@ -11,13 +12,11 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.config.NacosSwitchConfig;
+import com.github.loj.config.SwitchConfig;
 import com.github.loj.config.WebConfig;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.manager.email.EmailManager;
-import com.github.loj.pojo.dto.DBAndRedisConfigDTO;
-import com.github.loj.pojo.dto.EmailConfigDTO;
-import com.github.loj.pojo.dto.TestEmailDTO;
-import com.github.loj.pojo.dto.WebConfigDTO;
+import com.github.loj.pojo.dto.*;
 import com.github.loj.pojo.entity.common.File;
 import com.github.loj.pojo.vo.ConfigVO;
 import com.github.loj.utils.ConfigUtils;
@@ -320,5 +319,12 @@ public class ConfigManager {
             log.error("通过nacos修改网站配置异常--------------->{}", e.getMessage());
         }
         return isOk;
+    }
+
+    public SwitchConfigDTO getSwitchConfig() {
+        SwitchConfig switchConfig = nacosSwitchConfig.getSwitchConfig();
+        SwitchConfigDTO switchConfigDTO = new SwitchConfigDTO();
+        BeanUtil.copyProperties(switchConfig, switchConfigDTO);
+        return switchConfigDTO;
     }
 }

@@ -2,10 +2,7 @@ package com.github.loj.service.admin.system;
 
 import cn.hutool.json.JSONObject;
 import com.github.loj.common.result.CommonResult;
-import com.github.loj.pojo.dto.DBAndRedisConfigDTO;
-import com.github.loj.pojo.dto.EmailConfigDTO;
-import com.github.loj.pojo.dto.TestEmailDTO;
-import com.github.loj.pojo.dto.WebConfigDTO;
+import com.github.loj.pojo.dto.*;
 
 import java.util.List;
 
@@ -30,4 +27,6 @@ public interface ConfigService {
     public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig();
 
     public CommonResult<Void> setDBAndRedisConfig(DBAndRedisConfigDTO config);
+
+    public CommonResult<SwitchConfigDTO> getSwitchConfig();
 }
