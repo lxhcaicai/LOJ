@@ -83,4 +83,14 @@ public class ConfigServiceImpl implements ConfigService {
     public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig() {
         return CommonResult.successResponse(configManager.getDBAndRedisConfig());
     }
+
+    @Override
+    public CommonResult<Void> setDBAndRedisConfig(DBAndRedisConfigDTO config) {
+        try {
+            configManager.setDBAndRedisConfig(config);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

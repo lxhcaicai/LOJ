@@ -28,4 +28,6 @@ public interface ConfigService {
     public CommonResult<Void> testEmail(TestEmailDTO testEmailDTO);
 
     public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig();
+
+    public CommonResult<Void> setDBAndRedisConfig(DBAndRedisConfigDTO config);
 }

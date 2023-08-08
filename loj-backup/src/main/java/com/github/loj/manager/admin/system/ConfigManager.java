@@ -6,6 +6,9 @@ import cn.hutool.core.text.UnicodeUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.system.oshi.OshiUtil;
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.config.NacosSwitchConfig;
 import com.github.loj.config.WebConfig;
@@ -17,6 +20,7 @@ import com.github.loj.pojo.dto.TestEmailDTO;
 import com.github.loj.pojo.dto.WebConfigDTO;
 import com.github.loj.pojo.entity.common.File;
 import com.github.loj.pojo.vo.ConfigVO;
+import com.github.loj.utils.ConfigUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 @Component
 @Slf4j(topic = "loj")
@@ -48,6 +53,9 @@ public class ConfigManager {
     @Autowired
     private NacosSwitchConfig nacosSwitchConfig;
 
+    @Autowired
+    private ConfigUtils configUtils;
+
     @Value("${spring.cloud.nacos.url}")
     private String NACOS_URL;
 
@@ -56,6 +64,27 @@ public class ConfigManager {
 
     @Value("${service-url.name}")
     private String judgeServiceName;
+
+    @Value("${spring.cloud.nacos.config.username}")
+    private String nacosUsername;
+
+    @Value("${spring.cloud.nacos.config.password}")
+    private String nacosPassword;
+
+    @Value("${spring.cloud.nacos.config.prefix}")
+    private String prefix;
+
+    @Value("${spring.profiles.active}")
+    private String active;
+
+    @Value("${spring.cloud.nacos.config.file-extension}")
+    private String fileExtension;
+
+    @Value("${spring.cloud.nacos.config.group}")
+    private String GROUP;
+
+    @Value("${spring.cloud.nacos.config.type}")
+    private String TYPE;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -231,5 +260,65 @@ public class ConfigManager {
                 .redisPort(configVo.getMysqlPort())
                 .redisPassword(configVo.getRedisPassword())
                 .build();
+    }
+
+    public void setDBAndRedisConfig(DBAndRedisConfigDTO config) throws StatusFailException {
+
+        if(!StringUtils.isEmpty(config.getDbName())) {
+            configVo.setMysqlDBName(config.getDbName());
+        }
+
+        if (!StringUtils.isEmpty(config.getDbHost())) {
+            configVo.setMysqlHost(config.getDbHost());
+        }
+
+        if (config.getDbPort() != null) {
+            configVo.setMysqlPort(config.getDbPort());
+        }
+
+        if (!StringUtils.isEmpty(config.getDbUsername())) {
+            configVo.setMysqlUsername(config.getDbUsername());
+        }
+
+        if (!StringUtils.isEmpty(config.getDbPassword())) {
+            configVo.setMysqlPassword(config.getDbPassword());
+        }
+
+        if (!StringUtils.isEmpty(config.getRedisHost())) {
+            configVo.setRedisHost(config.getRedisHost());
+        }
+
+        if(config.getRedisHost() != null) {
+            configVo.setRedisHost(config.getRedisHost());
+        }
+        if (!StringUtils.isEmpty(config.getRedisPassword())) {
+            configVo.setRedisPassword(config.getRedisPassword());
+        }
+
+        boolean isOk = sendNewConfigToNacos();
+
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+    }
+
+    public boolean sendNewConfigToNacos() {
+
+        Properties properties = new Properties();
+        properties.put("serverAddr",NACOS_URL);
+
+        // 如果需要用户名和密码登录
+        properties.put("username", nacosUsername);
+        properties.put("password", nacosPassword);
+
+        ConfigService configService = null;
+        boolean isOk = false;
+        try {
+            configService = NacosFactory.createConfigService(properties);
+            isOk = configService.publishConfig(prefix + "-" + active + "." + fileExtension, GROUP, configUtils.getConfigContent(), TYPE);
+        } catch (NacosException e) {
+            log.error("通过nacos修改网站配置异常--------------->{}", e.getMessage());
+        }
+        return isOk;
     }
 }

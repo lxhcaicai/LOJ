@@ -77,4 +77,10 @@ public class ConfigController {
     public CommonResult<DBAndRedisConfigDTO> getDBAndRedisConfig() {
         return configService.getDBAndRedisConfig();
     }
+
+    @RequiresPermissions("system_info_admin")
+    @PutMapping("/set-db-and-redis-config")
+    public CommonResult<Void> setDBAndRedisConfig(@RequestBody DBAndRedisConfigDTO config) {
+        return configService.setDBAndRedisConfig(config);
+    }
 }

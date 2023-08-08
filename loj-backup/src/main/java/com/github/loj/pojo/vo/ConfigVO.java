@@ -29,7 +29,7 @@ public class ConfigVO {
     private Integer mysqlPort;
 
     @Value("${loj.db.public-port:3306}")
-    private Integer mysqlPublishPort;
+    private Integer mysqlPublichPort;
 
     @Value("${loj.judge.token}")
     private String judgeToken;
