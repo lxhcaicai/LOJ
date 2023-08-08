@@ -38,4 +38,10 @@ public class AnnouncementController {
     public CommonResult<Void> addAnnouncement(@RequestBody Announcement announcement) {
         return adminAnnouncementService.addAnnouncement(announcement);
     }
+
+    @PutMapping("/announcement")
+    @RequiresPermissions("announcement_admin")
+    public CommonResult<Void> updateAnnouncement(@RequestBody Announcement announcement) {
+        return adminAnnouncementService.updateAnnouncement(announcement);
+    }
 }

@@ -47,4 +47,11 @@ public class AdminAnnouncementManager {
             throw new StatusFailException("添加失败");
         }
     }
+
+    public void updateAnnouncement(Announcement announcement) throws StatusFailException {
+        boolean isOk = announcementEntityService.saveOrUpdate(announcement);
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+    }
 }

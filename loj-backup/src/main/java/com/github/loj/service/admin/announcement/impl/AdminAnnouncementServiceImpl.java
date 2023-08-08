@@ -41,4 +41,14 @@ public class AdminAnnouncementServiceImpl implements AdminAnnouncementService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> updateAnnouncement(Announcement announcement) {
+        try {
+            adminAnnouncementManager.updateAnnouncement(announcement);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
