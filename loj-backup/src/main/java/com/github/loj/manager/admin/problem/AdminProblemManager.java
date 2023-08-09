@@ -3,10 +3,14 @@ package com.github.loj.manager.admin.problem;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
@@ -58,5 +62,24 @@ public class AdminProblemManager {
             problemList = problemEntityService.page(iPage, queryWrapper);
         }
         return problemList;
+    }
+
+    public Problem getProblem(Long pid) throws StatusFailException, StatusForbiddenException {
+
+        Problem problem = problemEntityService.getById(pid);
+        if(problem != null) {
+            // 获取当前登录的用户
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+            boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+            // 只有超级管理员和题目管理员、题目创建者才能操作
+            if(!isRoot && !isProblemAdmin && !userRolesVo.getUsername().equals(problem.getAuthor())) {
+                throw new StatusForbiddenException("对不起，你无权限查看题目！");
+            }
+            return problem;
+        } else {
+            throw new StatusFailException("查询失败！");
+        }
     }
 }

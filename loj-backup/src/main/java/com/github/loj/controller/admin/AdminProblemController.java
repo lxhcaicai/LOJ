@@ -30,4 +30,11 @@ public class AdminProblemController {
                                                        @RequestParam(value = "oj", required = false) String oj) {
         return adminProblemService.getProblemList(limit,currentPage,keyword,auth,oj);
     }
+
+    @GetMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Problem> getProblem(@RequestParam("pid") Long pid) {
+        return adminProblemService.getProblem(pid);
+    }
 }
