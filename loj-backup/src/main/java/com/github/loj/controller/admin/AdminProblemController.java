@@ -8,10 +8,7 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/amin/problem")
@@ -36,5 +33,12 @@ public class AdminProblemController {
     @RequiresRoles(value = {"root","admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<Problem> getProblem(@RequestParam("pid") Long pid) {
         return adminProblemService.getProblem(pid);
+    }
+
+    @DeleteMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> deleteProblem(@RequestParam("pid") Long pid) {
+        return adminProblemService.deleteProblem(pid);
     }
 }

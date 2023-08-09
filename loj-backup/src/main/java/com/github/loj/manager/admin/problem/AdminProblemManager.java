@@ -1,5 +1,6 @@
 package com.github.loj.manager.admin.problem;
 
+import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.io.File;
 
 @Component
 @RefreshScope
@@ -80,6 +83,19 @@ public class AdminProblemManager {
             return problem;
         } else {
             throw new StatusFailException("查询失败！");
+        }
+    }
+
+    public void deleteProblem(Long pid) throws StatusFailException {
+        boolean isOk = problemEntityService.removeById(pid);
+        // problem的id为其他表的外键的表中的对应数据都会被一起删除！
+        if(isOk) {
+            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+            log.info("[{}],[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Problem", "Delete", pid, userRolesVo.getUid(), userRolesVo.getUsername());
+        } else {
+            throw new StatusFailException("删除失败！");
         }
     }
 }

@@ -34,4 +34,14 @@ public class AdminProblemServiceImpl implements AdminProblemService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteProblem(Long pid) {
+        try {
+            adminProblemManager.deleteProblem(pid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
