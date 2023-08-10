@@ -2,12 +2,15 @@ package com.github.loj.manager.admin.problem;
 
 import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.dto.ProblemDTO;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
@@ -29,6 +32,9 @@ public class AdminProblemManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
 
     @Resource
     private ProblemValidator problemValidator;
@@ -117,6 +123,45 @@ public class AdminProblemManager {
         boolean isOk = problemEntityService.adminAddProblem(problemDTO);
         if(isOk) {
             throw new StatusFailException("添加失败");
+        }
+    }
+
+    public void updateProblem(ProblemDTO problemDTO) throws StatusFailException, StatusForbiddenException {
+
+        problemValidator.validateProblemUpdate(problemDTO.getProblem());
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        // 只有超级管理员和题目管理员、题目创建者才能操作
+        if(!isRoot && !isProblemAdmin && !userRolesVo.getUsername().equals(problemDTO.getProblem().getAuthor())) {
+            throw new StatusForbiddenException("对不起，你无权限修改题目！");
+        }
+
+        String problemId = problemDTO.getProblem().getProblemId().toUpperCase();
+        QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("problem_id", problemId);
+        Problem problem = problemEntityService.getOne(queryWrapper);
+
+        // 如果problem_id不是原来的且已存在该problem_id，则修改失败！
+        if(problem != null && problem.getId().longValue() != problemDTO.getProblem().getId()) {
+            throw new StatusFailException("当前的Problem ID 已被使用，请重新更换新的！");
+        }
+
+        // 记录修改题目的用户
+        problemDTO.getProblem().setModifiedUser(userRolesVo.getUsername());
+
+        boolean result = problemEntityService.adminUpdateProblem(problemDTO);
+        if(result) {  // 更新成功
+            if(problem != null) {
+                UpdateWrapper<Judge> judgeUpdateWrapper = new UpdateWrapper<>();
+                judgeUpdateWrapper.eq("pid", problemDTO.getProblem().getId())
+                        .set("display_pid", problemId);
+                judgeEntityService.update(judgeUpdateWrapper);
+            }
+        } else {
+            throw new StatusFailException("修改失败");
         }
     }
 }

@@ -55,4 +55,16 @@ public class AdminProblemServiceImpl implements AdminProblemService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> updateProblem(ProblemDTO problemDTO) {
+        try {
+            adminProblemManager.updateProblem(problemDTO);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

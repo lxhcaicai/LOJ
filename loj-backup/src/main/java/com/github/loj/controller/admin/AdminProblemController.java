@@ -49,4 +49,11 @@ public class AdminProblemController {
     public CommonResult<Void> addProblem(@RequestBody ProblemDTO problemDTO) {
         return adminProblemService.addProblem(problemDTO);
     }
+
+    @PutMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin","problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> updateProblem(@RequestBody ProblemDTO problemDTO) {
+        return adminProblemService.updateProblem(problemDTO);
+    }
 }

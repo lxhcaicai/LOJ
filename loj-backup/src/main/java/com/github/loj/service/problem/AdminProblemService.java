@@ -13,4 +13,6 @@ public interface AdminProblemService {
     public CommonResult<Void> deleteProblem(Long pid);
 
     public CommonResult<Void> addProblem(ProblemDTO problemDTO);
+
+    public CommonResult<Void> updateProblem(ProblemDTO problemDTO);
 }

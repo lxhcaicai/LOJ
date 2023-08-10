@@ -62,4 +62,14 @@ public class ProblemValidator {
             }
         }
     }
+
+    public void validateProblemUpdate(Problem problem) throws StatusFailException {
+        if(problem == null) {
+            throw new StatusFailException("题目的配置项不能为空！");
+        }
+        if(problem.getId() == null) {
+            throw new StatusFailException("题目的id不能为空！");
+        }
+        validateeProblem(problem);
+    }
 }
