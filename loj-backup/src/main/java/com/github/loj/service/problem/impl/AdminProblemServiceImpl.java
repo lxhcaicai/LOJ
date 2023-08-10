@@ -6,6 +6,7 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.admin.problem.AdminProblemManager;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.service.problem.AdminProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,16 @@ public class AdminProblemServiceImpl implements AdminProblemService {
     public CommonResult<Void> deleteProblem(Long pid) {
         try {
             adminProblemManager.deleteProblem(pid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addProblem(ProblemDTO problemDTO) {
+        try {
+            adminProblemManager.addProblem(problemDTO);
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());

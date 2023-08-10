@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.service.problem.AdminProblemService;
 import org.apache.shiro.authz.annotation.Logical;
@@ -40,5 +41,12 @@ public class AdminProblemController {
     @RequiresRoles(value = {"root", "problem_admin"}, logical = Logical.OR)
     public CommonResult<Void> deleteProblem(@RequestParam("pid") Long pid) {
         return adminProblemService.deleteProblem(pid);
+    }
+
+    @PostMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin","problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> addProblem(@RequestBody ProblemDTO problemDTO) {
+        return adminProblemService.addProblem(problemDTO);
     }
 }

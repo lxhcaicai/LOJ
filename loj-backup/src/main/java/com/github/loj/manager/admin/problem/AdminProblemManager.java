@@ -7,9 +7,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
+import com.github.loj.validator.ProblemValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.io.File;
 
 @Component
@@ -26,6 +29,9 @@ public class AdminProblemManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Resource
+    private ProblemValidator problemValidator;
 
     public IPage<Problem> getProblemList(Integer limit, Integer currentPage, String keyword, Integer auth, String oj) {
 
@@ -96,6 +102,21 @@ public class AdminProblemManager {
                     "Admin_Problem", "Delete", pid, userRolesVo.getUid(), userRolesVo.getUsername());
         } else {
             throw new StatusFailException("删除失败！");
+        }
+    }
+
+    public void addProblem(ProblemDTO problemDTO) throws StatusFailException {
+        problemValidator.validateeProblem(problemDTO.getProblem());
+        QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("problem_id", problemDTO.getProblem().getProblemId().toUpperCase());
+        Problem problem = problemEntityService.getOne(queryWrapper);
+        if(problem != null) {
+            throw new StatusFailException("该题目的Problem ID已存在，请更换！");
+        }
+
+        boolean isOk = problemEntityService.adminAddProblem(problemDTO);
+        if(isOk) {
+            throw new StatusFailException("添加失败");
         }
     }
 }

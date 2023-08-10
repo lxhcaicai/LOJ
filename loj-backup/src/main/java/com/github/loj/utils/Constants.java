@@ -376,4 +376,53 @@ public class Constants {
         }
     }
 
+    public enum ProblemType {
+        ACM(0),
+        OI(1);
+
+        private final Integer type;
+
+        ProblemType(Integer type) {
+            this.type = type;
+        }
+
+        public Integer getType() {
+            return type;
+        }
+
+        public static ProblemType getProblemType(Integer type) {
+            for(ProblemType problemType: ProblemType.values()) {
+                if(problemType.getType().equals(type)) {
+                    return problemType;
+                }
+            }
+            return null;
+        }
+    }
+
+    public enum ProblemAuth {
+        PUBLIC(1),
+        PRIVATE(2),
+        CONTEST(3);
+
+        private final Integer auth;
+
+        ProblemAuth(Integer auth) {
+            this.auth = auth;
+        }
+
+        public Integer getAuth() {
+            return auth;
+        }
+
+        public static ProblemAuth getProblemAuth(Integer auth) {
+            for(ProblemAuth problemAuth: ProblemAuth.values()) {
+                if(problemAuth.getAuth().equals(auth)) {
+                    return problemAuth;
+                }
+            }
+            return null;
+        }
+    }
+
 }
