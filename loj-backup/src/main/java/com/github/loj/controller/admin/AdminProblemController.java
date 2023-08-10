@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.ProblemCase;
 import com.github.loj.service.problem.AdminProblemService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/amin/problem")
@@ -55,5 +58,13 @@ public class AdminProblemController {
     @RequiresRoles(value = {"root", "admin","problem_admin"}, logical = Logical.OR)
     public CommonResult<Void> updateProblem(@RequestBody ProblemDTO problemDTO) {
         return adminProblemService.updateProblem(problemDTO);
+    }
+
+    @GetMapping("/get-problem-cases")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin","problem_admin"}, logical = Logical.OR)
+    public CommonResult<List<ProblemCase>> getProblemCases(@RequestParam("pid") Long pid,
+                                                           @RequestParam(value = "isUpload", defaultValue = "true") Boolean isUpload) {
+        return adminProblemService.getProblemCases(pid,isUpload);
     }
 }

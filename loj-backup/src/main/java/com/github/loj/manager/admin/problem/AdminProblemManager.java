@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.judge.JudgeEntityService;
+import com.github.loj.dao.problem.ProblemCaseEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.ProblemCase;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.ProblemValidator;
@@ -24,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.List;
 
 @Component
 @RefreshScope
@@ -35,6 +38,9 @@ public class AdminProblemManager {
 
     @Autowired
     private JudgeEntityService judgeEntityService;
+
+    @Autowired
+    private ProblemCaseEntityService problemCaseEntityService;
 
     @Resource
     private ProblemValidator problemValidator;
@@ -163,5 +169,14 @@ public class AdminProblemManager {
         } else {
             throw new StatusFailException("修改失败");
         }
+    }
+
+    public List<ProblemCase> getProblemCases(Long pid, Boolean isUpload) {
+        QueryWrapper<ProblemCase> problemCaseQueryWrapper = new QueryWrapper<>();
+        problemCaseQueryWrapper.eq("pid",pid).eq("status",0);
+        if(isUpload) {
+            problemCaseQueryWrapper.last("order by length(input) asc, input asc");
+        }
+        return problemCaseEntityService.list(problemCaseQueryWrapper);
     }
 }
