@@ -67,4 +67,11 @@ public class AdminProblemController {
                                                            @RequestParam(value = "isUpload", defaultValue = "true") Boolean isUpload) {
         return adminProblemService.getProblemCases(pid,isUpload);
     }
+
+    @PutMapping("/change-problem-auth")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin","problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> changeProblemAuth(@RequestBody Problem problem) {
+        return adminProblemService.changeProblemAuth(problem);
+    }
 }

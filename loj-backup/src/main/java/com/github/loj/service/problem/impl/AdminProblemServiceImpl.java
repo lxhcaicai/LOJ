@@ -77,4 +77,16 @@ public class AdminProblemServiceImpl implements AdminProblemService {
         List<ProblemCase> problemCaseList = adminProblemManager.getProblemCases(pid, isUpload);
         return CommonResult.successResponse(problemCaseList);
     }
+
+    @Override
+    public CommonResult<Void> changeProblemAuth(Problem problem) {
+        try {
+            adminProblemManager.changeProblemAuth(problem);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

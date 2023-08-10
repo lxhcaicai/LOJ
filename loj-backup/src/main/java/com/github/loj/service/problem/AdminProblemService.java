@@ -20,4 +20,6 @@ public interface AdminProblemService {
     public CommonResult<Void> updateProblem(ProblemDTO problemDTO);
 
     public CommonResult<List<ProblemCase>> getProblemCases(Long pid, Boolean isUpload);
+
+    public CommonResult<Void> changeProblemAuth(Problem problem);
 }

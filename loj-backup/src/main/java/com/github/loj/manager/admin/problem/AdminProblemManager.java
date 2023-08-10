@@ -179,4 +179,29 @@ public class AdminProblemManager {
         }
         return problemCaseEntityService.list(problemCaseQueryWrapper);
     }
+
+    public void changeProblemAuth(Problem problem) throws StatusForbiddenException, StatusFailException {
+        // 普通管理员只能将题目变成隐藏题目和比赛题目
+        boolean root = SecurityUtils.getSubject().hasRole("root");
+
+        boolean problemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+
+        if(!problemAdmin && !root && problem.getAuth() == 1) {
+            throw new StatusForbiddenException("修改失败！你无权限公开题目！");
+        }
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        UpdateWrapper<Problem> problemUpdateWrapper = new UpdateWrapper<>();
+        problemUpdateWrapper.eq("id",problem.getId())
+                .set("auth",problem.getAuth())
+                .set("modified_user", userRolesVo.getUsername());
+
+        boolean isOk = problemEntityService.update(problemUpdateWrapper);
+        if(!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+        log.info("[{}],[{}],value:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Problem", "Change_Auth", problem.getAuth(), problem.getId(), userRolesVo.getUid(), userRolesVo.getUsername());
+    }
 }
