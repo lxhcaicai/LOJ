@@ -14,4 +14,6 @@ public interface GroupAnnouncementService {
     public CommonResult<Void> addAnnouncement(Announcement announcement);
 
     public CommonResult<Void> updateAnnouncement(Announcement announcement);
+
+    public CommonResult<Void> deleteAnnouncement(Long aid);
 }

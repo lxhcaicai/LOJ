@@ -40,4 +40,9 @@ public class GroupAnnouncementController {
     public CommonResult<Void> updateAnnouncement(@RequestBody Announcement announcement) {
         return groupAnnouncementService.updateAnnouncement(announcement);
     }
+
+    @DeleteMapping("/announcement")
+    public CommonResult<Void> deleteAnnouncement(@RequestParam(value = "aid", required = true) Long aid) {
+        return groupAnnouncementService.deleteAnnouncement(aid);
+    }
 }
