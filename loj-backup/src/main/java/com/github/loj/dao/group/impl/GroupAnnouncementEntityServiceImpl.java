@@ -26,4 +26,13 @@ public class GroupAnnouncementEntityServiceImpl extends ServiceImpl<GroupAnnounc
 
         return iPage.setRecords(announcementList);
     }
+
+    @Override
+    public IPage<AnnouncementVO> getAdminAnnouncementList(Integer limit, Integer currentPage, Long gid) {
+        IPage<AnnouncementVO> iPage = new Page<>(currentPage, limit);
+
+        List<AnnouncementVO> announcementList = groupAnnouncementMapper.getAdminAnnouncementList(iPage, gid);
+
+        return iPage.setRecords(announcementList);
+    }
 }

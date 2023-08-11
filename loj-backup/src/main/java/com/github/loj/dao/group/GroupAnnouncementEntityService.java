@@ -8,4 +8,6 @@ import com.github.loj.pojo.vo.AnnouncementVO;
 public interface GroupAnnouncementEntityService extends IService<Announcement> {
 
     IPage<AnnouncementVO> getAnnouncementList(int limit, int currentPage, Long gid);
+
+    IPage<AnnouncementVO> getAdminAnnouncementList(Integer limit, Integer currentPage, Long gid);
 }

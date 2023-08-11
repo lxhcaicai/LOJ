@@ -49,4 +49,28 @@ public class GroupAnnouncementManager {
         }
         return groupAnnouncementEntityService.getAnnouncementList(limit,currentPage,gid);
     }
+
+    public IPage<AnnouncementVO> getAdminAnnouncementList(Integer limit, Integer currentPage, Long gid) throws StatusNotFoundException, StatusForbiddenException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Group group = groupEntityService.getById(gid);
+
+        if (group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("获取公告失败，该团队不存在或已被封禁！");
+        }
+
+        if(!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        if(currentPage == null || currentPage < 1) {
+            currentPage = 1;
+        }
+        if(limit == null || limit < 1) {
+            limit = 10;
+        }
+        return groupAnnouncementEntityService.getAdminAnnouncementList(limit,currentPage,gid);
+    }
 }
