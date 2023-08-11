@@ -35,4 +35,9 @@ public class GroupAnnouncementController {
     public CommonResult<Void> addAnnouncement(@RequestBody Announcement announcement) {
         return groupAnnouncementService.addAnnouncement(announcement);
     }
+
+    @PutMapping("/announcement")
+    public CommonResult<Void> updateAnnouncement(@RequestBody Announcement announcement) {
+        return groupAnnouncementService.updateAnnouncement(announcement);
+    }
 }

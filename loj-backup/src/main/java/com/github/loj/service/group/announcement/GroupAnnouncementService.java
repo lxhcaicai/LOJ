@@ -12,4 +12,6 @@ public interface GroupAnnouncementService {
     public CommonResult<IPage<AnnouncementVO>> getAdminAnnouncementList(Integer limit, Integer currentPage, Long gid);
 
     public CommonResult<Void> addAnnouncement(Announcement announcement);
+
+    public CommonResult<Void> updateAnnouncement(Announcement announcement);
 }
