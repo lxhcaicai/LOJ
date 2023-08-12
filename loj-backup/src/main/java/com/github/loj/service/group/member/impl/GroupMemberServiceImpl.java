@@ -27,4 +27,15 @@ public class GroupMemberServiceImpl implements GroupMemberService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
         }
     }
+
+    @Override
+    public CommonResult<IPage<GroupMemberVO>> getApplyList(Integer limit, Integer currentPage, String keyword, Integer auth, Long gid) {
+        try {
+            return CommonResult.successResponse(groupMemberManager.getApplyList(limit,currentPage, keyword,auth,gid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        }
+    }
 }

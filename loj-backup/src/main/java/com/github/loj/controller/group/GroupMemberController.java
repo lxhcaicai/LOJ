@@ -28,4 +28,13 @@ public class GroupMemberController {
         return groupMemberService.getMemberList(limit,currentPage,keyword,auth,gid);
     }
 
+    @GetMapping("/get-apply-list")
+    public CommonResult<IPage<GroupMemberVO>> getApplyList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                            @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                            @RequestParam(value = "keyword", required = false) String keyword,
+                                                            @RequestParam(value = "auth", required = false) Integer auth,
+                                                            @RequestParam(value = "gid", required = true) Long gid) {
+        return groupMemberService.getApplyList(limit,currentPage,keyword,auth,gid);
+    }
+
 }
