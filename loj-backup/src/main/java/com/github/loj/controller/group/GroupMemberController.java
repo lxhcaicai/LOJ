@@ -2,6 +2,7 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.group.GroupMember;
 import com.github.loj.service.group.member.GroupMemberService;
 import com.github.loj.pojo.vo.GroupMemberVO;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -42,4 +43,11 @@ public class GroupMemberController {
 
         return groupMemberService.addMember(gid,code,reason);
     }
+
+    @PutMapping("/member")
+    @RequiresAuthentication
+    public CommonResult<Void> updateMember(@RequestBody GroupMember groupMember) {
+        return groupMemberService.updateMember(groupMember);
+    }
+
 }

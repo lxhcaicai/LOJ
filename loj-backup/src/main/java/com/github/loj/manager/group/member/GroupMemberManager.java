@@ -144,4 +144,59 @@ public class GroupMemberManager {
             }
         }
     }
+
+    public void updateMember(GroupMember groupMember) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long gid = groupMember.getGid();
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("更新成员失败，该团队不存在或已被封禁！");
+        }
+
+        if(group.getUid().equals(groupMember.getUid())) {
+            throw new StatusNotFoundException("对不起，不允许操作团队的Owner权限！");
+        }
+
+        boolean isAgreedNewMember = false;
+
+        QueryWrapper<GroupMember> groupMemberQueryWrapper = new QueryWrapper<>();
+        groupMemberQueryWrapper.eq("gid", gid)
+                .eq("uid", userRolesVo.getUid())
+                .in("auth", 4,5);
+
+        GroupMember currentGroupMember = groupMemberEntityService.getOne(groupMemberQueryWrapper);
+
+        if(!isRoot && currentGroupMember == null) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<GroupMember> changeGroupMemberQueryWrapper = new QueryWrapper<>();
+        changeGroupMemberQueryWrapper.eq("gid", gid).eq("uid", groupMember.getUid());
+
+        GroupMember changeGroupMember =  groupMemberEntityService.getOne(changeGroupMemberQueryWrapper);
+
+        if(changeGroupMember == null) {
+            throw new StatusNotFoundException("该用户不在团队中！");
+        }
+
+        if(!isRoot && (changeGroupMember.getAuth() >= currentGroupMember.getAuth()
+                || groupMember.getAuth() >= currentGroupMember.getAuth())) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = groupMemberEntityService.updateById(groupMember);
+        if(!isOk) {
+            throw new StatusFailException("更新失败，请重新尝试！");
+        } else {
+            if(changeGroupMember.getAuth() <= 2) {  // 之前是申请中，则之后通过审批就要发消息
+                groupMemberEntityService.addWelcomeNoticeToGroupNewMember(gid, group.getName(), groupMember.getUid());
+            }
+        }
+    }
 }

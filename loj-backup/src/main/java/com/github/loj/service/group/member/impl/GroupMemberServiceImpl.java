@@ -7,6 +7,7 @@ import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.group.member.GroupMemberManager;
+import com.github.loj.pojo.entity.group.GroupMember;
 import com.github.loj.service.group.member.GroupMemberService;
 import com.github.loj.pojo.vo.GroupMemberVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,20 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     public CommonResult<Void> addMember(Long gid, String code, String reason) {
         try {
             groupMemberManager.addMember(gid,code,reason);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
+
+    @Override
+    public CommonResult<Void> updateMember(GroupMember groupMember) {
+        try {
+            groupMemberManager.updateMember(groupMember);
             return CommonResult.successResponse();
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
