@@ -50,4 +50,11 @@ public class GroupMemberController {
         return groupMemberService.updateMember(groupMember);
     }
 
+    @DeleteMapping("/member")
+    @RequiresAuthentication
+    public CommonResult<Void> deleteMember(@RequestParam(value = "uid", required = true) String uid,
+                                           @RequestParam(value = "gid", required = true) Long gid) {
+        return groupMemberService.deleteMember(uid,gid);
+    }
+
 }

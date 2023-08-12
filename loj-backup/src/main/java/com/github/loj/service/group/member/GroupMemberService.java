@@ -13,4 +13,6 @@ public interface GroupMemberService {
     public CommonResult<Void> addMember(Long gid, String code, String reason);
 
     public CommonResult<Void> updateMember(GroupMember groupMember);
+
+    public CommonResult<Void> deleteMember(String uid, Long gid);
 }

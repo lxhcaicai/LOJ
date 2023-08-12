@@ -199,4 +199,55 @@ public class GroupMemberManager {
             }
         }
     }
+
+    public void deleteMember(String uid, Long gid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("删除成员失败，该团队不存在或已被封禁！");
+        }
+
+        if(userRolesVo.getUid().equals(uid)) {
+            throw new StatusNotFoundException("对不起，您无法删除自己！");
+        }
+
+        if(group.getUid().equals(uid)) {
+            throw new StatusNotFoundException("对不起，不允许删除团队的Owner！");
+        }
+
+        QueryWrapper<GroupMember>  groupMemberQueryWrapper = new QueryWrapper<>();
+        groupMemberQueryWrapper.eq("gid", gid)
+                .eq("uid", userRolesVo.getUid())
+                .in("auth", 4,5);
+
+        GroupMember currentGroupMember = groupMemberEntityService.getOne(groupMemberQueryWrapper);
+
+        if(currentGroupMember == null && !isRoot) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<GroupMember> changeGroupMemberQueryWrapper = new QueryWrapper<>();
+        changeGroupMemberQueryWrapper.eq("gid", gid).eq("uid", uid);
+
+        GroupMember changeGroupMember = groupMemberEntityService.getOne(changeGroupMemberQueryWrapper);
+
+        if(changeGroupMember == null) {
+            throw new StatusNotFoundException("该用户不在团队中！");
+        }
+
+        if(!isRoot && currentGroupMember.getAuth() <= changeGroupMember.getAuth()) {
+            throw new StatusNotFoundException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = groupMemberEntityService.remove(changeGroupMemberQueryWrapper);
+        if(!isOk) {
+            throw new StatusFailException("删除失败，请重新尝试！");
+        } else {
+            groupMemberEntityService.addRemoveNoticeToGroupMember(gid,group.getName(),userRolesVo.getUsername(),uid);
+        }
+    }
 }
