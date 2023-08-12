@@ -6,10 +6,7 @@ import com.github.loj.service.group.member.GroupMemberService;
 import com.github.loj.pojo.vo.GroupMemberVO;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiresAuthentication
@@ -37,4 +34,12 @@ public class GroupMemberController {
         return groupMemberService.getApplyList(limit,currentPage,keyword,auth,gid);
     }
 
+    @PostMapping("/member")
+    @RequiresAuthentication
+    public CommonResult<Void> addGroupMember(@RequestParam(value = "gid", required = true) Long gid,
+                                             @RequestParam(value = "code", required = false) String code,
+                                             @RequestParam(value = "reason", required = false) String reason) {
+
+        return groupMemberService.addMember(gid,code,reason);
+    }
 }

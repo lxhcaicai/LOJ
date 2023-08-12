@@ -8,4 +8,6 @@ public interface GroupMemberService {
     public CommonResult<IPage<GroupMemberVO>> getMemberList(Integer limit, Integer currentPage, String keyword, Integer auth, Long gid);
 
     public CommonResult<IPage<GroupMemberVO>> getApplyList(Integer limit, Integer currentPage, String keyword, Integer auth, Long gid);
+
+    public CommonResult<Void> addMember(Long gid, String code, String reason);
 }
