@@ -25,6 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class GroupManager {
 
@@ -259,6 +262,39 @@ public class GroupManager {
         boolean isOk = groupEntityService.updateById(group);
         if(!isOk) {
             throw new StatusFailException("更新失败，请重新尝试！");
+        }
+    }
+
+    public void deleteGroup(Long gid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group != null || group.getStatus() == 11 && !isRoot) {
+            throw new StatusNotFoundException("删除失败，该团队不存在或已被封禁！");
+        }
+
+        if(!isRoot && !userRolesVo.getUid().equals(group.getUid())) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<GroupMember> groupMemberQueryWrapper = new QueryWrapper<>();
+        groupMemberQueryWrapper.eq("gid",gid).in("auth", 3, 4,5);
+        List<GroupMember> groupMemberList = groupMemberEntityService.list(groupMemberQueryWrapper);
+        List<String> groupMemberUidList = groupMemberList.stream()
+                .map(GroupMember::getUid)
+                .collect(Collectors.toList());
+
+        boolean isOk = groupEntityService.removeById(gid);
+        if(!isOk) {
+            throw new StatusFailException("删除失败，请重新尝试！");
+        } else {
+            groupMemberEntityService.addDissolutionNoticeToGroupMember(gid,
+                    group.getName(),
+                    groupMemberUidList,
+                    userRolesVo.getUsername());
         }
     }
 }

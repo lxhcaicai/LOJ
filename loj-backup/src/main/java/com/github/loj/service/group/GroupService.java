@@ -20,4 +20,6 @@ public interface GroupService {
     public CommonResult<Void> addGroup(Group group);
 
     public CommonResult<Void> updateGroup(Group group);
+
+    public CommonResult<Void> deleteGroup(Long gid);
 }

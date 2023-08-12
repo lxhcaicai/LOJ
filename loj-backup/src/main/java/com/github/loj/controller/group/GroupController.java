@@ -59,4 +59,11 @@ public class GroupController {
     public CommonResult<Void> updateGroup(@RequestBody Group group) {
         return groupService.updateGroup(group);
     }
+
+    @DeleteMapping("/group")
+    @RequiresAuthentication
+    @RequiresPermissions("group_del")
+    public CommonResult<Void> deleteGroup(@RequestParam(value = "gid", required = true) Long gid) {
+        return groupService.deleteGroup(gid);
+    }
 }
