@@ -3,8 +3,10 @@ package com.github.loj.manager;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
+import com.github.loj.common.result.CommonResult;
 import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.pojo.entity.group.Group;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.GroupVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.validator.GroupValidator;
@@ -64,5 +66,28 @@ public class GroupManager {
             group.setCode(null);
         }
         return group;
+    }
+
+    public AccessVO getGroupAccess(Long gid) throws StatusNotFoundException, StatusForbiddenException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        boolean access = false;
+
+        if(groupValidator.isGroupMember(userRolesVo.getUid(), gid) || isRoot) {
+            access = true;
+            Group group = groupEntityService.getById(gid);
+            if(group == null || group.getStatus() == 1 && !isRoot) {
+                throw new StatusNotFoundException("获取权限失败，该团队不存在或已被封禁！");
+            }
+            if(!isRoot && !group.getVisible() && !groupValidator.isGroupMember(userRolesVo.getUid(),gid)) {
+                throw new StatusForbiddenException("该团队并非公开团队，不支持访问！");
+            }
+        }
+
+        AccessVO accessVO = new AccessVO();
+        accessVO.setAccess(access);
+        return accessVO;
     }
 }

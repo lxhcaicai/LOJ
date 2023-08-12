@@ -1,10 +1,10 @@
 package com.github.loj.controller.group;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.entity.group.Group;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.GroupVO;
 import com.github.loj.service.group.GroupService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -35,5 +35,11 @@ public class GroupController {
     @RequiresAuthentication
     public CommonResult<Group> getGroup(@RequestParam(value = "gid", required = true) Long gid) {
         return groupService.getGroup(gid);
+    }
+
+    @GetMapping("/get-group-access")
+    @RequiresAuthentication
+    public CommonResult<AccessVO> getGroupAccess(@RequestParam(value = "gid", required = true) Long gid) {
+        return groupService.getGroupAccess(gid);
     }
 }

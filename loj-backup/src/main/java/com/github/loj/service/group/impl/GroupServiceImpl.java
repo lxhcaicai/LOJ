@@ -7,6 +7,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.GroupManager;
 import com.github.loj.pojo.entity.group.Group;
+import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.GroupVO;
 import com.github.loj.service.group.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,20 @@ public class GroupServiceImpl implements GroupService {
         try {
             return CommonResult.successResponse(groupManager.getGroup(gid));
         } catch (StatusForbiddenException e) {
-            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
-        } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResult<AccessVO> getGroupAccess(Long gid) {
+        try {
+            return CommonResult.successResponse(groupManager.getGroupAccess(gid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
 }
