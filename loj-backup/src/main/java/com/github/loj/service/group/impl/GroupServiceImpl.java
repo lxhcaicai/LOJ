@@ -63,4 +63,16 @@ public class GroupServiceImpl implements GroupService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
         }
     }
+
+    @Override
+    public CommonResult<Void> updateGroup(Group group) {
+        try {
+            groupManager.updateGroup(group);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
 }

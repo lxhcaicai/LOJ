@@ -53,4 +53,10 @@ public class GroupController {
     public CommonResult<Void> addGroup(@RequestBody Group group) {
         return groupService.addGroup(group);
     }
+
+    @PutMapping("/group")
+    @RequiresAuthentication
+    public CommonResult<Void> updateGroup(@RequestBody Group group) {
+        return groupService.updateGroup(group);
+    }
 }

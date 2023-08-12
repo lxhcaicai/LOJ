@@ -214,4 +214,51 @@ public class GroupManager {
         }
 
     }
+
+    public void updateGroup(Group group) throws StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if(!groupValidator.isGroupRoot(userRolesVo.getUid(), group.getId()) && !isRoot) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        if (!StringUtils.isEmpty(group.getName()) && (group.getName().length() < 5 || group.getName().length() > 25)) {
+            throw new StatusFailException("团队名称的长度应为 5 到 25！");
+        }
+        if (!StringUtils.isEmpty(group.getShortName()) && (group.getShortName().length() < 5 || group.getShortName().length() > 10)) {
+            throw new StatusFailException("团队简称的长度应为 5 到 10！");
+        }
+        if (!StringUtils.isEmpty(group.getBrief()) && (group.getBrief().length() < 5 || group.getBrief().length() > 50)) {
+            throw new StatusFailException("团队简介的长度应为 5 到 50！");
+        }
+        if(!StringUtils.isEmpty(group.getCode()) && group.getCode().length() != 6) {
+            throw new StatusFailException("团队邀请码的长度应为 6！");
+        }
+        if (!StringUtils.isEmpty(group.getDescription()) && (group.getDescription().length() < 5 || group.getDescription().length() > 1000)) {
+            throw new StatusFailException("团队描述的长度应为 5 到 1000！");
+        }
+
+        QueryWrapper<Group> groupQueryWrapper = new QueryWrapper<>();
+        groupQueryWrapper.eq("name", group.getName())
+                .ne("id", group.getId());
+        int sameNameGroupCount = groupEntityService.count(groupQueryWrapper);
+        if(sameNameGroupCount > 0) {
+            throw new StatusFailException("团队名称已存在，请修改后重试！");
+        }
+
+        groupQueryWrapper = new QueryWrapper<>();
+        groupQueryWrapper.eq("short_name", group.getShortName())
+                .ne("id", group.getId());
+        int sameShortNameGroupCount = groupEntityService.count(groupQueryWrapper);
+        if(sameShortNameGroupCount > 0) {
+            throw new StatusFailException("团队简称已存在，请修改后重试！");
+        }
+
+        boolean isOk = groupEntityService.updateById(group);
+        if(!isOk) {
+            throw new StatusFailException("更新失败，请重新尝试！");
+        }
+    }
 }

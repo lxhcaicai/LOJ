@@ -18,4 +18,6 @@ public interface GroupService {
     public CommonResult<Integer> getGroupAuth(Long gid);
 
     public CommonResult<Void> addGroup(Group group);
+
+    public CommonResult<Void> updateGroup(Group group);
 }
