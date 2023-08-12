@@ -1,11 +1,14 @@
 package com.github.loj.manager;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.dao.group.GroupEntityService;
+import com.github.loj.dao.group.GroupMemberEntityService;
 import com.github.loj.pojo.entity.group.Group;
+import com.github.loj.pojo.entity.group.GroupMember;
 import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.GroupVO;
 import com.github.loj.shiro.AccountProfile;
@@ -23,6 +26,9 @@ public class GroupManager {
 
     @Autowired
     private GroupValidator groupValidator;
+
+    @Autowired
+    private GroupMemberEntityService groupMemberEntityService;
 
     public IPage<GroupVO> getGroupList(Integer limit, Integer currentPage, String keyword, Integer auth, Boolean onlyMine) {
 
@@ -89,5 +95,21 @@ public class GroupManager {
         AccessVO accessVO = new AccessVO();
         accessVO.setAccess(access);
         return accessVO;
+    }
+
+    public Integer getGroupAuth(Long gid) {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        QueryWrapper<GroupMember> groupMemberQueryWrapper = new QueryWrapper<>();
+        groupMemberQueryWrapper.eq("gid",gid).eq("uid", userRolesVo.getUid());
+
+        GroupMember groupMember = groupMemberEntityService.getOne(groupMemberQueryWrapper);
+
+        Integer auth = 0;
+        if(groupMember != null) {
+            auth = groupMember.getAuth();
+        }
+        return auth;
+
     }
 }

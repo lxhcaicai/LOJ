@@ -14,4 +14,6 @@ public interface GroupService {
     public CommonResult<Group> getGroup(Long gid);
 
     public CommonResult<AccessVO> getGroupAccess(Long gid);
+
+    public CommonResult<Integer> getGroupAuth(Long gid);
 }

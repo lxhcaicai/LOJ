@@ -42,4 +42,10 @@ public class GroupController {
     public CommonResult<AccessVO> getGroupAccess(@RequestParam(value = "gid", required = true) Long gid) {
         return groupService.getGroupAccess(gid);
     }
+
+    @GetMapping("/get-group-auth")
+    @RequiresAuthentication
+    public CommonResult<Integer> getGroupAuth(@RequestParam(value = "gid", required = true) Long gid) {
+        return groupService.getGroupAuth(gid);
+    }
 }

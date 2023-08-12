@@ -45,4 +45,9 @@ public class GroupServiceImpl implements GroupService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
+
+    @Override
+    public CommonResult<Integer> getGroupAuth(Long gid) {
+        return CommonResult.successResponse(groupManager.getGroupAuth(gid));
+    }
 }
