@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.annotation.AnonApi;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.vo.GroupVO;
 import com.github.loj.service.group.GroupService;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,4 +31,9 @@ public class GroupController {
         return groupService.getGroupList(limit,currentPage, keyword, auth, onlyMine);
     }
 
+    @GetMapping("/get-group-detail")
+    @RequiresAuthentication
+    public CommonResult<Group> getGroup(@RequestParam(value = "gid", required = true) Long gid) {
+        return groupService.getGroup(gid);
+    }
 }
