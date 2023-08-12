@@ -15,4 +15,6 @@ public interface GroupMemberService {
     public CommonResult<Void> updateMember(GroupMember groupMember);
 
     public CommonResult<Void> deleteMember(String uid, Long gid);
+
+    public CommonResult<Void> exitGroup(Long gid);
 }

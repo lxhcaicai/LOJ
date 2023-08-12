@@ -82,4 +82,18 @@ public class GroupMemberServiceImpl implements GroupMemberService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
         }
     }
+
+    @Override
+    public CommonResult<Void> exitGroup(Long gid) {
+        try {
+            groupMemberManager.exitGroup(gid);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
 }

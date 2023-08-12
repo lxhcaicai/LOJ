@@ -250,4 +250,37 @@ public class GroupMemberManager {
             groupMemberEntityService.addRemoveNoticeToGroupMember(gid,group.getName(),userRolesVo.getUsername(),uid);
         }
     }
+
+    public void exitGroup(Long gid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("退出团队失败，该团队不存在或已被封禁！");
+        }
+
+        if(userRolesVo.getUid().equals(group.getUid())) {
+            throw new StatusNotFoundException("对不起，作为该团队Owner，您只可以解散团队，不允许退出团队！");
+        }
+
+        QueryWrapper<GroupMember> groupMemberQueryWrapper = new QueryWrapper<>();
+        groupMemberQueryWrapper.eq("gid", gid)
+                .eq("uid", userRolesVo.getUid());
+
+        GroupMember currentGroupMember = groupMemberEntityService.getOne(groupMemberQueryWrapper);
+
+        if(currentGroupMember == null || currentGroupMember.getAuth() == null || currentGroupMember.getAuth() <= 2) {
+            throw new StatusForbiddenException("对不起，您并未在当前团队，无法退出！");
+        }
+
+        boolean isOk = groupMemberEntityService.remove(groupMemberQueryWrapper);
+        if(!isOk) {
+            throw new StatusFailException("退出团队失败，请重新尝试！");
+        }
+
+    }
 }
