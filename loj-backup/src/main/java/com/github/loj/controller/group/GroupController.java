@@ -8,11 +8,9 @@ import com.github.loj.pojo.vo.AccessVO;
 import com.github.loj.pojo.vo.GroupVO;
 import com.github.loj.service.group.GroupService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -47,5 +45,12 @@ public class GroupController {
     @RequiresAuthentication
     public CommonResult<Integer> getGroupAuth(@RequestParam(value = "gid", required = true) Long gid) {
         return groupService.getGroupAuth(gid);
+    }
+
+    @PostMapping("/group")
+    @RequiresAuthentication
+    @RequiresPermissions("group_add")
+    public CommonResult<Void> addGroup(@RequestBody Group group) {
+        return groupService.addGroup(group);
     }
 }

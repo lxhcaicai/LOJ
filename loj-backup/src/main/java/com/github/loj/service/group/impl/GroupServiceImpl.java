@@ -1,6 +1,7 @@
 package com.github.loj.service.group.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
@@ -49,5 +50,17 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public CommonResult<Integer> getGroupAuth(Long gid) {
         return CommonResult.successResponse(groupManager.getGroupAuth(gid));
+    }
+
+    @Override
+    public CommonResult<Void> addGroup(Group group) {
+        try {
+            groupManager.addGroup(group);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
     }
 }
