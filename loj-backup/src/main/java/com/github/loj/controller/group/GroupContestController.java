@@ -2,6 +2,7 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.pojo.vo.ContestVO;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiresAuthentication
@@ -72,5 +74,10 @@ public class GroupContestController {
                                                                       @RequestParam(value = "problemType", required = false) Integer problemType,
                                                                       @RequestParam(value = "oj", required = false) String oj) {
         return groupContestProblemService.getContestProblemList(limit,currentPage,keyword,cid,problemType,oj);
+    }
+
+    @PostMapping("/contest-problem")
+    public CommonResult<Map<Object,Object>> addProblem(@RequestBody ProblemDTO problemDTO) {
+        return groupContestProblemService.addProblem(problemDTO);
     }
 }
