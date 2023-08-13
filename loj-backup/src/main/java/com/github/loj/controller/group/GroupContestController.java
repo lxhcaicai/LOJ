@@ -106,4 +106,12 @@ public class GroupContestController {
     public CommonResult<Void> addProblemFromPublic(@RequestBody ContestProblemDTO contestProblemDTO) {
         return groupContestProblemService.addProblemFromPublic(contestProblemDTO);
     }
+
+    @PostMapping("/add-contest-problem-from-group")
+    public CommonResult<Void> addProblemFromGroup(@RequestParam(value = "problemId", required = true) String problemId,
+                                                  @RequestParam(value = "cid", required = true) Long cid,
+                                                  @RequestParam(value = "displayId", required = true) String displayId) {
+
+        return groupContestProblemService.addProblemFromGroup(problemId,cid,displayId);
+    }
 }

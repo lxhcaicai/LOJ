@@ -27,6 +27,7 @@ import com.github.loj.validator.ProblemValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -323,6 +324,66 @@ public class GroupContestProblemManager {
                 .setCid(cid).setPid(pid).setDisplayTitle(displayName).setDisplayId(displayId));
 
         if(!isOk) {
+            throw new StatusFailException("添加失败");
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addProblemFromGroup(String problemId, Long cid, String displayId) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusNotFoundException("添加失败，该比赛不存在！");
+        }
+
+        Long gid = contest.getGid();
+        if(gid == null) {
+            throw new StatusForbiddenException("添加失败，不可操作非团队内的比赛！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("添加失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUid().equals(contest.getUid()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(),gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.eq("problem_id", problemId).eq("gid", gid);
+
+        Problem problem = problemEntityService.getOne(problemQueryWrapper);
+
+        if(problem == null) {
+            throw new StatusNotFoundException("该题目不存在或不是团队题目！");
+        }
+
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        contestProblemQueryWrapper.eq("cid",cid)
+                .and(wrapper -> wrapper.eq("pid", problem.getId())
+                        .or()
+                        .eq("display_id", displayId));
+
+        ContestProblem contestProblem = contestProblemEntityService.getOne(contestProblemQueryWrapper,false);
+        if(contestProblem != null) {
+            throw new StatusFailException("添加失败，该题目已添加或者题目的比赛展示ID已存在！");
+        }
+
+        ContestProblem newCProblem = new ContestProblem();
+        String displayName = problem.getTitle();
+
+        boolean updateProblem = problemEntityService.save(problem.setAuth(3));
+
+        boolean isOk = contestProblemEntityService.saveOrUpdate(
+                newCProblem.setCid(cid).setPid(problem.getId()).setDisplayTitle(displayName).setDisplayId(displayId));
+
+        if(!isOk || !updateProblem) {
             throw new StatusFailException("添加失败");
         }
     }

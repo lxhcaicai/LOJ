@@ -20,4 +20,6 @@ public interface GroupContestProblemService {
     public CommonResult<Void> deleteContestProblem(Long pid, Long cid);
 
     public CommonResult<Void> addProblemFromPublic(ContestProblemDTO contestProblemDTO);
+
+    public CommonResult<Void> addProblemFromGroup(String problemId, Long cid, String displayId);
 }
