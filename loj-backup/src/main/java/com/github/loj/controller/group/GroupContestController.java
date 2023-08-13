@@ -8,10 +8,7 @@ import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.service.group.contest.GroupContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiresAuthentication
@@ -38,5 +35,10 @@ public class GroupContestController {
     @GetMapping("/contest")
     public CommonResult<AdminContestVO> getContest(@RequestParam("cid") Long cid) {
         return groupContestService.getContest(cid);
+    }
+
+    @PostMapping("/contest")
+    public CommonResult<Void> addContest(@RequestBody AdminContestVO adminContestVO) {
+        return groupContestService.addContest(adminContestVO);
     }
 }

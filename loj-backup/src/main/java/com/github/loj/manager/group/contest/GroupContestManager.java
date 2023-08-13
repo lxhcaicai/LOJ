@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.contest.ContestEntityService;
@@ -15,6 +16,7 @@ import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.pojo.vo.ContestAwardConfigVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.validator.ContestValidator;
 import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -32,6 +35,9 @@ public class GroupContestManager {
 
     @Autowired
     private GroupContestEntityService groupContestEntityService;
+
+    @Autowired
+    private ContestValidator contestValidator;
 
     @Autowired
     private ContestEntityService contestEntityService;
@@ -140,5 +146,52 @@ public class GroupContestManager {
             adminContestVO.setAwardConfigList(new ArrayList<>());
         }
         return adminContestVO;
+    }
+
+    public void addContest(AdminContestVO adminContestVO) throws StatusFailException, StatusNotFoundException, StatusForbiddenException {
+
+        contestValidator.validateContest(adminContestVO);
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long gid = adminContestVO.getGid();
+
+        if(gid == null) {
+            throw new StatusNotFoundException("添加失败，比赛所属的团队ID不可为空！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("添加失败，该团队不存在或已被封禁！");
+        }
+
+        if(!isRoot && !groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        Contest contest = BeanUtil.copyProperties(adminContestVO,Contest.class, "starAccount");
+        JSONObject accountJson = new JSONObject();
+        if(adminContestVO.getStarAccount() == null) {
+            accountJson.set("star_account", new ArrayList<>());
+        } else {
+            accountJson.set("star_account", adminContestVO.getStarAccount());
+        }
+        contest.setStarAccount(accountJson.toString());
+
+        if(adminContestVO.getAwardType() != null && adminContestVO.getAwardType() != 0) {
+            JSONObject awardConfigJson = new JSONObject();
+            List<ContestAwardConfigVO> awardConfigList = adminContestVO.getAwardConfigList();
+            awardConfigList.sort(Comparator.comparingInt(ContestAwardConfigVO::getPriority));
+            contest.setAwardConfig(awardConfigJson.toString());
+        }
+
+        contest.setIsGroup(true);
+
+        boolean isOk = contestEntityService.save(contest);
+        if(!isOk) {
+            throw new StatusFailException("添加失败");
+        }
+
     }
 }

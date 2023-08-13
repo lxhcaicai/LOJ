@@ -12,4 +12,6 @@ public interface GroupContestService {
     public CommonResult<IPage<Contest>> getAdminContestList(Integer limit, Integer currentPage, Long gid);
 
     public CommonResult<AdminContestVO> getContest(Long cid);
+
+    public CommonResult<Void> addContest(AdminContestVO adminContestVO);
 }
