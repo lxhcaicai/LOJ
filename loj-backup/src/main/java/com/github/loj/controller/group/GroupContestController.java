@@ -46,4 +46,9 @@ public class GroupContestController {
     public CommonResult<Void> updateContest(@RequestBody AdminContestVO adminContestVO) {
         return groupContestService.updateContest(adminContestVO);
     }
+
+    @DeleteMapping("/contest")
+    public CommonResult<Void> deleteContest(@RequestParam(value = "cid", required = true) Long cid) {
+        return groupContestService.deleteContest(cid);
+    }
 }

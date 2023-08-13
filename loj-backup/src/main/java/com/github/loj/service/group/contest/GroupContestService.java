@@ -16,4 +16,6 @@ public interface GroupContestService {
     public CommonResult<Void> addContest(AdminContestVO adminContestVO);
 
     public CommonResult<Void> updateContest(AdminContestVO adminContestVO);
+
+    public CommonResult<Void> deleteContest(Long cid);
 }
