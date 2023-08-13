@@ -1,6 +1,7 @@
 package com.github.loj.service.group.contest;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 
@@ -17,4 +18,6 @@ public interface GroupContestProblemService {
     public CommonResult<ContestProblem> getContestProblem(Long pid, Long cid);
 
     public CommonResult<Void> deleteContestProblem(Long pid, Long cid);
+
+    public CommonResult<Void> addProblemFromPublic(ContestProblemDTO contestProblemDTO);
 }

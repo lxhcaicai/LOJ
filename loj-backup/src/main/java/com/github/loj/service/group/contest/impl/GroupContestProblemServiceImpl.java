@@ -6,6 +6,7 @@ import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.group.contest.GroupContestProblemManager;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.service.group.contest.GroupContestProblemService;
@@ -76,6 +77,20 @@ public class GroupContestProblemServiceImpl implements GroupContestProblemServic
     public CommonResult<Void> deleteContestProblem(Long pid, Long cid) {
         try {
             groupContestProblemManager.deleteContestProblem(pid,cid);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addProblemFromPublic(ContestProblemDTO contestProblemDTO) {
+        try {
+            groupContestProblemManager.addProblemFromPublic(contestProblemDTO);
             return CommonResult.successResponse();
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);

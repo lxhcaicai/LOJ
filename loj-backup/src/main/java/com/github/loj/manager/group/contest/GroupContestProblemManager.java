@@ -12,6 +12,7 @@ import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
@@ -263,6 +264,66 @@ public class GroupContestProblemManager {
             judgeEntityService.remove(judgeUpdateWrapper);
         } else {
             throw new StatusFailException("删除失败！");
+        }
+    }
+
+    public void addProblemFromPublic(ContestProblemDTO contestProblemDTO) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long pid = contestProblemDTO.getPid();
+
+        Problem problem = problemEntityService.getById(pid);
+
+        if(problem == null || problem.getAuth() != 1 || problem.getIsGroup()) {
+            throw new StatusNotFoundException("该题目不存在或已被隐藏！");
+        }
+
+        Long cid = contestProblemDTO.getCid();
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusNotFoundException("该比赛不存在！");
+        }
+        Long gid = contest.getGid();
+        if(gid == null) {
+            throw new StatusForbiddenException("添加失败，不可操作非团队内的比赛！");
+        }
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("添加题目失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUid().equals(contest.getUid()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(),gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        String displayId = contestProblemDTO.getDisplayId();
+
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        contestProblemQueryWrapper.eq("cid", cid)
+                .and(wrapper -> wrapper.eq("pid", pid)
+                        .or()
+                        .eq("display_id", displayId));
+
+        ContestProblem contestProblem = contestProblemEntityService.getOne(contestProblemQueryWrapper,false);
+        if(contestProblem != null) {
+            throw new StatusFailException("添加失败，该题目已添加或者题目的比赛展示ID已存在！");
+        }
+
+        String displayName = problem.getTitle();
+
+        ContestProblem newProblem = new ContestProblem();
+
+        boolean isOk = contestProblemEntityService.saveOrUpdate(newProblem
+                .setCid(cid).setPid(pid).setDisplayTitle(displayName).setDisplayId(displayId));
+
+        if(!isOk) {
+            throw new StatusFailException("添加失败");
         }
     }
 }

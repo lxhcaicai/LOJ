@@ -2,6 +2,7 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
@@ -99,5 +100,10 @@ public class GroupContestController {
                                                           @RequestParam(value = "cid", required = true) Long cid) {
 
         return groupContestProblemService.deleteContestProblem(pid,cid);
+    }
+
+    @PostMapping("/add-contest-problem-from-public")
+    public CommonResult<Void> addProblemFromPublic(@RequestBody ContestProblemDTO contestProblemDTO) {
+        return groupContestProblemService.addProblemFromPublic(contestProblemDTO);
     }
 }
