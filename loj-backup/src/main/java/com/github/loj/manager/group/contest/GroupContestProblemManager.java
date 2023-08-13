@@ -180,4 +180,42 @@ public class GroupContestProblemManager {
             throw new StatusFailException("更新失败！");
         }
     }
+
+    public ContestProblem getContestProblem(Long pid, Long cid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusNotFoundException("获取比赛题目失败，该比赛不存在！");
+        }
+
+        Long gid = contest.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("获取比赛题目失败，不可获取非团队内的比赛题目！");
+        }
+
+        Group group = groupEntityService.getById(gid);;
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("获取失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUid().equals(contest.getUid()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(),gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<ContestProblem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cid", cid).eq("pid", pid);
+
+        ContestProblem contestProblem = contestProblemEntityService.getOne(queryWrapper);
+        if(contestProblem == null) {
+            throw new StatusFailException("获取失败，该比赛题目不存在！");
+        }
+        return contestProblem;
+    }
 }

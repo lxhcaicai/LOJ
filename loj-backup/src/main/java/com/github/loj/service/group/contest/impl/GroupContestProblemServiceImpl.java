@@ -59,4 +59,17 @@ public class GroupContestProblemServiceImpl implements GroupContestProblemServic
         }
     }
 
+    @Override
+    public CommonResult<ContestProblem> getContestProblem(Long pid, Long cid) {
+        try {
+            return CommonResult.successResponse(groupContestProblemManager.getContestProblem(pid,cid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
+
 }

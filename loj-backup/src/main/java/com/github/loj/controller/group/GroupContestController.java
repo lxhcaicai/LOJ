@@ -86,4 +86,11 @@ public class GroupContestController {
     public CommonResult<Void> updateContestProblem(@RequestBody ContestProblem contestProblem) {
         return groupContestProblemService.updateContestProblem(contestProblem);
     }
+
+    @GetMapping("/contest-problem")
+    public CommonResult<ContestProblem> getContestProblem(@RequestParam(value = "pid", required = true) Long pid,
+                                                          @RequestParam(value = "cid", required = true) Long cid) {
+
+        return groupContestProblemService.getContestProblem(pid,cid);
+    }
 }

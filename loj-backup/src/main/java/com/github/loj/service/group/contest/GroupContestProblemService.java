@@ -13,4 +13,7 @@ public interface GroupContestProblemService {
     public CommonResult<Map<Object, Object>> addProblem(ProblemDTO problemDTO);
 
     public CommonResult<Void> updateContestProblem(ContestProblem contestProblem);
+
+    public CommonResult<ContestProblem> getContestProblem(Long pid, Long cid);
+
 }
