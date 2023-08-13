@@ -122,4 +122,42 @@ public class GroupContestAnnouncementManager {
             throw new StatusFailException("添加失败！");
         }
     }
+
+    public void updateContestAnnouncement(AnnouncementDTO announcementDto) throws StatusFailException, StatusNotFoundException, StatusForbiddenException {
+        commonValidator.validateContent(announcementDto.getAnnouncement().getTitle(), "公告标题", 255);
+        commonValidator.validateContentLength(announcementDto.getAnnouncement().getContent(), "公告", 65535);
+        commonValidator.validateNotEmpty(announcementDto.getCid(), "比赛ID");
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long cid = announcementDto.getCid();
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusNotFoundException("更新失败，该比赛不存在！");
+        }
+
+        Long gid = contest.getGid();
+        if(gid == null) {
+            throw new StatusForbiddenException("更新失败，不可操作非团队内的比赛公告！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("更新失败，该团队不存在或已被封禁！");
+        }
+        if (!userRolesVo.getUid().equals(contest.getUid()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = announcementEntityService.updateById(announcementDto.getAnnouncement());
+        if(!isOk) {
+            throw new StatusFailException("更新失败！");
+        }
+    }
 }

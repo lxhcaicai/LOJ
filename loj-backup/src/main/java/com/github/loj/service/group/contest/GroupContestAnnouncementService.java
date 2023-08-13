@@ -9,4 +9,6 @@ public interface GroupContestAnnouncementService {
     public CommonResult<IPage<AnnouncementVO>> getContestAnnouncementList(Integer limit, Integer currentPage, Long cid);
 
     public CommonResult<Void> addContestAnnouncement(AnnouncementDTO announcementDto);
+
+    public CommonResult<Void> updateContestAnnouncement(AnnouncementDTO announcementDto);
 }

@@ -128,9 +128,13 @@ public class GroupContestController {
         return groupContestAnnouncementService.getContestAnnouncementList(limit,currentPage,cid);
     }
 
-
     @PostMapping("/contest-announcement")
     public CommonResult<Void> addContestAnnouncement(@RequestBody AnnouncementDTO announcementDto) {
         return groupContestAnnouncementService.addContestAnnouncement(announcementDto);
+    }
+
+    @PutMapping("/contest-announcement")
+    public CommonResult<Void> updateContestAnnouncement(@RequestBody AnnouncementDTO announcementDto) {
+        return groupContestAnnouncementService.updateContestAnnouncement(announcementDto);
     }
 }
