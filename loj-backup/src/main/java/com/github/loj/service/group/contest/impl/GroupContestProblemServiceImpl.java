@@ -7,6 +7,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.group.contest.GroupContestProblemManager;
 import com.github.loj.pojo.dto.ProblemDTO;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.service.group.contest.GroupContestProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,4 +44,19 @@ public class GroupContestProblemServiceImpl implements GroupContestProblemServic
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
         }
     }
+
+    @Override
+    public CommonResult<Void> updateContestProblem(ContestProblem contestProblem) {
+        try {
+            groupContestProblemManager.updateContestProblem(contestProblem);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
+
 }

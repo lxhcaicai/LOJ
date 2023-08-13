@@ -6,11 +6,13 @@ import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.Tag;
@@ -37,6 +39,9 @@ public class GroupContestProblemManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private ContestProblemEntityService contestProblemEntityService;
 
     @Autowired
     private GroupValidator groupValidator;
@@ -135,6 +140,44 @@ public class GroupContestProblemManager {
             return MapUtil.builder().put("pid", problemDTO.getProblem().getId()).map();
         } else {
             throw new StatusFailException("添加失败");
+        }
+    }
+
+    public void updateContestProblem(ContestProblem contestProblem) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long cid = contestProblem.getCid();
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusNotFoundException("该比赛不存在！");
+        }
+
+        Long gid = contest.getGid();
+        if(gid == null) {
+            throw new StatusForbiddenException("更新失败，不可操作非团队内的比赛题目！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("更新失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUid().equals(contest.getUid())
+                && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = contestProblemEntityService.saveOrUpdate(contestProblem);
+        if(isOk) {
+            contestProblemEntityService.syncContestRecord(contestProblem.getPid(), contestProblem.getCid(), contestProblem.getDisplayId());
+        } else {
+            throw new StatusFailException("更新失败！");
         }
     }
 }

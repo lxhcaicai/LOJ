@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.vo.AdminContestVO;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.service.group.contest.GroupContestProblemService;
@@ -79,5 +80,10 @@ public class GroupContestController {
     @PostMapping("/contest-problem")
     public CommonResult<Map<Object,Object>> addProblem(@RequestBody ProblemDTO problemDTO) {
         return groupContestProblemService.addProblem(problemDTO);
+    }
+
+    @PutMapping("/contest-problem")
+    public CommonResult<Void> updateContestProblem(@RequestBody ContestProblem contestProblem) {
+        return groupContestProblemService.updateContestProblem(contestProblem);
     }
 }
