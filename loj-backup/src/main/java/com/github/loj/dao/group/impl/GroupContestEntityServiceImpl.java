@@ -25,4 +25,12 @@ public class GroupContestEntityServiceImpl extends ServiceImpl<GroupContestMappe
         List<ContestVO> contestList =groupContestMapper.getContestList(iPage,gid);
         return iPage.setRecords(contestList);
     }
+
+    @Override
+    public IPage<Contest> getAdminContestList(Integer limit, Integer currentPage, Long gid) {
+        IPage<Contest> iPage = new Page<>(currentPage,limit);
+
+        List<Contest> contestList =groupContestMapper.getAdminContestList(iPage,gid);
+        return iPage.setRecords(contestList);
+    }
 }

@@ -2,6 +2,7 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.vo.ContestVO;
 import com.github.loj.service.group.contest.GroupContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -24,5 +25,12 @@ public class GroupContestController {
                                                          @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                          @RequestParam(value = "gid", required = true) Long gid) {
         return groupContestService.getContestList(limit,currentPage, gid);
+    }
+
+    @GetMapping("/get-admin-contest-list")
+    public CommonResult<IPage<Contest>> getAdminContestList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                            @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                            @RequestParam(value = "gid", required = true) Long gid) {
+        return groupContestService.getAdminContestList(limit,currentPage, gid);
     }
 }

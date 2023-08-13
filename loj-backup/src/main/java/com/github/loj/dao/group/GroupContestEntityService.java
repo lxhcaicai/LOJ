@@ -7,4 +7,6 @@ import com.github.loj.pojo.vo.ContestVO;
 
 public interface GroupContestEntityService extends IService<Contest> {
     IPage<ContestVO> getContestList(Integer limit, Integer currentPage, Long gid);
+
+    IPage<Contest> getAdminContestList(Integer limit, Integer currentPage, Long gid);
 }
