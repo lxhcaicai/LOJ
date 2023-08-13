@@ -51,4 +51,10 @@ public class GroupContestController {
     public CommonResult<Void> deleteContest(@RequestParam(value = "cid", required = true) Long cid) {
         return groupContestService.deleteContest(cid);
     }
+
+    @PutMapping("/change-contest-visible")
+    public CommonResult<Void> changeContestVisible(@RequestParam(value = "cid", required = true) Long cid,
+                                                   @RequestParam(value = "visible", required = true) Boolean visible) {
+        return groupContestService.changeContestVisible(cid,visible);
+    }
 }
