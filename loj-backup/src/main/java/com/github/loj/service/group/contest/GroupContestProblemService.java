@@ -16,4 +16,5 @@ public interface GroupContestProblemService {
 
     public CommonResult<ContestProblem> getContestProblem(Long pid, Long cid);
 
+    public CommonResult<Void> deleteContestProblem(Long pid, Long cid);
 }

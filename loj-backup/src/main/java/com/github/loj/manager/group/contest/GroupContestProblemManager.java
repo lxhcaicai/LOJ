@@ -2,21 +2,25 @@ package com.github.loj.manager.group.contest;
 
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.group.GroupEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.manager.admin.contest.AdminContestProblemManager;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.group.Group;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
 import com.github.loj.validator.GroupValidator;
 import com.github.loj.validator.ProblemValidator;
 import org.apache.shiro.SecurityUtils;
@@ -42,6 +46,9 @@ public class GroupContestProblemManager {
 
     @Autowired
     private ContestProblemEntityService contestProblemEntityService;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
 
     @Autowired
     private GroupValidator groupValidator;
@@ -217,5 +224,45 @@ public class GroupContestProblemManager {
             throw new StatusFailException("获取失败，该比赛题目不存在！");
         }
         return contestProblem;
+    }
+
+    public void deleteContestProblem(Long pid, Long cid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Contest contest = contestEntityService.getById(cid);
+
+        if(contest == null) {
+            throw new StatusNotFoundException("删除失败，该比赛不存在！");
+        }
+
+        Long gid = contest.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("删除失败，不可操作非团队内的比赛题目！");
+        }
+
+        Group group = groupEntityService.getById(gid);;
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("删除失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUid().equals(contest.getUid()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(),gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        contestProblemQueryWrapper.eq("cid", cid).eq("pid",pid);
+        boolean isOk = contestProblemEntityService.remove(contestProblemQueryWrapper);
+        if(isOk) {
+            UpdateWrapper<Judge> judgeUpdateWrapper = new UpdateWrapper<>();
+            judgeUpdateWrapper.eq("cid", cid).eq("pid", pid);
+            judgeEntityService.remove(judgeUpdateWrapper);
+        } else {
+            throw new StatusFailException("删除失败！");
+        }
     }
 }

@@ -93,4 +93,11 @@ public class GroupContestController {
 
         return groupContestProblemService.getContestProblem(pid,cid);
     }
+
+    @DeleteMapping("/contest-problem")
+    public CommonResult<Void> deleteContestProblem(@RequestParam(value = "pid", required = true) Long pid,
+                                                          @RequestParam(value = "cid", required = true) Long cid) {
+
+        return groupContestProblemService.deleteContestProblem(pid,cid);
+    }
 }
