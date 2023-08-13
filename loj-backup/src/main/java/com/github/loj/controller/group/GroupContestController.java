@@ -2,6 +2,7 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.AnnouncementDTO;
 import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
@@ -125,5 +126,11 @@ public class GroupContestController {
                                                                           @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                                           @RequestParam(value = "cid", required = true) Long cid) {
         return groupContestAnnouncementService.getContestAnnouncementList(limit,currentPage,cid);
+    }
+
+
+    @PostMapping("/contest-announcement")
+    public CommonResult<Void> addContestAnnouncement(@RequestBody AnnouncementDTO announcementDto) {
+        return groupContestAnnouncementService.addContestAnnouncement(announcementDto);
     }
 }
