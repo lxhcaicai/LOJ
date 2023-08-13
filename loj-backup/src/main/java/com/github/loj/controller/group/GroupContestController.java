@@ -7,7 +7,9 @@ import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.vo.AdminContestVO;
+import com.github.loj.pojo.vo.AnnouncementVO;
 import com.github.loj.pojo.vo.ContestVO;
+import com.github.loj.service.group.contest.GroupContestAnnouncementService;
 import com.github.loj.service.group.contest.GroupContestProblemService;
 import com.github.loj.service.group.contest.GroupContestService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -27,6 +29,9 @@ public class GroupContestController {
 
     @Autowired
     private GroupContestProblemService groupContestProblemService;
+
+    @Autowired
+    private GroupContestAnnouncementService groupContestAnnouncementService;
 
     @GetMapping("/get-contest-list")
     public CommonResult<IPage<ContestVO>> getContestList(@RequestParam(value = "limit", required = false) Integer limit,
@@ -113,5 +118,12 @@ public class GroupContestController {
                                                   @RequestParam(value = "displayId", required = true) String displayId) {
 
         return groupContestProblemService.addProblemFromGroup(problemId,cid,displayId);
+    }
+
+    @GetMapping("/get-contest-announcement-list")
+    public CommonResult<IPage<AnnouncementVO>> getContestAnnouncementList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                                          @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                                          @RequestParam(value = "cid", required = true) Long cid) {
+        return groupContestAnnouncementService.getContestAnnouncementList(limit,currentPage,cid);
     }
 }
