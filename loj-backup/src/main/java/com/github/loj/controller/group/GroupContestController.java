@@ -41,4 +41,9 @@ public class GroupContestController {
     public CommonResult<Void> addContest(@RequestBody AdminContestVO adminContestVO) {
         return groupContestService.addContest(adminContestVO);
     }
+
+    @PutMapping("/contest")
+    public CommonResult<Void> updateContest(@RequestBody AdminContestVO adminContestVO) {
+        return groupContestService.updateContest(adminContestVO);
+    }
 }

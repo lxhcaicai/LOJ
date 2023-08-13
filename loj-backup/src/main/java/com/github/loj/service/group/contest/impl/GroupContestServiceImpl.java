@@ -66,4 +66,18 @@ public class GroupContestServiceImpl implements GroupContestService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
         }
     }
+
+    @Override
+    public CommonResult<Void> updateContest(AdminContestVO adminContestVO) {
+        try {
+            groupContestManager.updateContest(adminContestVO);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
 }
