@@ -11,4 +11,6 @@ public interface GroupContestAnnouncementService {
     public CommonResult<Void> addContestAnnouncement(AnnouncementDTO announcementDto);
 
     public CommonResult<Void> updateContestAnnouncement(AnnouncementDTO announcementDto);
+
+    public CommonResult<Void> deleteContestAnnouncement(Long aid, Long cid);
 }

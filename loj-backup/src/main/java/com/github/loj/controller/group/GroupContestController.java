@@ -137,4 +137,10 @@ public class GroupContestController {
     public CommonResult<Void> updateContestAnnouncement(@RequestBody AnnouncementDTO announcementDto) {
         return groupContestAnnouncementService.updateContestAnnouncement(announcementDto);
     }
+
+    @DeleteMapping("/contest-announcement")
+    public CommonResult<Void> deleteContestAnnouncement(@RequestParam(value = "aid", required = true) Long aid,
+                                                        @RequestParam(value = "cid", required = true) Long cid) {
+        return groupContestAnnouncementService.deleteContestAnnouncement(aid,cid);
+    }
 }
