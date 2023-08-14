@@ -26,4 +26,13 @@ public class GroupProblemEntityServiceImpl extends ServiceImpl<GroupProblemMappe
 
         return iPage.setRecords(problemVOList);
     }
+
+    @Override
+    public IPage<Problem> getAdminProblemList(Integer limit, Integer currentPage, Long gid) {
+        IPage<Problem> iPage = new Page<>();
+
+        List<Problem> problemList = groupProblemMapper.getAdminProblemList(iPage, gid);
+
+        return iPage.setRecords(problemList);
+    }
 }

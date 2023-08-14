@@ -2,6 +2,7 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.group.problem.GroupProblemService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -24,6 +25,13 @@ public class GroupProblemController {
                                                           @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                           @RequestParam(value = "gid", required = true) Long gid) {
         return groupProblemService.getProblemList(limit,currentPage,gid);
+    }
+
+    @GetMapping("/get-admin-problem-list")
+    public CommonResult<IPage<Problem>>  getAdminProblemList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                             @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                             @RequestParam(value = "gid", required = true) Long gid) {
+        return groupProblemService.getAdminProblemList(limit,currentPage,gid);
     }
 
 }
