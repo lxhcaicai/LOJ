@@ -8,4 +8,6 @@ public interface GroupDiscussionService {
     public CommonResult<IPage<Discussion>> getDiscussionList(Integer limit, Integer currentPage, Long gid, String pid);
 
     public CommonResult<IPage<Discussion>> getAdminDiscussionList(Integer limit, Integer currentPage, Long gid);
+
+    public CommonResult<Void> addDiscussion(Discussion discussion);
 }

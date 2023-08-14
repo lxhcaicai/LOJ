@@ -8,10 +8,7 @@ import com.github.loj.pojo.entity.discussion.Discussion;
 import com.github.loj.service.group.discussion.GroupDiscussionService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiresAuthentication
@@ -35,6 +32,11 @@ public class GroupDiscussionController {
                                                                   @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                                   @RequestParam(value = "gid", required = true) Long gid) {
         return groupDiscussionService.getAdminDiscussionList(limit,currentPage,gid);
+    }
+
+    @PostMapping("/discussion")
+    public CommonResult<Void> addDiscussion(@RequestBody Discussion discussion) {
+        return groupDiscussionService.addDiscussion(discussion);
     }
 
 }
