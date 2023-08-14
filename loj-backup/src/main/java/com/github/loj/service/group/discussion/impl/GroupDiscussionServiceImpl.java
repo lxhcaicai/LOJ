@@ -27,4 +27,15 @@ public class GroupDiscussionServiceImpl implements GroupDiscussionService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
+
+    @Override
+    public CommonResult<IPage<Discussion>> getAdminDiscussionList(Integer limit, Integer currentPage, Long gid) {
+        try {
+            return CommonResult.successResponse(groupDiscussionManager.getAdminDiscussionList(limit,currentPage,gid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
 }

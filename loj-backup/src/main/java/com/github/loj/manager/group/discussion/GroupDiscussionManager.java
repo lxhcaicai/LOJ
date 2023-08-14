@@ -59,4 +59,32 @@ public class GroupDiscussionManager {
                 .orderByDesc("view_num");
         return discussionEntityService.page(iPage, discussionQueryWrapper);
     }
+
+    public IPage<Discussion> getAdminDiscussionList(Integer limit, Integer currentPage, Long gid) throws StatusNotFoundException, StatusForbiddenException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("获取讨论列表失败，该团队不存在或已被封禁！");
+        }
+
+        if(!groupValidator.isGroupMember(userRolesVo.getUid(), gid) && !isRoot) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+
+        IPage<Discussion> iPage = new Page<>(currentPage, limit);
+
+        discussionQueryWrapper
+                .eq("gid",gid)
+                .orderByDesc("top_priority")
+                .orderByDesc("gmt_create")
+                .orderByDesc("like_num")
+                .orderByDesc("view_num");
+        return discussionEntityService.page(iPage, discussionQueryWrapper);
+    }
 }
