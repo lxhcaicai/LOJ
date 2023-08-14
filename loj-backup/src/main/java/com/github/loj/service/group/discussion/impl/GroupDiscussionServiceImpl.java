@@ -53,4 +53,18 @@ public class GroupDiscussionServiceImpl implements GroupDiscussionService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
         }
     }
+
+    @Override
+    public CommonResult<Void> updateDiscussion(Discussion discussion) {
+        try {
+            groupDiscussionManager.updateDiscussion(discussion);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FAIL);
+        }
+    }
 }

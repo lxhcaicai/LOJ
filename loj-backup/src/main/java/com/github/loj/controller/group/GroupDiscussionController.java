@@ -39,4 +39,9 @@ public class GroupDiscussionController {
         return groupDiscussionService.addDiscussion(discussion);
     }
 
+    @PutMapping("/discussion")
+    public CommonResult<Void> updateDiscussion(@RequestBody Discussion discussion) {
+        return groupDiscussionService.updateDiscussion(discussion);
+    }
+
 }
