@@ -44,4 +44,9 @@ public class GroupDiscussionController {
         return groupDiscussionService.updateDiscussion(discussion);
     }
 
+    @DeleteMapping("/discussion")
+    public CommonResult<Void> deleteDiscussion(@RequestParam(value = "did", required = true) Long did) {
+        return groupDiscussionService.deleteDiscussion(did);
+    }
+
 }

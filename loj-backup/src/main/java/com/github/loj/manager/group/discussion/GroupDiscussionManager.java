@@ -235,4 +235,33 @@ public class GroupDiscussionManager {
             throw new StatusFailException("修改失败");
         }
     }
+
+    public void deleteDiscussion(Long did) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Discussion discussion = discussionEntityService.getById(did);
+
+        Long gid = discussion.getGid();
+
+        if(gid == null) {
+            throw new StatusNotFoundException("删除失败，该讨论非团队讨论！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if (group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("删除失败，该团队不存在或已被封禁！");
+        }
+
+        if(!groupValidator.isGroupAdmin(userRolesVo.getUid(), gid) && !discussion.getUid().equals(userRolesVo.getUid()) && !isRoot) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = discussionEntityService.removeById(did);
+        if(!isOk) {
+            throw new StatusFailException("删除失败");
+        }
+    }
 }

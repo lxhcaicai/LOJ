@@ -12,4 +12,6 @@ public interface GroupDiscussionService {
     public CommonResult<Void> addDiscussion(Discussion discussion);
 
     public CommonResult<Void> updateDiscussion(Discussion discussion);
+
+    public CommonResult<Void> deleteDiscussion(Long did);
 }
