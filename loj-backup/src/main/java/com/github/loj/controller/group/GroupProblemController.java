@@ -72,4 +72,10 @@ public class GroupProblemController {
                                                 @RequestParam(value = "auth", required = true) Integer auth) {
         return groupProblemService.changeProblemAuth(pid, auth);
     }
+
+    @PutMapping("/apply-public")
+    public CommonResult<Void> applyPublic(@RequestParam(value = "pid", required = true) Long pid,
+                                          @RequestParam(value = "isApplied", required = true) Boolean isApplied){
+        return groupProblemService.applyPublic(pid,isApplied);
+    }
 }

@@ -29,4 +29,6 @@ public interface GroupProblemService {
     public CommonResult<List<Tag>> getAllProblemTagList(Long gid);
 
     public CommonResult<Void> changeProblemAuth(Long pid, Integer auth);
+
+    public CommonResult<Void> applyPublic(Long pid, Boolean isApplied);
 }
