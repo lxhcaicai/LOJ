@@ -10,4 +10,6 @@ public interface GroupProblemService {
     public CommonResult<IPage<ProblemVO>> getProblemList(Integer limit, Integer currentPage, Long gid);
 
     public CommonResult<IPage<Problem>> getAdminProblemList(Integer limit, Integer currentPage, Long gid);
+
+    public CommonResult<Problem> getProblem(Long pid);
 }

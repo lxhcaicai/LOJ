@@ -34,4 +34,9 @@ public class GroupProblemController {
         return groupProblemService.getAdminProblemList(limit,currentPage,gid);
     }
 
+    @GetMapping("/problem")
+    public CommonResult<Problem> getProblem(@RequestParam("pid") Long pid) {
+        return groupProblemService.getProblem(pid);
+    }
+
 }

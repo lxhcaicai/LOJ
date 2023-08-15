@@ -39,4 +39,15 @@ public class GroupProblemServiceImpl implements GroupProblemService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
         }
     }
+
+    @Override
+    public CommonResult<Problem> getProblem(Long pid) {
+        try {
+            return CommonResult.successResponse(groupProblemManager.getProblem(pid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        }
+    }
 }
