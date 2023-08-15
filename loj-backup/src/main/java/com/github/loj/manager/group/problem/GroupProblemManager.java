@@ -10,11 +10,13 @@ import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.group.GroupProblemEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
+import com.github.loj.dao.problem.ProblemCaseEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.ProblemCase;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.shiro.AccountProfile;
@@ -45,6 +47,9 @@ public class GroupProblemManager {
 
     @Autowired
     private ProblemValidator problemValidator;
+
+    @Autowired
+    private ProblemCaseEntityService problemCaseEntityService;
 
     @Autowired
     private JudgeEntityService judgeEntityService;
@@ -294,5 +299,41 @@ public class GroupProblemManager {
             throw new StatusFailException("删除失败！");
         }
 
+    }
+
+    public List<ProblemCase> getProblemCases(Long pid, Boolean isUpload) throws StatusNotFoundException, StatusForbiddenException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Problem problem = problemEntityService.getById(pid);
+
+        if (problem == null) {
+            throw new StatusNotFoundException("该题目不存在！");
+        }
+
+        Long gid = problem.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("获取失败，不可获取非团队内的题目的题目数据！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("获取失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUsername().equals(problem.getAuthor()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<ProblemCase> problemCaseQueryWrapper = new QueryWrapper<>();
+        problemCaseQueryWrapper.eq("pid", pid).eq("status", 0);
+        if(isUpload) {
+            problemCaseQueryWrapper.last("order by length(input) asc, input asc");
+        }
+        return problemCaseEntityService.list(problemCaseQueryWrapper);
     }
 }

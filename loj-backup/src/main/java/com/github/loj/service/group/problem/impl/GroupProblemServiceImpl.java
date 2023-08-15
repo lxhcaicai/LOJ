@@ -9,10 +9,13 @@ import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.group.problem.GroupProblemManager;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.ProblemCase;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.group.problem.GroupProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class GroupProblemServiceImpl implements GroupProblemService {
@@ -92,6 +95,17 @@ public class GroupProblemServiceImpl implements GroupProblemService {
             return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<List<ProblemCase>> getProblemCases(Long pid, Boolean isUpload) {
+        try {
+            return CommonResult.successResponse(groupProblemManager.getProblemCases(pid, isUpload));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
 }

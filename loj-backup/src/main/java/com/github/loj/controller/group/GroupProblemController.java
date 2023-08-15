@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.ProblemCase;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.group.problem.GroupProblemService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiresAuthentication
@@ -50,5 +53,11 @@ public class GroupProblemController {
     @DeleteMapping("/problem")
     public CommonResult<Void> deleteProblem(@RequestParam(value = "pid", required = true) Long pid) {
         return groupProblemService.deleteProblem(pid);
+    }
+
+    @GetMapping("/get-problem-cases")
+    public CommonResult<List<ProblemCase>> getProblemCases(@RequestParam("pid") Long pid,
+                                                           @RequestParam(value = "isUpload", defaultValue = "true") Boolean isUpload) {
+        return groupProblemService.getProblemCases(pid, isUpload);
     }
 }
