@@ -1,5 +1,6 @@
 package com.github.loj.manager.group.problem;
 
+import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +18,7 @@ import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
 import com.github.loj.validator.GroupValidator;
 import com.github.loj.validator.ProblemValidator;
 import org.apache.shiro.SecurityUtils;
@@ -24,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -251,6 +254,44 @@ public class GroupProblemManager {
             }
         } else {
             throw new StatusFailException("修改失败");
+        }
+
+    }
+
+    public void deleteProblem(Long pid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Problem problem = problemEntityService.getById(pid);
+
+        if (problem == null) {
+            throw new StatusNotFoundException("该题目不存在！");
+        }
+
+        Long gid = problem.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("更新失败，不可操作非团队内的题目！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("更新失败，该团队不存在或已被封禁！");
+        }
+
+        if(!groupValidator.isGroupRoot(userRolesVo.getUid(),gid)
+                && !userRolesVo.getUsername().equals(problem.getAuthor())
+                && !isRoot) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = problemEntityService.removeById(pid);
+        if(!isOk) {
+            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+        } else {
+            throw new StatusFailException("删除失败！");
         }
 
     }

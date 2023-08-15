@@ -47,4 +47,8 @@ public class GroupProblemController {
         return groupProblemService.updateProblem(problemDTO);
     }
 
+    @DeleteMapping("/problem")
+    public CommonResult<Void> deleteProblem(@RequestParam(value = "pid", required = true) Long pid) {
+        return groupProblemService.deleteProblem(pid);
+    }
 }
