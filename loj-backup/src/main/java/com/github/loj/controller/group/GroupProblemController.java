@@ -42,4 +42,9 @@ public class GroupProblemController {
         return groupProblemService.addProblem(problemDTO);
     }
 
+    @PutMapping("/problem")
+    public CommonResult<Problem> updateProblem(@RequestBody ProblemDTO problemDTO) {
+        return groupProblemService.updateProblem(problemDTO);
+    }
+
 }

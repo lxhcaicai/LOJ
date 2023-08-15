@@ -15,4 +15,6 @@ public interface GroupProblemService {
     public CommonResult<Problem> getProblem(Long pid);
 
     public CommonResult<Problem> addProblem(ProblemDTO problemDTO);
+
+    public CommonResult<Problem> updateProblem(ProblemDTO problemDTO);
 }

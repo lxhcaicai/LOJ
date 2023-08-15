@@ -1,15 +1,18 @@
 package com.github.loj.manager.group.problem;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.group.GroupProblemEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.group.Group;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.vo.ProblemVO;
@@ -39,6 +42,9 @@ public class GroupProblemManager {
 
     @Autowired
     private ProblemValidator problemValidator;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
 
     @Autowired
     private GroupProblemEntityService groupProblemEntityService;
@@ -172,5 +178,80 @@ public class GroupProblemManager {
         if(!isOk) {
             throw new StatusFailException("添加失败");
         }
+    }
+
+    public void updateProblem(ProblemDTO problemDTO) throws StatusFailException, StatusNotFoundException, StatusForbiddenException {
+        problemValidator.validateGroupProblem(problemDTO.getProblem());
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long pid = problemDTO.getProblem().getId();
+
+        Problem problem = problemEntityService.getById(pid);
+
+        if (problem == null) {
+            throw new StatusNotFoundException("该题目不存在！");
+        }
+
+        Long gid = problem.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("更新失败，不可操作非团队内的题目！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("更新失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUsername().equals(problem.getAuthor())
+                && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        problemDTO.getProblem().setProblemId(group.getShortName() + problemDTO.getProblem().getProblemId());
+        String problemId = problemDTO.getProblem().getProblemId().toUpperCase();
+
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.eq("problem_id", problemId);
+
+        Problem existedProblem = problemEntityService.getOne(problemQueryWrapper);
+
+        problemDTO.getProblem().setModifiedUser(userRolesVo.getUsername());
+
+        if(existedProblem != null && existedProblem.getId().longValue() != pid) {
+            throw new StatusFailException("当前的Problem ID 已被使用，请重新更换新的！");
+        }
+
+        problemDTO.getProblem().setIsGroup(problem.getIsGroup());
+
+        List<Tag> tagList = new LinkedList<>();
+        for(Tag tag: problemDTO.getTags()) {
+            if(tag.getGid() != null && tag.getGid().longValue() != gid) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+            if(tag.getId() == null) {
+                tag.setGid(gid);
+            }
+            tagList.add(tag);
+        }
+        problemDTO.setTags(tagList);
+        problemDTO.getProblem().setApplyPublicProgress(null);
+
+        boolean isOk = problemEntityService.adminUpdateProblem(problemDTO);
+        if(isOk) {
+            if(existedProblem == null) {
+                UpdateWrapper<Judge> judgeUpdateWrapper = new UpdateWrapper<>();
+                judgeUpdateWrapper.eq("pid", problemDTO.getProblem().getId())
+                        .set("display_pid", problemId);
+                judgeEntityService.update(judgeUpdateWrapper);
+            }
+        } else {
+            throw new StatusFailException("修改失败");
+        }
+
     }
 }
