@@ -66,4 +66,10 @@ public class GroupProblemController {
     public CommonResult<List<Tag>> getAllProblemTagList(@RequestParam("gid") Long gid) {
         return groupProblemService.getAllProblemTagList(gid);
     }
+
+    @PutMapping("/change-problem-auth")
+    public CommonResult<Void> changeProblemAuth(@RequestParam(value = "pid", required = true) Long pid,
+                                                @RequestParam(value = "auth", required = true) Integer auth) {
+        return groupProblemService.changeProblemAuth(pid, auth);
+    }
 }

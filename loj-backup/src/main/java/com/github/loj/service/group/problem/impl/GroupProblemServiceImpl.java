@@ -120,4 +120,18 @@ public class GroupProblemServiceImpl implements GroupProblemService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
         }
     }
+
+    @Override
+    public CommonResult<Void> changeProblemAuth(Long pid, Integer auth) {
+        try {
+            groupProblemManager.changeProblemAuth(pid,auth);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
