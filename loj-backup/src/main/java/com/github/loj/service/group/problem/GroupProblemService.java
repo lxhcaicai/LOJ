@@ -6,6 +6,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.ProblemCase;
+import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.vo.ProblemVO;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface GroupProblemService {
     public CommonResult<Void> deleteProblem(Long pid);
 
     public CommonResult<List<ProblemCase>> getProblemCases(Long pid, Boolean isUpload);
+
+    public CommonResult<List<Tag>> getAllProblemTagList(Long gid);
 }

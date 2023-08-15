@@ -12,6 +12,7 @@ import com.github.loj.dao.group.GroupProblemEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemCaseEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.dao.problem.TagEntityService;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.entity.judge.Judge;
@@ -56,6 +57,9 @@ public class GroupProblemManager {
 
     @Autowired
     private GroupProblemEntityService groupProblemEntityService;
+
+    @Autowired
+    private TagEntityService tagEntityService;
 
     public IPage<ProblemVO> getProblemList(Integer limit, Integer currentPage, Long gid) throws StatusNotFoundException, StatusForbiddenException {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
@@ -335,5 +339,28 @@ public class GroupProblemManager {
             problemCaseQueryWrapper.last("order by length(input) asc, input asc");
         }
         return problemCaseEntityService.list(problemCaseQueryWrapper);
+    }
+
+    public List<Tag> getAllProblemTagList(Long gid) throws StatusNotFoundException, StatusForbiddenException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("获取失败，该团队不存在或已被封禁！");
+        }
+
+        if(!isRoot && !groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        List<Tag> tagList;
+        QueryWrapper<Tag> tagQueryWrapper = new QueryWrapper<>();
+        tagQueryWrapper.isNull("gid").or().eq("gid", gid);
+        tagList = tagEntityService.list(tagQueryWrapper);
+
+        return tagList;
     }
 }

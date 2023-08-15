@@ -5,6 +5,7 @@ import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.ProblemCase;
+import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.group.problem.GroupProblemService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -59,5 +60,10 @@ public class GroupProblemController {
     public CommonResult<List<ProblemCase>> getProblemCases(@RequestParam("pid") Long pid,
                                                            @RequestParam(value = "isUpload", defaultValue = "true") Boolean isUpload) {
         return groupProblemService.getProblemCases(pid, isUpload);
+    }
+
+    @GetMapping("/get-all-problem-tags")
+    public CommonResult<List<Tag>> getAllProblemTagList(@RequestParam("gid") Long gid) {
+        return groupProblemService.getAllProblemTagList(gid);
     }
 }

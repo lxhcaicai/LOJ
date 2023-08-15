@@ -10,6 +10,7 @@ import com.github.loj.manager.group.problem.GroupProblemManager;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.problem.ProblemCase;
+import com.github.loj.pojo.entity.problem.Tag;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.group.problem.GroupProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +103,17 @@ public class GroupProblemServiceImpl implements GroupProblemService {
     public CommonResult<List<ProblemCase>> getProblemCases(Long pid, Boolean isUpload) {
         try {
             return CommonResult.successResponse(groupProblemManager.getProblemCases(pid, isUpload));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResult<List<Tag>> getAllProblemTagList(Long gid) {
+        try {
+            return CommonResult.successResponse(groupProblemManager.getAllProblemTagList(gid));
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusNotFoundException e) {
