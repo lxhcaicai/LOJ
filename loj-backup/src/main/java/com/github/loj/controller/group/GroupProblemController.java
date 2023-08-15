@@ -2,15 +2,13 @@ package com.github.loj.controller.group;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.service.group.problem.GroupProblemService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiresAuthentication
@@ -37,6 +35,11 @@ public class GroupProblemController {
     @GetMapping("/problem")
     public CommonResult<Problem> getProblem(@RequestParam("pid") Long pid) {
         return groupProblemService.getProblem(pid);
+    }
+
+    @PostMapping("/problem")
+    public CommonResult<Problem> addProblem(@RequestBody ProblemDTO problemDTO) {
+        return groupProblemService.addProblem(problemDTO);
     }
 
 }

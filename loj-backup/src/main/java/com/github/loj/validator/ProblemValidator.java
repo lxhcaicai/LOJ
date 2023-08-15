@@ -4,12 +4,16 @@ import cn.hutool.core.util.StrUtil;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.utils.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
 @Component
 public class ProblemValidator {
+
+    @Autowired
+    private CommonValidator commonValidator;
 
     public void validateeProblem(Problem problem) throws StatusFailException {
 
@@ -71,5 +75,42 @@ public class ProblemValidator {
             throw new StatusFailException("题目的id不能为空！");
         }
         validateeProblem(problem);
+    }
+
+    public void validateGroupProblem(Problem problem) throws StatusFailException {
+        if (problem == null) {
+            throw new StatusFailException("题目的配置项不能为空！");
+        }
+
+        if (StrUtil.isBlank(problem.getProblemId())) {
+            throw new StatusFailException("题目的展示ID不能为空！");
+        }
+
+        defaultValidate(problem);
+
+        commonValidator.validateContent(problem.getProblemId(),"题目的展示ID", 50);
+        if(problem.getTimeLimit() == null
+                || problem.getTimeLimit() <= 0
+                || problem.getTimeLimit() > 1000 * 30) {
+            throw new StatusFailException("题目的时间限制范围请合理填写！(1~30000ms)");
+        }
+
+        if (problem.getMemoryLimit() == null
+                || problem.getMemoryLimit() <= 0
+                || problem.getMemoryLimit() > 1024) {
+            throw new StatusFailException("题目的内存限制范围请合理填写！(1~1024mb)");
+        }
+
+        if(problem.getStackLimit() == null
+                || problem.getStackLimit() <= 0
+                || problem.getStackLimit() > 1024) {
+            throw new StatusFailException("题目的栈限制范围请合理填写！(1~1024mb)");
+        }
+
+        commonValidator.validateContent(problem.getTitle(), "题目标题", 255);
+        commonValidator.validateContentLength(problem.getDescription(), "题目描述", 65535);
+        commonValidator.validateContentLength(problem.getInput(), "输入描述", 65535);
+        commonValidator.validateContentLength(problem.getOutput(), "输出描述", 65535);
+        commonValidator.validateContentLength(problem.getHint(), "题目提示", 65535);
     }
 }
