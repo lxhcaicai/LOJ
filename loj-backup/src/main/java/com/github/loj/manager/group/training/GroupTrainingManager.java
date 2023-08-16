@@ -2,6 +2,7 @@ package com.github.loj.manager.group.training;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.group.GroupEntityService;
@@ -17,9 +18,13 @@ import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.validator.GroupValidator;
+import com.github.loj.validator.TrainingValidator;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Component
 public class GroupTrainingManager {
@@ -32,6 +37,9 @@ public class GroupTrainingManager {
 
     @Autowired
     private TrainingEntityService trainingEntityService;
+
+    @Autowired
+    private TrainingValidator trainingValidator;
 
     @Autowired
     private TrainingCategoryEntityService trainingCategoryEntityService;
@@ -133,5 +141,60 @@ public class GroupTrainingManager {
         }
         trainingDTO.setTrainingCategory(trainingCategory);
         return trainingDTO;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addTraining(TrainingDTO trainingDto) throws StatusFailException, StatusForbiddenException, StatusNotFoundException {
+
+        trainingValidator.validateTraining(trainingDto.getTraining());
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long gid = trainingDto.getTraining().getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("添加失败，训练所属的团队ID不可为空！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("添加训练失败，该团队不存在或已被封禁！");
+        }
+
+        if(!isRoot && !groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        trainingDto.getTraining().setIsGroup(true);
+
+        Training training = trainingDto.getTraining();
+        trainingEntityService.save(training);
+        TrainingCategory trainingCategory = trainingDto.getTrainingCategory();
+
+        if(trainingCategory.getGid() != null && !Objects.equals(trainingCategory.getGid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        if(trainingCategory.getGid() == null) {
+            try {
+                trainingCategory.setGid(gid);
+                trainingCategoryEntityService.save(trainingCategory);
+            } catch (Exception ignored) {
+                QueryWrapper<TrainingCategory> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("name", trainingCategory.getName());
+                trainingCategory = trainingCategoryEntityService.getOne(queryWrapper, false);
+            }
+        }
+
+        boolean isOk = mappingTrainingCategoryEntityService.save(new MappingTrainingCategory()
+                .setTid(training.getId())
+                .setCid(trainingCategory.getId()));
+
+        if(!isOk) {
+            throw new StatusFailException("添加失败！");
+        }
     }
 }

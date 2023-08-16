@@ -2,6 +2,7 @@ package com.github.loj.validator;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusAccessDeniedException;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.training.TrainingRegisterEntityService;
 import com.github.loj.pojo.entity.training.Training;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author lxhcaicai
@@ -20,6 +22,9 @@ import javax.annotation.Resource;
  */
 @Component
 public class TrainingValidator {
+
+    @Resource
+    private CommonValidator commonValidator;
 
     @Resource
     private TrainingRegisterEntityService trainingRegisterEntityService;
@@ -96,5 +101,14 @@ public class TrainingValidator {
     public void validateTrainingAuth(Training training) throws StatusForbiddenException, StatusAccessDeniedException {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         validateTrainingAuth(training, userRolesVo);
+    }
+
+    public void validateTraining(Training training) throws StatusFailException {
+        commonValidator.validateContent(training.getTitle(), "训练标题", 500);
+        commonValidator.validateContentLength(training.getDescription(), "训练描述", 65535);
+        if(!Objects.equals(training.getAuth(),"Public")
+                && !Objects.equals(training.getAuth(), "Private")) {
+            throw new StatusFailException("训练的权限类型必须为公开训练(Public)、私有训练(Private)！");
+        }
     }
 }

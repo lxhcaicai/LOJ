@@ -1,6 +1,7 @@
 package com.github.loj.service.group.training.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
@@ -49,6 +50,20 @@ public class GroupTrainingServiceImpl implements GroupTrainingService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
         } catch (StatusNotFoundException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addTraining(TrainingDTO trainingDto) {
+        try {
+            groupTrainingManager.addTraining(trainingDto);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
         }
     }
 }

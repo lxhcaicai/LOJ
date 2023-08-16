@@ -12,4 +12,6 @@ public interface GroupTrainingService {
     public CommonResult<IPage<Training>> getAdminTrainingList(Integer limit, Integer currentPage, Long gid);
 
     public CommonResult<TrainingDTO> getTraining(Long tid);
+
+    public CommonResult<Void> addTraining(TrainingDTO trainingDto);
 }

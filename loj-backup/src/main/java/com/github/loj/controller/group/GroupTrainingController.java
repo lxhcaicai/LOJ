@@ -8,10 +8,7 @@ import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.service.group.training.GroupTrainingService;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiresAuthentication
@@ -38,5 +35,10 @@ public class GroupTrainingController {
     @GetMapping("/training")
     public CommonResult<TrainingDTO> getTraining(@RequestParam("tid") Long tid) {
         return groupTrainingService.getTraining(tid);
+    }
+
+    @PostMapping("/training")
+    public CommonResult<Void> addTraining(@RequestBody TrainingDTO trainingDto) {
+        return groupTrainingService.addTraining(trainingDto);
     }
 }
