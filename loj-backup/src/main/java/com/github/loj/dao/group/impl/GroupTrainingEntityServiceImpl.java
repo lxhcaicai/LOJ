@@ -55,4 +55,13 @@ public class GroupTrainingEntityServiceImpl extends ServiceImpl<GroupTrainingMap
 
         return iPage.setRecords(trainingList);
     }
+
+    @Override
+    public IPage<Training> getAdminTrainingList(Integer limit, Integer currentPage, Long gid) {
+        IPage<Training> iPage = new Page<>(currentPage, limit);
+
+        List<Training> trainingList = groupTrainingMapper.getAdminTrainingList(iPage, gid);
+
+        return iPage.setRecords(trainingList);
+    }
 }

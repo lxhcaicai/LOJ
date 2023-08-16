@@ -7,4 +7,6 @@ import com.github.loj.pojo.vo.TrainingVO;
 
 public interface GroupTrainingEntityService extends IService<Training> {
     IPage<TrainingVO> getTrainingList(Integer limit, Integer currentPage, Long gid);
+
+    IPage<Training> getAdminTrainingList(Integer limit, Integer currentPage, Long gid);
 }
