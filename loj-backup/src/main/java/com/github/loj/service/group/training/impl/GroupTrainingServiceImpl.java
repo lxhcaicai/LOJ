@@ -94,4 +94,18 @@ public class GroupTrainingServiceImpl implements GroupTrainingService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> changeTrainingStatus(Long tid, Boolean status) {
+        try {
+            groupTrainingManager.changeTrainingStatus(tid,status);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

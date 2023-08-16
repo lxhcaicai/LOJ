@@ -51,4 +51,10 @@ public class GroupTrainingController {
     public CommonResult<Void> deleteTraining(@RequestParam(value = "tid", required = true) Long tid) {
         return groupTrainingService.deleteTraining(tid);
     }
+
+    @PutMapping("/change-training-staus")
+    public CommonResult<Void> changeTrainingStatus(@RequestParam(value = "tid", required = true) Long tid,
+                                                   @RequestParam(value = "status", required = true) Boolean status) {
+        return groupTrainingService.changeTrainingStatus(tid,status);
+    }
 }

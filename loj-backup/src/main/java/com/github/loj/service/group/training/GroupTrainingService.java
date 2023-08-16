@@ -18,4 +18,6 @@ public interface GroupTrainingService {
     public CommonResult<Void> updateTraining(TrainingDTO trainingDto);
 
     public CommonResult<Void> deleteTraining(Long tid);
+
+    public CommonResult<Void> changeTrainingStatus(Long tid, Boolean status);
 }
