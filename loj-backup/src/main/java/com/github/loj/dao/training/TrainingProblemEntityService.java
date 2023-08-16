@@ -23,4 +23,6 @@ public interface TrainingProblemEntityService extends IService<TrainingProblem> 
     public List<ProblemFullScreenListVO> getTrainingFullScreenProblemList(Long tid);
 
     public List<ProblemVO> getTrainingProblemList(Long tid);
+
+    public List<TrainingProblem> getGroupTrainingListAcceptedCountByUid(List<Long> tidList, Long gid, String uid);
 }
