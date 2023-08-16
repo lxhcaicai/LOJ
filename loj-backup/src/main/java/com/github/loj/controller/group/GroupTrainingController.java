@@ -41,4 +41,9 @@ public class GroupTrainingController {
     public CommonResult<Void> addTraining(@RequestBody TrainingDTO trainingDto) {
         return groupTrainingService.addTraining(trainingDto);
     }
+
+    @PutMapping("/training")
+    public CommonResult<Void> updateTraining(@RequestBody TrainingDTO trainingDto) {
+        return groupTrainingService.updateTraining(trainingDto);
+    }
 }
