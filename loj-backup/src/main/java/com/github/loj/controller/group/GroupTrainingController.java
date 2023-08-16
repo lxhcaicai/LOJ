@@ -46,4 +46,9 @@ public class GroupTrainingController {
     public CommonResult<Void> updateTraining(@RequestBody TrainingDTO trainingDto) {
         return groupTrainingService.updateTraining(trainingDto);
     }
+
+    @DeleteMapping("/training")
+    public CommonResult<Void> deleteTraining(@RequestParam(value = "tid", required = true) Long tid) {
+        return groupTrainingService.deleteTraining(tid);
+    }
 }

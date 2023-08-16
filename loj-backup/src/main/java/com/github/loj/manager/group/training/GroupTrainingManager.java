@@ -297,4 +297,38 @@ public class GroupTrainingManager {
             }
         }
     }
+
+    public void deleteTraining(Long tid) throws StatusForbiddenException, StatusNotFoundException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Training training = trainingEntityService.getById(tid);
+
+        if(training == null) {
+            throw new StatusNotFoundException("该训练不存在！");
+        }
+
+        Long gid = training.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("删除失败，不可操作非团队内的训练！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("删除训练失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUsername().equals(training.getAuthor()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = trainingEntityService.removeById(tid);
+        if(!isOk) {
+            throw new StatusFailException("删除失败！");
+        }
+    }
 }
