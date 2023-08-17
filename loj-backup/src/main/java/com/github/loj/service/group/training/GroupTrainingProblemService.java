@@ -14,4 +14,6 @@ public interface GroupTrainingProblemService {
     public CommonResult<Void> deleteTrainingProblem(Long pid, Long tid);
 
     public CommonResult<Void> addProblemFromPublic(TrainingProblemDTO trainingProblemDTO);
+
+    public CommonResult<Void> addProblemFromGroup(String problemId, Long tid);
 }

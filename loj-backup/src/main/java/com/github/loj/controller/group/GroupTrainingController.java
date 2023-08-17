@@ -90,4 +90,10 @@ public class GroupTrainingController {
     public CommonResult<Void> addProblemFromPublic(@RequestBody TrainingProblemDTO trainingProblemDTO) {
         return groupTrainingProblemService.addProblemFromPublic(trainingProblemDTO);
     }
+
+    @PostMapping("/add-training-problem-from-group")
+    public CommonResult<Void> addProblemFromGroup(@RequestParam(value = "problemId", required = true) String problemId,
+                                                  @RequestParam(value = "tid", required = true) Long tid) {
+        return groupTrainingProblemService.addProblemFromGroup(problemId, tid);
+    }
 }

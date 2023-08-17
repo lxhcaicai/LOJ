@@ -10,6 +10,7 @@ import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.manager.admin.training.AdminTrainingProblemManager;
+import com.github.loj.manager.admin.training.AdminTrainingRecordManager;
 import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.entity.problem.Problem;
@@ -35,6 +36,9 @@ public class GroupTrainingProblemManager {
 
     @Autowired
     private AdminTrainingProblemManager adminTrainingProblemManager;
+
+    @Autowired
+    private AdminTrainingRecordManager adminTrainingRecordManager;
 
     @Autowired
     private TrainingProblemEntityService trainingProblemEntityService;
@@ -204,6 +208,69 @@ public class GroupTrainingProblemManager {
             adminTrainingProblemManager.syncAlreadyRegisterUserRecord(tid, pid, newTProblem.getId());
         } else {
             throw new StatusFailException("添加失败！");
+        }
+    }
+
+
+    public void addProblemFromGroup(String problemId, Long tid) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Training training = trainingEntityService.getById(tid);
+
+        if(training == null) {
+            throw new StatusNotFoundException("添加题目失败，该训练不存在！");
+        }
+
+        Long gid = training.getGid();
+
+        if(gid == null) {
+            throw new StatusForbiddenException("添加失败，不可操作非团队内的训练题目！");
+        }
+
+        Group group = groupEntityService.getById(gid);
+
+        if(group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("添加失败，该团队不存在或已被封禁！");
+        }
+
+        if(!userRolesVo.getUsername().equals(training.getAuthor()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.eq("problem_id", problemId).eq("gid", gid);
+
+        Problem problem = problemEntityService.getOne(problemQueryWrapper);
+
+        if(problem == null) {
+            throw new StatusNotFoundException("添加失败，该题目不存在或不是团队题目！");
+        }
+
+        QueryWrapper<TrainingProblem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tid",tid)
+                .and(wrapper -> wrapper.eq("pid", problem.getId()))
+                .or()
+                .eq("display_id", problem.getProblemId());
+
+        TrainingProblem trainingProblem = trainingProblemEntityService.getOne(queryWrapper);
+
+        if(trainingProblem != null) {
+            throw new StatusFailException("添加失败，该题目已添加或者题目的训练展示ID已存在！");
+        }
+
+        TrainingProblem newTProblem = new TrainingProblem();
+        boolean isOk = trainingProblemEntityService.save(newTProblem
+                .setTid(tid).setPid(problem.getId()).setDisplayId(problem.getProblemId()));
+
+        if(isOk) {
+            UpdateWrapper<Training> trainingUpdateWrapper = new UpdateWrapper<>();
+            trainingUpdateWrapper.set("gmt_modified", new Date())
+                    .eq("id", tid);
+            trainingEntityService.update(trainingUpdateWrapper);
+            adminTrainingRecordManager.syncAlreadyRegisterUserRecord(tid, problem.getId(), newTProblem.getId());
         }
     }
 }

@@ -72,4 +72,18 @@ public class GroupTrainingProblemServiceImpl implements GroupTrainingProblemServ
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> addProblemFromGroup(String problemId, Long tid) {
+        try {
+            groupTrainingProblemManager.addProblemFromGroup(problemId,tid);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

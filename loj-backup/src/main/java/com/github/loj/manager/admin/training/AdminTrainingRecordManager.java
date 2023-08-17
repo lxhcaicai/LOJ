@@ -2,6 +2,7 @@ package com.github.loj.manager.admin.training;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.dao.judge.JudgeEntityService;
+import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.dao.training.TrainingRecordEntityService;
 import com.github.loj.dao.training.TrainingRegisterEntityService;
@@ -30,6 +31,9 @@ public class AdminTrainingRecordManager {
 
     @Resource
     private TrainingRecordEntityService trainingRecordEntityService;
+
+    @Resource
+    private TrainingEntityService trainingEntityService;
 
     @Resource
     private TrainingRegisterEntityService trainingRegisterEntityService;
@@ -115,5 +119,26 @@ public class AdminTrainingRecordManager {
                 .in("uid", uidList);
         List<Judge> judgeList = judgeEntityService.list(judgeQueryWrapper);
         saveBatchNewRecordByJudgeList(judgeList, tid, null, pidMapTPid);
+    }
+
+    public void syncAlreadyRegisterUserRecord(Long tid, Long pid, Long tpId) {
+        Training training = trainingEntityService.getById(tid);
+        if(!Constants.Training.AUTH_PRIVATE.getValue().equals(training.getAuth())) {
+            return;
+        }
+        List<String> uidList = trainingRegisterEntityService.getAlreadyRegisterUidList(tid);
+        syncNewProblemUserSubmissionToRecord(pid, tpId, tid, uidList);
+    }
+
+    private void syncNewProblemUserSubmissionToRecord(Long pid, Long tpId, Long tid, List<String> uidList) {
+        if(!CollectionUtils.isEmpty(uidList)) {
+            QueryWrapper<Judge> judgeQueryWrapper = new QueryWrapper<>();
+            judgeQueryWrapper.eq("pid", pid)
+                    .eq("cid", 0)
+                    .eq("status", Constants.Judge.STATUS_ACCEPTED.getStatus())
+                    .in("uid", uidList);
+            List<Judge> judgeList = judgeEntityService.list(judgeQueryWrapper);
+            saveBatchNewRecordByJudgeList(judgeList, tid, tpId, null);
+        }
     }
 }

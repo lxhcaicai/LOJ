@@ -8,17 +8,11 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.group.GroupTrainingEntityService;
-import com.github.loj.dao.training.MappingTrainingCategoryEntityService;
-import com.github.loj.dao.training.TrainingCategoryEntityService;
-import com.github.loj.dao.training.TrainingEntityService;
-import com.github.loj.dao.training.TrainingRegisterEntityService;
+import com.github.loj.dao.training.*;
 import com.github.loj.manager.admin.training.AdminTrainingRecordManager;
 import com.github.loj.pojo.dto.TrainingDTO;
 import com.github.loj.pojo.entity.group.Group;
-import com.github.loj.pojo.entity.training.MappingTrainingCategory;
-import com.github.loj.pojo.entity.training.Training;
-import com.github.loj.pojo.entity.training.TrainingCategory;
-import com.github.loj.pojo.entity.training.TrainingRegister;
+import com.github.loj.pojo.entity.training.*;
 import com.github.loj.pojo.vo.TrainingVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
@@ -29,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Objects;
 
 @Component
