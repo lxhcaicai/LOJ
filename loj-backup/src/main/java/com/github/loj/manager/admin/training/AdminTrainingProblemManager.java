@@ -3,20 +3,26 @@ package com.github.loj.manager.admin.training;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.dao.training.TrainingProblemEntityService;
+import com.github.loj.dao.training.TrainingRecordEntityService;
+import com.github.loj.dao.training.TrainingRegisterEntityService;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.pojo.entity.training.TrainingProblem;
+import com.github.loj.pojo.entity.training.TrainingRecord;
+import com.github.loj.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,6 +31,18 @@ public class AdminTrainingProblemManager {
 
     @Autowired
     private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private TrainingEntityService trainingEntityService;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
+
+    @Autowired
+    private TrainingRegisterEntityService trainingRegisterEntityService;
+
+    @Autowired
+    private TrainingRecordEntityService trainingRecordEntityService;
 
     @Autowired
     private TrainingProblemEntityService trainingProblemEntityService;
@@ -90,5 +108,50 @@ public class AdminTrainingProblemManager {
         trainingProblem.put("trainingProblemMap", trainingProblemMap);
 
         return trainingProblem;
+    }
+
+    @Async
+    public void syncAlreadyRegisterUserRecord(Long tid, Long pid, Long tpId) {
+        Training training = trainingEntityService.getById(tid);
+        if(!Constants.Training.AUTH_PUBLIC.getValue().equals(training.getAuth())) {
+            return;
+        }
+        List<String> uidList = trainingRegisterEntityService.getAlreadyRegisterUidList(tid);
+        syncNewProblemUserSubmissionToRecord(pid, tpId, tid, uidList);
+    }
+
+    private void syncNewProblemUserSubmissionToRecord(Long pid, Long tpId, Long tid, List<String> uidList) {
+        if(!CollectionUtils.isEmpty(uidList)) {
+            QueryWrapper<Judge> judgeQueryWrapper = new QueryWrapper<>();
+            judgeQueryWrapper.eq("pid", pid)
+                    .eq("cid", 0)
+                    .eq("status", Constants.Judge.STATUS_ACCEPTED.getStatus())
+                    .in("uid", uidList);
+
+            List<Judge> judgeList = judgeEntityService.list(judgeQueryWrapper);
+            saveBatchNewRecordByJudgeList(judgeList, tid, tpId, null);
+        }
+    }
+
+    private void saveBatchNewRecordByJudgeList(List<Judge> judgeList, Long tid, Long tpId,HashMap<Long, Long> pidMapTPid) {
+        if(!CollectionUtils.isEmpty(judgeList)) {
+            List<TrainingRecord> trainingRecordList = new ArrayList<>();
+            for(Judge judge: judgeList) {
+                TrainingRecord trainingRecord = new TrainingRecord()
+                        .setPid(judge.getPid())
+                        .setSubmitId(judge.getSubmitId())
+                        .setTid(tid)
+                        .setUid(judge.getUid());
+
+                if(pidMapTPid != null) {
+                    trainingRecord.setTpid(pidMapTPid.get(judge.getPid()));
+                }
+                if(tpId != null) {
+                    trainingRecord.setTpid(tpId);
+                }
+                trainingRecordList.add(trainingRecord);
+            }
+            trainingRecordEntityService.saveBatch(trainingRecordList);
+        }
     }
 }

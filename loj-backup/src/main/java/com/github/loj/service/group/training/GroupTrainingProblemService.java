@@ -1,6 +1,7 @@
 package com.github.loj.service.group.training;
 
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 
 import java.util.HashMap;
@@ -11,4 +12,6 @@ public interface GroupTrainingProblemService {
     public CommonResult<Void> updateTrainingProblem(TrainingProblem trainingProblem);
 
     public CommonResult<Void> deleteTrainingProblem(Long pid, Long tid);
+
+    public CommonResult<Void> addProblemFromPublic(TrainingProblemDTO trainingProblemDTO);
 }

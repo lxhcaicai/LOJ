@@ -6,6 +6,7 @@ import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.manager.group.training.GroupTrainingProblemManager;
+import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.service.group.training.GroupTrainingProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,20 @@ public class GroupTrainingProblemServiceImpl implements GroupTrainingProblemServ
     public CommonResult<Void> deleteTrainingProblem(Long pid, Long tid) {
         try {
             groupTrainingProblemManager.deleteTrainingProblem(pid,tid);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addProblemFromPublic(TrainingProblemDTO trainingProblemDTO) {
+        try {
+            groupTrainingProblemManager.addProblemFromPublic(trainingProblemDTO);
             return CommonResult.successResponse();
         } catch (StatusForbiddenException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);

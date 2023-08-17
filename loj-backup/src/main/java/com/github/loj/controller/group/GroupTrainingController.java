@@ -3,6 +3,7 @@ package com.github.loj.controller.group;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.TrainingDTO;
+import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.pojo.vo.TrainingVO;
@@ -83,5 +84,10 @@ public class GroupTrainingController {
     public CommonResult<Void> deleteTrainingProblem(@RequestParam(value = "pid", required = true) Long pid,
                                                     @RequestParam(value = "tid", required = true) Long tid) {
         return groupTrainingProblemService.deleteTrainingProblem(pid,tid);
+    }
+
+    @PostMapping("/add-training-problem-from-public")
+    public CommonResult<Void> addProblemFromPublic(@RequestBody TrainingProblemDTO trainingProblemDTO) {
+        return groupTrainingProblemService.addProblemFromPublic(trainingProblemDTO);
     }
 }
