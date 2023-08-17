@@ -78,4 +78,10 @@ public class GroupTrainingController {
     public CommonResult<Void> updateTrainingProblem(@RequestBody TrainingProblem trainingProblem) {
         return groupTrainingProblemService.updateTrainingProblem(trainingProblem);
     }
+
+    @DeleteMapping("/training-problem")
+    public CommonResult<Void> deleteTrainingProblem(@RequestParam(value = "pid", required = true) Long pid,
+                                                    @RequestParam(value = "tid", required = true) Long tid) {
+        return groupTrainingProblemService.deleteTrainingProblem(pid,tid);
+    }
 }

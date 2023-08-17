@@ -43,4 +43,18 @@ public class GroupTrainingProblemServiceImpl implements GroupTrainingProblemServ
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteTrainingProblem(Long pid, Long tid) {
+        try {
+            groupTrainingProblemManager.deleteTrainingProblem(pid,tid);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.FORBIDDEN);
+        } catch (StatusNotFoundException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.NOT_FOUND);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
