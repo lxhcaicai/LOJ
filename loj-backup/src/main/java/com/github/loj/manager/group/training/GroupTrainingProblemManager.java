@@ -1,12 +1,15 @@
 package com.github.loj.manager.group.training;
 
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusNotFoundException;
 import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.training.TrainingEntityService;
+import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.manager.admin.training.AdminTrainingProblemManager;
 import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.entity.training.Training;
+import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.validator.GroupValidator;
 import org.apache.shiro.SecurityUtils;
@@ -26,6 +29,9 @@ public class GroupTrainingProblemManager {
 
     @Autowired
     private AdminTrainingProblemManager adminTrainingProblemManager;
+
+    @Autowired
+    private TrainingProblemEntityService trainingProblemEntityService;
 
     @Autowired
     private GroupEntityService groupEntityService;
@@ -56,5 +62,35 @@ public class GroupTrainingProblemManager {
 
         return adminTrainingProblemManager.getProblemList(limit,currentPage,keyword,queryExisted,tid);
 
+    }
+
+    public void updateTrainingProblem(TrainingProblem trainingProblem) throws StatusNotFoundException, StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Training training = trainingEntityService.getById(trainingProblem.getTid());
+
+        if (training == null) {
+            throw new StatusNotFoundException("更新失败，该训练不存在！");
+        }
+
+        Long gid = training.getGid();
+
+        Group group = groupEntityService.getById(gid);
+
+        if (group == null || group.getStatus() == 1 && !isRoot) {
+            throw new StatusNotFoundException("更新失败，该团队不存在或已被封禁！");
+        }
+
+        if (!userRolesVo.getUsername().equals(training.getAuthor()) && !isRoot
+                && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = trainingProblemEntityService.updateById(trainingProblem);
+        if(!isOk) {
+            throw new StatusFailException("修改失败！");
+        }
     }
 }

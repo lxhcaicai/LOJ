@@ -73,4 +73,9 @@ public class GroupTrainingController {
                                                                         @RequestParam(value = "tid", required = true) Long tid) {
         return groupTrainingProblemService.getTrainingProblemList(limit, currentPage, keyword, queryExisted, tid);
     }
+
+    @PutMapping("/training-problem")
+    public CommonResult<Void> updateTrainingProblem(@RequestBody TrainingProblem trainingProblem) {
+        return groupTrainingProblemService.updateTrainingProblem(trainingProblem);
+    }
 }
