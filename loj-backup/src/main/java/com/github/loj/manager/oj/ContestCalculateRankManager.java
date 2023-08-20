@@ -609,4 +609,20 @@ public class ContestCalculateRankManager {
                 .collect(Collectors.toList());
         return orderResultList;
     }
+
+    public List<OIContestRankVO> calcOIRank(Boolean isOpenSealRank,
+                                            Boolean removeStar,
+                                            Contest contest,
+                                            String currentUserId,
+                                            List<String> concernedList,
+                                            List<Integer> externalCidList) {
+        return calcOIRank(isOpenSealRank,
+                removeStar,
+                contest,
+                currentUserId,
+                concernedList,
+                externalCidList,
+                false,
+                null);
+    }
 }
