@@ -72,17 +72,17 @@ public abstract class AbstractJudge {
                                                   String testCaseOutputName) {
         if(testCaseInputName != null) {
             command = command.replace("{std_input}",
-                    Constants.JudgeDir.TMPFS_DIR.getContent() + File.separator + testCaseInputName);
+                    Constants.JudgeDir.TMPFS_DIR.getContent() + "/" + testCaseInputName);
         }
 
         if(userOutputName != null) {
             command = command.replace("{user_output}",
-                    Constants.JudgeDir.TMPFS_DIR.getContent() + File.separator + userOutputName);
+                    Constants.JudgeDir.TMPFS_DIR.getContent() + "/" + userOutputName);
         }
 
         if(userOutputName != null) {
             command = command.replace("{std_output}",
-                    Constants.JudgeDir.TMPFS_DIR.getContent() + File.separator + testCaseInputName);
+                    Constants.JudgeDir.TMPFS_DIR.getContent() + "/" + testCaseInputName);
         }
 
         return JudgeUtils.translateCommandline(command);

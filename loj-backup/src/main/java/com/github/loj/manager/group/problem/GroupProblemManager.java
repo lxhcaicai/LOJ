@@ -298,7 +298,7 @@ public class GroupProblemManager {
 
         boolean isOk = problemEntityService.removeById(pid);
         if(!isOk) {
-            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + "/" + "problem_" + pid);
         } else {
             throw new StatusFailException("删除失败！");
         }

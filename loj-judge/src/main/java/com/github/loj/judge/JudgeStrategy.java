@@ -225,11 +225,11 @@ public class JudgeStrategy {
                 return true;
             case SPJ:
                 languageConfig = languageConfigLoader.getLanguageConfigByName("SPJ-" + problem.getSpjLanguage());
-                programFilePath = Constants.JudgeDir.SPJ_WORKPLACE_DIR.getContent() + File.separator +
-                        problem.getId() + File.separator + languageConfig.getExeName();
+                programFilePath = Constants.JudgeDir.SPJ_WORKPLACE_DIR.getContent() + "/" +
+                        problem.getId() + "/" + languageConfig.getExeName();
 
-                programVersionPath = Constants.JudgeDir.SPJ_WORKPLACE_DIR.getContent() + File.separator +
-                        problem.getId() + File.separator + "version";
+                programVersionPath = Constants.JudgeDir.SPJ_WORKPLACE_DIR.getContent() + "/" +
+                        problem.getId() + "/" + "version";
 
                 // 如果不存在该已经编译好的程序，则需要再次进行编译
                 if(!FileUtil.exist(programFilePath) || !FileUtil.exist(programVersionPath)) {
@@ -258,11 +258,11 @@ public class JudgeStrategy {
 
             case INTERACTIVE:
                 languageConfig = languageConfigLoader.getLanguageConfigByName("INTERACTIVE-" + problem.getSpjLanguage());
-                programFilePath = Constants.JudgeDir.INTERACTIVE_WORKPLACE_DIR.getContent() + File.separator +
-                        problem.getId() + File.separator + languageConfig.getExeName();
+                programFilePath = Constants.JudgeDir.INTERACTIVE_WORKPLACE_DIR.getContent() + "/" +
+                        problem.getId() + "/" + languageConfig.getExeName();
 
-                programVersionPath = Constants.JudgeDir.INTERACTIVE_WORKPLACE_DIR.getContent() + File.separator +
-                        problem.getId() + File.separator + "version";
+                programVersionPath = Constants.JudgeDir.INTERACTIVE_WORKPLACE_DIR.getContent() + "/" +
+                        problem.getId() + "/" + "version";
 
                 // 如果不存在该已经编译好的程序，则需要再次进行编译
                 if(!FileUtil.exist(programFilePath) || !FileUtil.exist(programVersionPath)) {

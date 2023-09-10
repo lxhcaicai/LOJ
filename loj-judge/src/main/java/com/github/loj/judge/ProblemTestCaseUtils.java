@@ -40,8 +40,8 @@ public class ProblemTestCaseUtils {
 
     // 获取指定题目的info数据
     public JSONObject loadTestCaseInfo(Long problemId, String testCasesDir, String version, String judgeMode, String judgeCaseMode) throws SystemError {
-        if(FileUtil.exist(testCasesDir + File.separator + "info")) {
-            FileReader fileReader = new FileReader(testCasesDir + File.separator + "info", CharsetUtil.UTF_8);
+        if(FileUtil.exist(testCasesDir + "/" + "info")) {
+            FileReader fileReader = new FileReader(testCasesDir + "/" + "info", CharsetUtil.UTF_8);
             String infoStr = fileReader.readString();
             JSONObject testcaseInfo = JSONUtil.parseObj(infoStr);
 
@@ -165,7 +165,7 @@ public class ProblemTestCaseUtils {
         }
 
         result.set("testCases", testCaseList);
-        FileWriter infoFile = new FileWriter(testCaseDir + File.separator + "info", CharsetUtil.UTF_8);
+        FileWriter infoFile = new FileWriter(testCaseDir + "/" + "info", CharsetUtil.UTF_8);
         // 写入记录文件
         infoFile.write(JSONUtil.toJsonStr(result));
         return result;
@@ -202,13 +202,13 @@ public class ProblemTestCaseUtils {
 
             // 读取输出文件
             String output = "";
-            String outputFilePath = testCaseDir + File.separator + problemCase.getOutput();
+            String outputFilePath = testCaseDir + "/" + problemCase.getOutput();
             if(FileUtil.exist(outputFilePath)) {
                 FileReader outputFile = new FileReader(outputFilePath, CharsetUtil.UTF_8);
                 output = outputFile.readString()
                         .replaceAll("\r\n", "\n")
                         .replaceAll("\r", "\n");
-                FileWriter outFileWriter = new FileWriter(testCaseDir + File.separator + problemCase.getOutput(), CharsetUtil.UTF_8);
+                FileWriter outFileWriter = new FileWriter(testCaseDir + "/" + problemCase.getOutput(), CharsetUtil.UTF_8);
                 outFileWriter.write(output);
             } else {
                 FileWriter fileWriter = new FileWriter(outputFilePath);
@@ -229,7 +229,7 @@ public class ProblemTestCaseUtils {
             ((JSONArray)result.get("testCases")).put(jsonObject);
         }
 
-        FileWriter infoFile = new FileWriter(testCaseDir + File.separator + "info", CharsetUtil.UTF_8);
+        FileWriter infoFile = new FileWriter(testCaseDir + "/" + "info", CharsetUtil.UTF_8);
         // 写入记录文
         infoFile.write(JSONUtil.toJsonStr(result));
 

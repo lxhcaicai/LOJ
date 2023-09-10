@@ -108,7 +108,7 @@ public class AdminProblemManager {
         boolean isOk = problemEntityService.removeById(pid);
         // problem的id为其他表的外键的表中的对应数据都会被一起删除！
         if(isOk) {
-            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid);
+            FileUtil.del(Constants.File.TESTCASE_BASE_FOLDER.getPath() + "/" + "problem_" + pid);
             AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
             log.info("[{}],[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
                     "Admin_Problem", "Delete", pid, userRolesVo.getUid(), userRolesVo.getUsername());

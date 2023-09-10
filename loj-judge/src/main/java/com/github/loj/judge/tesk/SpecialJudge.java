@@ -56,15 +56,15 @@ public class SpecialJudge extends AbstractJudge{
             } else {
                 // 对于当前测试样例，用户程序的输出对应生成的文件
 
-                String userOutputFilePath = judgeGlobalDTO.getRunDir() + File.separator + judgeDTO.getTestCaseNum() + ".out";
+                String userOutputFilePath = judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseNum() + ".out";
                 FileWriter stdWriter = new FileWriter(userOutputFilePath);
                 stdWriter.write(sandBoxRes.getStdout());
 
                 LanguageConfig spjRunConfig = judgeGlobalDTO.getSpjRunConfig();
 
                 // 特判程序的路径
-                String spjExeSrc = Constants.JudgeDir.SPJ_WORKPLACE_DIR.getContent() + File.separator
-                        + judgeGlobalDTO.getProblemId() + File.separator + spjRunConfig.getExeName();
+                String spjExeSrc = Constants.JudgeDir.SPJ_WORKPLACE_DIR.getContent() + "/"
+                        + judgeGlobalDTO.getProblemId() + "/" + spjRunConfig.getExeName();
 
                 String userOutputFileName = judgeGlobalDTO.getProblemId() + "_user_output";
                 String testCaseInputFileName = judgeGlobalDTO.getProblemId() + "_input";

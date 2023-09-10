@@ -540,7 +540,7 @@ public class ProblemEntityServiceImpl extends ServiceImpl<ProblemMapper, Problem
                                    Long problemId,
                                    String tmpTestcaseDir,
                                    List<ProblemCase> problemCaseList) {
-        String testCaseDir = Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + problemId;
+        String testCaseDir = Constants.File.TESTCASE_BASE_FOLDER.getPath() + "/" + "problem_" + problemId;
 
         // 将之前的临时文件夹里面的评测文件全部复制到指定文件夹(覆盖)
         if(!StringUtils.isEmpty(tmpTestcaseDir)) {
@@ -577,23 +577,23 @@ public class ProblemEntityServiceImpl extends ServiceImpl<ProblemMapper, Problem
             listFileNames.remove(problemCase.getInput());
             listFileNames.remove(problemCase.getOutput());
             // 读取输入文件
-            FileReader inputFile = new FileReader(testCaseDir + File.separator + problemCase.getInput(), CharsetUtil.UTF_8);
+            FileReader inputFile = new FileReader(testCaseDir + "/" + problemCase.getInput(), CharsetUtil.UTF_8);
             String input = inputFile.readString()
                     .replaceAll("\r\n", "\n") // 避免window系统的换行问题
                     .replaceAll("\r", "\n");  // 避免mac系统的换行问题
 
-            FileWriter inputFileWriter = new FileWriter(testCaseDir + File.separator + problemCase.getInput(), CharsetUtil.UTF_8);
+            FileWriter inputFileWriter = new FileWriter(testCaseDir + "/" + problemCase.getInput(), CharsetUtil.UTF_8);
             inputFileWriter.write(input);
 
             // 读取输出文件
             String output = "";
-            String outputFilePath = testCaseDir + File.separator + problemCase.getOutput();
+            String outputFilePath = testCaseDir + "/" + problemCase.getOutput();
             if(FileUtil.exist(outputFilePath)) {
                 FileReader outputFile = new FileReader(outputFilePath, CharsetUtil.UTF_8);
                 output = outputFile.readString()
                         .replaceAll("\r\n", "\n") // 避免window系统的换行问题
                         .replaceAll("\r", "\n"); // 避免mac系统的换行问题
-                FileWriter outFileWriter = new FileWriter(testCaseDir + File.separator + problemCase.getOutput(), CharsetUtil.UTF_8);
+                FileWriter outFileWriter = new FileWriter(testCaseDir + "/" + problemCase.getOutput(), CharsetUtil.UTF_8);
                 outFileWriter.write(output);
             } else {
                 FileWriter fileWriter = new FileWriter(outputFilePath);
@@ -626,7 +626,7 @@ public class ProblemEntityServiceImpl extends ServiceImpl<ProblemMapper, Problem
         listFileNames.remove("info");
         if(!CollectionUtils.isEmpty(listFileNames)) {
             for(String filename: listFileNames) {
-                FileUtil.del(testCaseDir + File.separator + filename);
+                FileUtil.del(testCaseDir + "/" + filename);
             }
         }
     }
@@ -649,7 +649,7 @@ public class ProblemEntityServiceImpl extends ServiceImpl<ProblemMapper, Problem
 
         JSONArray testCaseList = new JSONArray(problemCaseList.size());
 
-        String testCaseDir = Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + problemId;
+        String testCaseDir = Constants.File.TESTCASE_BASE_FOLDER.getPath() + "/" + "problem_" + problemId;
         FileUtil.del(testCaseDir);
         for(int index = 0; index < problemCaseList.size(); index ++) {
             JSONObject jsonObject = new JSONObject();

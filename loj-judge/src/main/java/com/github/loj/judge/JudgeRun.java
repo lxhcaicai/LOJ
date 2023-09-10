@@ -148,7 +148,7 @@ public class JudgeRun {
         }
 
         // 用户输出的文件夹
-        String runDir = Constants.JudgeDir.RUN_WORKPLACE_DIR.getContent() + File.separator + submitId;
+        String runDir = Constants.JudgeDir.RUN_WORKPLACE_DIR.getContent() + "/" + submitId;
 
         LanguageConfig runConfig = languageConfigLoader.getLanguageConfigByName(judgeLanguage);
         LanguageConfig spjConfig = languageConfigLoader.getLanguageConfigByName("SPJ-" + problem.getSpjLanguage());

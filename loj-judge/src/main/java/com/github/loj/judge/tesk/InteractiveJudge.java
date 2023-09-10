@@ -27,7 +27,7 @@ public class InteractiveJudge extends AbstractJudge{
         LanguageConfig interactiveRunConfig = judgeGlobalDTO.getInteractiveRunConfig();
 
         String interactiveExeSrc = Constants.JudgeDir.INTERACTIVE_WORKPLACE_DIR.getContent()
-                + File.separator + judgeGlobalDTO.getProblemId() + File.separator + interactiveRunConfig.getExeName();
+                + "/" + judgeGlobalDTO.getProblemId() + "/" + interactiveRunConfig.getExeName();
 
         String testCaseInputFileName = judgeGlobalDTO.getProblemId() + "_input";
         String testCaseOutputFileName = judgeGlobalDTO.getProblemId() + "_output";
