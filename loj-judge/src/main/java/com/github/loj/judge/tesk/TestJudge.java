@@ -53,7 +53,7 @@ public class TestJudge extends AbstractJudge{
             } else if(sandBoxRes.getMemory() > judgeGlobalDTO.getMaxMemory() * 1024) {
                 result.set("status", Constants.Judge.STATUS_MEMORY_LIMIT_EXCEEDED.getStatus());
             } else {
-                if(judgeDTO.getTestCaseInputContent() != null) {
+                if(judgeDTO.getTestCaseOutputContent() != null) {
                     if(judgeGlobalDTO.getRemoveEOLBlank() != null && judgeGlobalDTO.getRemoveEOLBlank()) {
                         String stdOut = rtrim(sandBoxRes.getStdout());
                         String testCaseOutput = rtrim(judgeDTO.getTestCaseOutputContent());
