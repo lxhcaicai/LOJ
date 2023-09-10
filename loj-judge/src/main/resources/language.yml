@@ -26,6 +26,20 @@ run:
   env: default
   command: /w/{exe_path}
 
+---
+language: C++ With O2
+src_path: main.cpp
+exe_path: main
+compile:
+  env: default
+  command: /usr/bin/g++-12 -DONLINE_JUDGE -O2 -w -fmax-errors=1 -std=c++14 {src_path} -lm -o {exe_path}
+  maxCpuTime: 10s
+  maxRealTime: 20s
+  maxMemory: 512mb
+run:
+  env: default
+  command: /w/{exe_path}
+
 # 以下为特殊评测
 ---
 language: SPJ-C

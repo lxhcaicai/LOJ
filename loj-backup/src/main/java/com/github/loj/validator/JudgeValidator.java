@@ -93,20 +93,23 @@ public class JudgeValidator {
         // Remote Judge的编程语言需要转换成LOJ的编程语言才能进行自测
         if(testJudgeDTO.getIsRemoteJudge() != null && testJudgeDTO.getIsRemoteJudge()) {
             String language = MODE_MAP_LANGUAGE.get(testJudgeDTO.getMode());
-
-            String dtoLanguage = testJudgeDTO.getLanguage();
-            if (dtoLanguage.contains("PyPy 3") || dtoLanguage.contains("PyPy3")) {
-                testJudgeDTO.setLanguage("PyPy3");
-            } else if (dtoLanguage.contains("PyPy")) {
-                testJudgeDTO.setLanguage("PyPy2");
-            } else if (dtoLanguage.contains("Python 3")) {
-                testJudgeDTO.setLanguage("Python3");
-            } else if (dtoLanguage.contains("Python")) {
-                testJudgeDTO.setLanguage("Python2");
-            }else if (dtoLanguage.contains("Node")){
-                testJudgeDTO.setLanguage("JavaScript Node");
-            }else if (dtoLanguage.contains("JavaScript")){
-                testJudgeDTO.setLanguage("JavaScript V8");
+            if (language != null) {
+                testJudgeDTO.setLanguage(language);
+            } else {
+                String dtoLanguage = testJudgeDTO.getLanguage();
+                if (dtoLanguage.contains("PyPy 3") || dtoLanguage.contains("PyPy3")) {
+                    testJudgeDTO.setLanguage("PyPy3");
+                } else if (dtoLanguage.contains("PyPy")) {
+                    testJudgeDTO.setLanguage("PyPy2");
+                } else if (dtoLanguage.contains("Python 3")) {
+                    testJudgeDTO.setLanguage("Python3");
+                } else if (dtoLanguage.contains("Python")) {
+                    testJudgeDTO.setLanguage("Python2");
+                }else if (dtoLanguage.contains("Node")){
+                    testJudgeDTO.setLanguage("JavaScript Node");
+                }else if (dtoLanguage.contains("JavaScript")){
+                    testJudgeDTO.setLanguage("JavaScript V8");
+                }
             }
         }
 
