@@ -17,7 +17,7 @@ language: C++
 src_path: main.cpp
 exe_path: main
 compile:
-  command: /usr/bin/g++ -DONLINE_JUDGE -w -fmax-errors=1 -std=c++14 {src_path} -lm -o {exe_path}
+  command: /usr/bin/g++-12 -DONLINE_JUDGE -w -fmax-errors=1 -std=c++14 {src_path} -lm -o {exe_path}
   env: default
   maxCpuTime: 10s
   maxRealTime: 20s
@@ -47,7 +47,7 @@ src_path: spj.cpp
 exe_path: spj
 compile:
   env: default
-  command: /usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}
+  command: /usr/bin/g++-12 -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}
   maxCpuTime: 10s
   maxRealTime: 20s
   maxMemory: 512mb
@@ -75,7 +75,7 @@ src_path: interactive.cpp
 exe_path: interactive
 compile:
   env: default
-  command: /usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}
+  command: /usr/bin/g++-12 -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}
   maxCpuTime: 10s
   maxRealTime: 20s
   maxMemory: 512mb
