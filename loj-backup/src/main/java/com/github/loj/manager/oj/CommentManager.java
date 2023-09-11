@@ -94,6 +94,7 @@ public class CommentManager {
 
         if(cid == null && did != null) {
             QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
+            discussionQueryWrapper.select("id","gid").eq("id", did);
             Discussion discussion = discussionEntityService.getOne(discussionQueryWrapper);
             if(discussion != null && discussion.getGid() != null) {
                 accessValidator.validateAccess(LOJAccessEnum.GROUP_DISCUSSION);
