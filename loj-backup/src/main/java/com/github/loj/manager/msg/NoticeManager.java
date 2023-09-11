@@ -62,7 +62,7 @@ public class NoticeManager {
     @Async
     public void updateSysOrMineMsgRead(IPage<SysMsgVO> userMsgList) {
         List<Long> idList = userMsgList.getRecords().stream()
-                .filter(userMsgVo -> !userMsgVo.getStatus())
+                .filter(userMsgVo -> !userMsgVo.getState())
                 .map(SysMsgVO::getId)
                 .collect(Collectors.toList());
 

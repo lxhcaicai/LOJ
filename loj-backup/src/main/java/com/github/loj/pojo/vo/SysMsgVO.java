@@ -29,7 +29,7 @@ public class SysMsgVO {
     private String type;
 
     @ApiModelProperty(value = "是否已读")
-    private Boolean status;
+    private Boolean state;
 
     private Date gmtCreate;
 }
