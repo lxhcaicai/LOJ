@@ -72,7 +72,7 @@ public class ProblemTestCaseUtils {
         // 可能是zip上传记录的是文件名
         if(StringUtils.isEmpty(problemCases.get(0).getInput())
             || StringUtils.isEmpty(problemCases.get(0).getOutput())
-            || (problemCases.get(0).getInput().endsWith(".im")
+            || (problemCases.get(0).getInput().endsWith(".in")
                     && (problemCases.get(0).getOutput().endsWith(".out") || problemCases.get(0).getOutput().endsWith(".ans"))
                     )
             || (problemCases.get(0).getInput().endsWith(".txt") && problemCases.get(0).getOutput().endsWith(".txt"))) {
@@ -161,7 +161,7 @@ public class ProblemTestCaseUtils {
                 // 默认去掉文末空格的MD5
                 jsonObject.set("EOFStrippedOutputMd5", DigestUtils.md5DigestAsHex(rtrim(outputData).getBytes(StandardCharsets.UTF_8)));
             }
-
+            testCaseList.add(jsonObject);
         }
 
         result.set("testCases", testCaseList);
