@@ -127,7 +127,7 @@ public class AdminProblemManager {
         }
 
         boolean isOk = problemEntityService.adminAddProblem(problemDTO);
-        if(isOk) {
+        if(!isOk) {
             throw new StatusFailException("添加失败");
         }
     }
