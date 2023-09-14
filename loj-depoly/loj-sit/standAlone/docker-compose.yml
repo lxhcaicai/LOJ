@@ -83,6 +83,45 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  loj-backend:
+    #仅支持amd64
+    image: loj-backend
+    container_name: loj-backend
+    restart: always
+    depends_on:
+      - loj-redis
+      - loj-mysql
+      - loj-nacos
+    volumes:
+      - ${LOJ_DATA_DIRECTORY}/file:/loj/file
+      - ${LOJ_DATA_DIRECTORY}/testcase:/loj/testcase
+      - ${LOJ_DATA_DIRECTORY}/log/backend:/loj/log/backend
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xms192m -Xmx384m
+      - BACKEND_SERVER_PORT=${BACKEND_PORT:-4488}
+      - NACOS_URL=${NACOS_HOST:-172.20.0.4}:8848
+      - NACOS_USERNAME=${NACOS_USERNAME:-root} # 登录 http://ip:8848/nacos 分布式配置中心与注册中心的后台的账号
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-123456} # 密码
+      - JWT_TOKEN_SECRET=${JWT_TOKEN_SECRET:-default} # token加密秘钥 默认则生成32位随机密钥
+      - JWT_TOKEN_EXPIRE=${JWT_TOKEN_EXPIRE:-86400} # token过期时间默认为24小时 86400s
+      - JWT_TOKEN_FRESH_EXPIRE=${JWT_TOKEN_FRESH_EXPIRE:-43200} # token默认12小时可自动刷新
+      - JUDGE_TOKEN=${JUDGE_TOKEN:-default} # 调用判题服务器的token 默认则生成32位随机密钥
+      - MYSQL_HOST=${MYSQL_HOST:-172.20.0.3}
+      - MYSQL_PUBLIC_HOST=${MYSQL_PUBLIC_HOST} # 如果判题服务是分布式，请提供当前mysql所在服务器的公网ip
+      - MYSQL_PUBLIC_PORT=${MYSQL_PUBLIC_PORT:-3307}
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE_NAME=loj # 默认为loj
+      - MYSQL_USERNAME=root
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-123456}
+      - REDIS_HOST=-172.20.0.2
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=123456
+    ports:
+      - 4488:4488
+    networks:
+      loj-network:
+        ipv4_address: ${BACKUP_HOST:-172.20.0.6}
 networks:
   loj-network:
     driver: bridge
