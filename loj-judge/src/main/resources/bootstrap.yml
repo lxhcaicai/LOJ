@@ -1,13 +1,13 @@
 loj-judge-server:
-  max-task-num: 6 # ${MAX_TASK_NUM:-1} # -1表示最大并行任务数为cpu核心数+1
-  ip: 127.0.0.1 # ${JUDGE_SERVER_IP:127.0.0.1} # -1表示使用默认本地ipv4，若是部署其它服务器，务必使用公网ip
-  port: 5588 #  ${JUDGE_SERVER_PORT:8088}  # 端口号
-  nacos-url: 127.0.0.1:8848
-  name: loj-judger-1
+  max-task-num: ${MAX_TASK_NUM:-1} # -1表示最大并行任务数为cpu核心数+1
+  ip: ${JUDGE_SERVER_IP:127.0.0.1} # -1表示使用默认本地ipv4，若是部署其它服务器，务必使用公网ip
+  port: ${JUDGE_SERVER_PORT:5588}  # 端口号
+  name: ${JUDGE_SERVER_NAME:loj-judger-1} # 判题机名字 唯一不可重复！！！
+  nacos-url: ${NACOS_URL:127.0.0.1:8848}  # nacos地址
   remote-judge:
-    open:  true # ${REMOTE_JUDGE_OPEN:true} # 当前判题服务器是否开启远程虚拟判题功能
-    max-task-num: -1 # ${REMOTE_JUDGE_MAX_TASK_NUM:-1}
-  sandbox-url: http://127.0.0.1:6565
+    open: ${REMOTE_JUDGE_OPEN:true} # 当前判题服务器是否开启远程虚拟判题功能
+    max-task-num: ${REMOTE_JUDGE_MAX_TASK_NUM:-1}  # -1表示最大并行任务数为cpu核心数*2+1
+  sandbox-url: ${SANDBOX_URL:127.0.0.1:6565}
 
 server:
   port: ${loj-judge-server.port}
