@@ -25,7 +25,7 @@
                 <version>2.3.0.RELEASE</version>
                 <configuration>
                     <!-- 指定该Main Class为全局的唯一入口 -->
-                    <mainClass>com.github.loj.DataBackupApplication</mainClass>
+                    <mainClass>com.github.loj.JudgeServerApplication</mainClass>
                     <layout>ZIP</layout>
                 </configuration>
                 <executions>
