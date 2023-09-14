@@ -3,7 +3,7 @@
     <!-- 属性文件:在properties文件中找到对应的配置项 -->
     <springProperty scope="context" name="logging.path" source="logging.file.path"/>
     <springProperty scope="context" name="logging.level.root" source="logging.level.root"/>
-    <contextName>hoj</contextName>
+    <contextName>loj</contextName>
     <property name="LOG_LEVEL" value="${logging.level.root}"/>
     <property name="LOG_PATH" value="${logging.path}"/>
     <property name="LOG_FILE" value="${LOG_PATH}/application.log"/>
@@ -99,6 +99,20 @@
 
     <!--开发环境-->
     <springProfile name="sit">
+        <logger name="com.github.loj" level="${LOG_LEVEL}" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="APPLICATION_ASYNC"/>
+            <appender-ref ref="ERROR_ASYNC"/>
+        </logger>
+        <root level="${LOG_LEVEL}">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="APPLICATION_ASYNC"/>
+            <appender-ref ref="ERROR_ASYNC"/>
+        </root>
+    </springProfile>
+
+    <!--生产 环境-->
+    <springProfile name="pro">
         <logger name="com.github.loj" level="${LOG_LEVEL}" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="APPLICATION_ASYNC"/>

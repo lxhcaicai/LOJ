@@ -16,7 +16,7 @@ import java.util.Optional;
  * @date 2023/4/26 22:50
  */
 @Configuration
-@Slf4j(topic = "hoj")
+@Slf4j(topic = "loj")
 @RefreshScope
 @Data
 public class DruidConfigure {

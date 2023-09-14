@@ -7,7 +7,7 @@ nacos-web-config: loj-web.yml
 
 spring:
   profiles:
-    active: sit
+    active: pro
   application:
     name: loj-data-backup
   cloud:
