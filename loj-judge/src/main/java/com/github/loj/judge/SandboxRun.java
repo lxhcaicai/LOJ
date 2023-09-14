@@ -6,11 +6,13 @@ import cn.hutool.json.JSONUtil;
 import com.github.loj.common.exception.SystemError;
 import com.github.loj.util.Constants;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -25,7 +27,7 @@ import java.util.Map;
  * @date 2023/4/15 11:14
  */
 
-
+@Component
 @Slf4j(topic = "loj")
 public class SandboxRun {
     private static final RestTemplate restTemplate;
@@ -33,7 +35,7 @@ public class SandboxRun {
     // 单例模式
     private static final SandboxRun instance = new SandboxRun();
 
-    private static final String SANDBOX_BASE_URL = "http://localhost:6565";
+    private static String SANDBOX_BASE_URL;
 
     public static final HashMap<String,Integer> RESULT_MAP_STATUS = new HashMap<>();
 
@@ -49,6 +51,11 @@ public class SandboxRun {
 
     private SandboxRun() {
 
+    }
+
+    @Value("${loj-judge-server.sandbox-url}")
+    public void setSandboxBaseUrl(String sandboxBaseUrl) {
+        SANDBOX_BASE_URL = sandboxBaseUrl;
     }
 
     static {
