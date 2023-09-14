@@ -111,18 +111,32 @@
         </root>
     </springProfile>
 
-    <!--生产环境-->
-    <springProfile name="prod">
+    <!--开发环境-->
+    <springProfile name="pro">
         <logger name="com.github.loj" level="${LOG_LEVEL}" additivity="false">
-            <appender-ref ref="CONSOLE_ERROR"/>
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="APPLICATION_ASYNC"/>
             <appender-ref ref="ERROR_ASYNC"/>
         </logger>
         <root level="${LOG_LEVEL}">
-            <appender-ref ref="CONSOLE_ERROR"/>
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="APPLICATION_ASYNC"/>
             <appender-ref ref="ERROR_ASYNC"/>
         </root>
     </springProfile>
+
+<!--    &lt;!&ndash;生产环境&ndash;&gt;-->
+<!--    <springProfile name="pro">-->
+<!--        <logger name="com.github.loj" level="${LOG_LEVEL}" additivity="false">-->
+<!--            <appender-ref ref="CONSOLE_ERROR"/>-->
+<!--            <appender-ref ref="APPLICATION_ASYNC"/>-->
+<!--            <appender-ref ref="ERROR_ASYNC"/>-->
+<!--        </logger>-->
+<!--        <root level="${LOG_LEVEL}">-->
+<!--            <appender-ref ref="CONSOLE_ERROR"/>-->
+<!--            <appender-ref ref="APPLICATION_ASYNC"/>-->
+<!--            <appender-ref ref="ERROR_ASYNC"/>-->
+<!--        </root>-->
+<!--    </springProfile>-->
 
 </configuration>
