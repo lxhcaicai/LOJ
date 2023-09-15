@@ -169,6 +169,30 @@ services:
     networks:
       loj-network:
         ipv4_address: ${LOJ_SANDBOX_HOST:-172.20.0.8}
+
+  loj-frontend:
+    image: loj-frontend
+    container_name: loj-frontend
+    restart: always
+    # 开启https，请提供证书
+    #volumes:
+    #  - ./server.crt:/etc/nginx/etc/crt/server.crt
+    #  - ./server.key:/etc/nginx/etc/crt/server.key
+    # 修改前端logo
+    #  - ./logo.a0924d7d.png:/usr/share/nginx/html/assets/img/logo.a0924d7d.png
+    #  - ./backstage.8bce8c6e.png:/usr/share/nginx/html/assets/img/backstage.8bce8c6e.png
+    environment:
+      - SERVER_NAME=localhost # 域名(例如baidu.com)或localhost(本地)
+      - BACKEND_SERVER_HOST=${BACKEND_HOST:-172.20.0.6} # backend后端服务地址
+      - BACKEND_SERVER_PORT=${BACKEND_PORT:-4488} # backend后端服务端口号
+      - USE_HTTPS=false # 使用https请设置为true
+    ports:
+      - "7080:80"
+      # - "7443:443"
+    networks:
+      loj-network:
+        ipv4_address: 172.20.0.9
+
 networks:
   loj-network:
     driver: bridge
