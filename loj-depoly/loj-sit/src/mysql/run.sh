@@ -1,11 +1,19 @@
 #!/bin/bash
+echo "
+██╗      ██████╗      ██╗      ███╗   ███╗██╗   ██╗███████╗ ██████╗ ██╗
+██║     ██╔═══██╗     ██║      ████╗ ████║╚██╗ ██╔╝██╔════╝██╔═══██╗██║
+██║     ██║   ██║     ██║█████╗██╔████╔██║ ╚████╔╝ ███████╗██║   ██║██║
+██║     ██║   ██║██   ██║╚════╝██║╚██╔╝██║  ╚██╔╝  ╚════██║██║▄▄ ██║██║
+███████╗╚██████╔╝╚█████╔╝      ██║ ╚═╝ ██║   ██║   ███████║╚██████╔╝███████╗
+╚══════╝ ╚═════╝  ╚════╝       ╚═╝     ╚═╝   ╚═╝   ╚══════╝ ╚══▀▀═╝ ╚══════╝
 
+"
 $WORK_PATH/bcrypt --username=$NACOS_USERNAME --password=$NACOS_PASSWORD --filepath=$WORK_PATH/$FILE_2;
 
 sleep 2;
 
 mysql -uroot -p$MYSQL_ROOT_PASSWORD << EOF
-system echo '================Start create database hoj====================';
+system echo '================Start create database loj====================';
 source $WORK_PATH/$FILE_0;
 system echo '================Start create database nacos==================';
 source $WORK_PATH/$FILE_1;
