@@ -27,4 +27,6 @@ public interface AdminContestProblemService {
     public CommonResult<ContestProblem> setContestProblem(ContestProblem contestProblem);
 
     public CommonResult<Void> addProblemFromPublic(ContestProblemDTO contestProblemDTO);
+
+    public CommonResult<Void> importContestRemoteOJProblem(String name, String problemId, Long cid, String displayId);
 }

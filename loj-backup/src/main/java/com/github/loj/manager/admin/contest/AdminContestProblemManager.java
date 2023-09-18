@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
+import com.github.loj.crawler.problem.ProblemStrategy;
 import com.github.loj.dao.contest.ContestEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.manager.admin.problem.RemoteProblemManager;
 import com.github.loj.pojo.dto.ContestProblemDTO;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.contest.Contest;
@@ -46,6 +48,9 @@ public class AdminContestProblemManager {
 
     @Autowired
     private JudgeEntityService judgeEntityService;
+
+    @Autowired
+    private RemoteProblemManager remoteProblemManager;
 
 
     public HashMap<String, Object> getProblemList(Integer limit, Integer currentPage, String keyword,
@@ -299,5 +304,59 @@ public class AdminContestProblemManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         log.info("[{}],[{}],cid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_Contest", "Add_Public_Problem", cid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
+
+    public void importContestRemoteOJProblem(String name, String problemId, Long cid, String displayId) throws StatusFailException {
+        QueryWrapper<Problem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("problem_id", name.toUpperCase() + "-" + problemId);
+        Problem problem = problemEntityService.getOne(queryWrapper, false);
+
+        // 如果该题目不存在，需要先导入
+        if (problem == null) {
+            AccountProfile useRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+            try {
+                ProblemStrategy.RemoteProblemInfo otherOJProblemInfo = remoteProblemManager.getOtherOJProblemInfo(name.toUpperCase(), problemId, useRolesVo.getUsername());
+                if (otherOJProblemInfo != null) {
+                    problem = remoteProblemManager.adminAddOtherOJProblem(otherOJProblemInfo, name);
+                    if(problem == null) {
+                        throw new StatusFailException("导入新题目失败!请重新尝试!");
+                    }
+                } else {
+                    throw new StatusFailException("导入新题目失败！原因：可能是与该OJ链接超时或题号格式错误！");
+                }
+            } catch (Exception e) {
+                throw new StatusFailException(e.getMessage());
+            }
+        }
+
+        QueryWrapper<ContestProblem> contestProblemQueryWrapper = new QueryWrapper<>();
+        Problem finalProblem = problem;
+        contestProblemQueryWrapper.eq("cid", cid)
+                .and(wrapper -> wrapper.eq("pid", finalProblem.getId())
+                        .or()
+                        .eq("display_id", displayId));
+        ContestProblem contestProblem = contestProblemEntityService.getOne(contestProblemQueryWrapper, false);
+        if (contestProblem != null) {
+            throw new StatusFailException("添加失败，该题目已添加或者题目的比赛展示ID已存在！");
+        }
+
+        // 比赛中题目显示默认为原标题
+        String displayName = problem.getTitle();
+
+        // 修改成比赛题目
+        boolean updateProblem = problemEntityService.saveOrUpdate(problem.setAuth(3));
+
+        boolean isOk = contestProblemEntityService.saveOrUpdate(new ContestProblem()
+                .setCid(cid).setPid(problem.getId()).setDisplayTitle(displayName).setDisplayId(displayId));
+
+        if (!isOk || !updateProblem) {
+            throw new StatusFailException("添加失败");
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],cid:[{}],pid:[{}],problemId:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Contest", "Add_Remote_Problem", cid, problem.getId(), problem.getProblemId(),
+                userRolesVo.getUid(), userRolesVo.getUsername());
     }
 }

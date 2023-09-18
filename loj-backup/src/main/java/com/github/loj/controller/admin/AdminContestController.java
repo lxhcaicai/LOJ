@@ -170,6 +170,17 @@ public class AdminContestController {
         return adminContestProblemService.addProblemFromPublic(contestProblemDTO);
     }
 
+    @GetMapping("import-remote-oj-problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","admin","problem_admin"}, logical = Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Void> importContestRemoteOJProblem(@RequestParam("name") String name,
+                                                           @RequestParam("problemId") String problemId,
+                                                           @RequestParam("cid") Long cid,
+                                                           @RequestParam("displayId") String displayId) {
+        return adminContestProblemService.importContestRemoteOJProblem(name, problemId, cid, displayId);
+    }
+
     /**
      * 以下处理比赛公告的操作请求
      */
