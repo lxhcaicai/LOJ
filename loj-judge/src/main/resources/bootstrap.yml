@@ -7,7 +7,7 @@ loj-judge-server:
   remote-judge:
     open: ${REMOTE_JUDGE_OPEN:true} # 当前判题服务器是否开启远程虚拟判题功能
     max-task-num: ${REMOTE_JUDGE_MAX_TASK_NUM:-1}  # -1表示最大并行任务数为cpu核心数*2+1
-  sandbox-url: ${SANDBOX_URL:127.0.0.1:6565}
+  sandbox-url: ${SANDBOX_URL:http://127.0.0.1:6565}
 
 server:
   port: ${loj-judge-server.port}
