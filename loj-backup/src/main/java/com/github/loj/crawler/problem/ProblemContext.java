@@ -22,4 +22,13 @@ public class ProblemContext {
             throw e;
         }
     }
+
+    public ProblemStrategy.RemoteProblemInfo getProblemInfoByLogin(String problemId, String author, String username, String password) {
+        try {
+            return problemStrategy.getProblemInfoByLogin(problemId, author, username, password);
+        } catch (Exception e) {
+            log.error("获取题目详情失败---------------->{}", e);
+        }
+        return null;
+    }
 }

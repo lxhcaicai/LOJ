@@ -3,6 +3,7 @@ package com.github.loj.manager.admin.problem;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.crawler.language.LanguageContext;
+import com.github.loj.crawler.problem.CFProblemStrategy;
 import com.github.loj.crawler.problem.HDUProblemStrategy;
 import com.github.loj.crawler.problem.ProblemContext;
 import com.github.loj.crawler.problem.ProblemStrategy;
@@ -45,6 +46,9 @@ public class RemoteProblemManager {
             case "HDU":
                 problemStrategy = new HDUProblemStrategy();
                 break;
+            case "CF":
+                problemStrategy = new CFProblemStrategy();
+                break;
             default:
                 throw new Exception("未知的OJ名字, 暂时不支持!");
         }
@@ -53,6 +57,15 @@ public class RemoteProblemManager {
         try {
             return problemContext.getProblemInfo(problemId, author);
         } catch (IllegalStateException e) {
+            if (Objects.equals("GYM",OJName)) {
+                QueryWrapper<RemoteJudgeAccount> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("oj","CF");
+                List<RemoteJudgeAccount> remoteJudgeAccounts = remoteJudgeAccountEntityService.list(queryWrapper);
+                if(!CollectionUtil.isEmpty(remoteJudgeAccounts)) {
+                    RemoteJudgeAccount account = remoteJudgeAccounts.get(0);
+                    return problemContext.getProblemInfoByLogin(problemId, author, account.getUsername(), account.getPassword());
+                }
+            }
             return null;
         }
     }
