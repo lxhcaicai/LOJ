@@ -1,5 +1,6 @@
 package com.github.loj.dao.problem.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.io.file.FileWriter;
@@ -20,6 +21,7 @@ import com.github.loj.mapper.ProblemMapper;
 import com.github.loj.pojo.bo.Pair_;
 import com.github.loj.pojo.dto.ProblemDTO;
 import com.github.loj.pojo.entity.problem.*;
+import com.github.loj.pojo.vo.ImportProblemVO;
 import com.github.loj.pojo.vo.ProblemCountVO;
 import com.github.loj.pojo.vo.ProblemVO;
 import com.github.loj.utils.Constants;
@@ -530,6 +532,59 @@ public class ProblemEntityServiceImpl extends ServiceImpl<ProblemMapper, Problem
         } else {
             return false;
         }
+    }
+
+    @Override
+    public ImportProblemVO buildExportProblem(Long pid, List<HashMap<String, Object>> problemCaseList, HashMap<Long, String> languageMap, HashMap<Long, String> tagMap) {
+
+        // 导出相当于导入
+        ImportProblemVO importProblemVO = new ImportProblemVO();
+        Problem problem = problemMapper.selectById(pid);
+        problem.setCaseVersion(null)
+                .setGmtCreate(null)
+                .setId(null)
+                .setAuth(1)
+                .setIsUploadCase(true)
+                .setAuth(null)
+                .setGmtModified(null);
+        HashMap<String,Object> problemMap = new HashMap<>();
+        BeanUtil.beanToMap(problem, problemMap, false, true);
+        importProblemVO.setProblem(problemMap);
+        QueryWrapper<CodeTemplate> codeTemplateQueryWrapper = new QueryWrapper<>();
+        codeTemplateQueryWrapper.eq("pid", pid).eq("status", true);
+        List<CodeTemplate> codeTemplates = codeTemplateEntityService.list(codeTemplateQueryWrapper);
+        List<HashMap<String,String>> codeTemplateList = new LinkedList<>();
+        for(CodeTemplate codeTemplate: codeTemplates) {
+            HashMap<String,String> tmp = new HashMap<>();
+            tmp.put("language",languageMap.get(codeTemplate.getLid()));
+            tmp.put("code", codeTemplate.getCode());
+            codeTemplateList.add(tmp);
+        }
+        importProblemVO.setCodeTemplates(codeTemplateList)
+                .setJudgeMode(problem.getJudgeMode())
+                .setSamples(problemCaseList);
+
+        if (!StringUtils.isEmpty(problem.getUserExtraFile())) {
+            HashMap<String,String> userExtraFileMap = (HashMap<String, String>) JSONUtil.toBean(problem.getUserExtraFile(), Map.class);
+            importProblemVO.setUserExtraFile(userExtraFileMap);
+        }
+
+        if (!StringUtils.isEmpty(problem.getJudgeExtraFile())) {
+            HashMap<String, String> judgeExtraFileMap = (HashMap<String, String>) JSONUtil.toBean(problem.getJudgeExtraFile(), Map.class);
+            importProblemVO.setJudgeExtraFile(judgeExtraFileMap);
+        }
+
+        QueryWrapper<ProblemTag> problemTagQueryWrapper = new QueryWrapper<>();
+        problemTagQueryWrapper.eq("pid",pid);
+        List<ProblemTag> problemTags = problemTagEntityService.list(problemTagQueryWrapper);
+        importProblemVO.setTags(problemTags.stream().map(problemTag -> tagMap.get(problemTag.getTid())).collect(Collectors.toList()));
+
+        QueryWrapper<ProblemLanguage> problemLanguageQueryWrapper = new QueryWrapper<>();
+        problemLanguageQueryWrapper.eq("pid", pid);
+        List<ProblemLanguage> problemLanguages = problemLanguageEntityService.list(problemLanguageQueryWrapper);
+        importProblemVO.setLanguages(problemLanguages.stream().map(problemLanguage -> languageMap.get(problemLanguage.getLid())).collect(Collectors.toList()));
+
+        return importProblemVO;
     }
 
     // 初始化上传文件的测试数据，写成json文件
