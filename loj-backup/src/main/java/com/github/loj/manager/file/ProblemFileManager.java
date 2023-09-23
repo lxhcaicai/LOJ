@@ -10,19 +10,24 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusSystemErrorException;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.dao.problem.LanguageEntityService;
 import com.github.loj.dao.problem.ProblemCaseEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.problem.TagEntityService;
-import com.github.loj.pojo.entity.problem.Language;
-import com.github.loj.pojo.entity.problem.ProblemCase;
-import com.github.loj.pojo.entity.problem.Tag;
+import com.github.loj.exception.ProblemIDRepeatException;
+import com.github.loj.pojo.dto.ProblemDTO;
+import com.github.loj.pojo.entity.problem.*;
 import com.github.loj.pojo.vo.ImportProblemVO;
+import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -215,6 +220,198 @@ public class ProblemFileManager {
             // 清空临时文件
             FileUtil.del(workDir);
             FileUtil.del(Constants.File.FILE_DOWNLOAD_TMP_FOLDER + "/" + fileName);
+        }
+    }
+
+    public void importProblem(MultipartFile file) throws StatusFailException, StatusSystemErrorException {
+        String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+        if (!"zip".toUpperCase().contains(suffix.toUpperCase())) {
+            throw new StatusFailException("请上传zip格式的题目文件压缩包！");
+        }
+
+        String fileDirId = IdUtil.simpleUUID();
+        String fileDir = Constants.File.TESTCASE_TMP_FOLDER.getPath() + "/" + fileDirId;
+        String filePath = fileDir + "/" + file.getOriginalFilename();
+        // 文件夹不存在就新建
+        FileUtil.mkdir(fileDir);
+        try {
+            file.transferTo(new File(filePath));
+        } catch (IOException e) {
+            FileUtil.del(fileDir);
+            throw new StatusSystemErrorException("服务器异常：评测数据上传失败！");
+        }
+        // 将压缩包压缩到指定文件夹
+        ZipUtil.unzip(filePath, fileDir);
+
+        // 删除zip文件
+        FileUtil.del(filePath);
+
+        // 检查文件是否存在
+        File testCaseFileList = new File(fileDir);
+        File[] files = testCaseFileList.listFiles();
+        if (files == null || files.length == 0) {
+            FileUtil.del(fileDir);
+            throw new StatusFailException("评测数据压缩包里文件不能为空！");
+        }
+
+        HashMap<String, File> problemInfo = new HashMap<>();
+        HashMap<String,File> testcaseInfo = new HashMap<>();
+
+        for (File tmp: files) {
+            if (tmp.isFile()) {
+                // 检查文件是否时json文件
+                if(!tmp.getName().endsWith("json")) {
+                    FileUtil.del(fileDir);
+                    throw new StatusFailException("编号为：" + tmp.getName() + "的文件格式错误，请使用json文件！");
+                }
+                String tmpPreName = tmp.getName().substring(0, tmp.getName().lastIndexOf("."));
+                problemInfo.put(tmpPreName, tmp);
+            }
+            if (tmp.isDirectory()) {
+                testcaseInfo.put(tmp.getName(), tmp);
+            }
+        }
+
+        // 读取json文件生成对象
+        HashMap<String, ImportProblemVO> problemVOMap = new HashMap<>();
+        for(String key: problemInfo.keySet()) {
+            // 若有名字不对应，直接返回失败
+            if (testcaseInfo.getOrDefault(key, null) == null) {
+                FileUtil.del(fileDir);
+                throw new StatusFailException("请检查编号为：" + key + "的题目数据文件与测试数据文件夹是否一一对应！");
+            }
+            try {
+                FileReader fileReader = new FileReader(problemInfo.get(key));
+                ImportProblemVO importProblemVO = JSONUtil.toBean(fileReader.readString(), ImportProblemVO.class);
+                problemVOMap.put(key, importProblemVO);
+            } catch (Exception e) {
+                FileUtil.del(fileDir);
+                throw new StatusFailException("请检查编号为：" + key + "的题目json文件的格式：" + e.getLocalizedMessage());
+            }
+        }
+
+        QueryWrapper<Language> languageQueryWrapper = new QueryWrapper<>();
+        languageQueryWrapper.eq("oj", "ME");
+        List<Language> languageList = languageEntityService.list(languageQueryWrapper);
+
+        HashMap<String, Long> languageMap = new HashMap<>();
+        for(Language language: languageList) {
+            languageMap.put(language.getName(), language.getId());
+        }
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        List<ProblemDTO> problemDTOS = new LinkedList<>();
+        List<Tag> tagList = tagEntityService.list(new QueryWrapper<Tag>().eq("oj","ME"));
+        HashMap<String,Tag> tagMap = new HashMap<>();
+        for(Tag tag: tagList) {
+            tagMap.put(tag.getName().toUpperCase(), tag);
+        }
+        for(String key: problemInfo.keySet()) {
+            ImportProblemVO importProblemVO = problemVOMap.get(key);
+            // 格式化题目语言
+            List<Language> languages = new LinkedList<>();
+            for(String lang: importProblemVO.getLanguages()) {
+                Long lid = languageMap.getOrDefault(lang, null);
+
+                if(lid == null) {
+                    throw new StatusFailException("请检查编号为：" + key + "的题目的代码语言是否有错，不要添加不支持的语言！");
+                }
+                languages.add(new Language().setId(lid).setName(lang));
+            }
+            // 格式化题目代码模板
+            List<CodeTemplate> codeTemplates = new LinkedList<>();
+            for(Map<String, String> tmp: importProblemVO.getCodeTemplates()) {
+                String language = tmp.getOrDefault("language", null);
+                String code = tmp.getOrDefault("code", null);
+                Long lid = languageMap.getOrDefault(language, null);
+                if (language == null || code == null || lid == null) {
+                    FileUtil.del(fileDir);
+                    throw new StatusFailException("请检查编号为：" + key + "的题目的代码模板列表是否有错，不要添加不支持的语言！");
+                }
+                codeTemplates.add(new CodeTemplate().setCode(code).setStatus(true).setLid(lid));
+            }
+
+            // 格式化标签
+            List<Tag> tags = new LinkedList<>();
+            for(String tagStr: importProblemVO.getTags()) {
+                Tag tag = tagMap.getOrDefault(tagStr.toUpperCase(), null);
+                if (tag == null) {
+                    tags.add(new Tag().setName(tagStr).setOj("ME"));
+                } else {
+                    tags.add(tag);
+                }
+            }
+
+            Problem problem = BeanUtil.mapToBean(importProblemVO.getProblem(), Problem.class, true);
+            if(problem.getAuthor() == null) {
+                problem.setAuthor(userRolesVo.getUsername());
+            }
+            problem.setIsGroup(false);
+            List<ProblemCase> problemCaseList = new LinkedList<>();
+            for(Map<String,Object> tmp: importProblemVO.getSamples()) {
+                problemCaseList.add(BeanUtil.mapToBean(tmp, ProblemCase.class, true));
+            }
+
+            // 格式化用户额外文件和判题额外文件
+            if(importProblemVO.getUserExtraFile() != null) {
+                JSONObject userExtraFileJson = JSONUtil.parseObj(importProblemVO.getUserExtraFile());
+                problem.setUserExtraFile(userExtraFileJson.toString());
+            }
+            if(importProblemVO.getJudgeExtraFile() != null) {
+                JSONObject judgeExtraFileJson = JSONUtil.parseObj(importProblemVO.getJudgeExtraFile());
+                problem.setJudgeExtraFile(judgeExtraFileJson.toString());
+            }
+
+            ProblemDTO problemDTO = new ProblemDTO();
+            problemDTO.setProblem(problem)
+                    .setCodeTemplates(codeTemplates)
+                    .setTags(tags)
+                    .setLanguages(languages)
+                    .setUploadTestcaseDir(fileDir + "/" + key)
+                    .setIsUploadTestCase(true)
+                    .setSamples(problemCaseList);
+
+            Constants.JudgeMode judgeMode = Constants.JudgeMode.getJudgeMode(importProblemVO.getJudgeMode());
+            if (judgeMode == null) {
+                problemDTO.setJudgeMode(Constants.JudgeMode.DEFAULT.getMode());
+            } else {
+                problemDTO.setJudgeMode(judgeMode.getMode());
+            }
+            problemDTOS.add(problemDTO);
+        }
+
+        if (problemDTOS.size() == 0) {
+            throw new StatusFailException("警告：未成功导入一道以上的题目，请检查文件格式是否正确！");
+        } else {
+            HashSet<String> repeatProblemIDSet = new HashSet<>();
+            HashSet<String> failedProblemIDSet = new HashSet<>();
+            int failedCount = 0;
+            for(ProblemDTO problemDTO: problemDTOS) {
+                try {
+                    boolean isOk = problemEntityService.adminAddProblem(problemDTO);
+                    if (!isOk) {
+                        failedCount ++;
+                    }
+                } catch (ProblemIDRepeatException e) {
+                    repeatProblemIDSet.add(problemDTO.getProblem().getProblemId());
+                    failedCount ++;
+                } catch (Exception e) {
+                    log.error("", e);
+                    failedProblemIDSet.add(problemDTO.getProblem().getProblemId());
+                    failedCount ++;
+                }
+            }
+            if (failedCount > 0) {
+                int successCount = problemDTOS.size() - failedCount;
+                String errMsg = "[导入结果] 成功数：" + successCount + ",  失败数：" + failedCount +
+                        ",  重复失败的题目ID：" + repeatProblemIDSet;
+                if (failedProblemIDSet.size() > 0) {
+                    errMsg = errMsg + "<br/>未知失败的题目ID：" + failedProblemIDSet;
+                }
+                throw new StatusFailException(errMsg);
+            }
         }
     }
 }
