@@ -27,4 +27,6 @@ public interface FileEntityService extends IService<File> {
                                                         String rankShowName);
 
     int updateFileToDeleteByUidAndType(String uid, String type);
+
+    int updateFileToDeleteByGidAndType(Long gid, String type);
 }

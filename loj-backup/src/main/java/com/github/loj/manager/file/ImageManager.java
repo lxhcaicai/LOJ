@@ -5,16 +5,20 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.loj.common.exception.StatusFailException;
+import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusSystemErrorException;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.group.GroupEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRoleEntityService;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.entity.group.Group;
 import com.github.loj.pojo.entity.user.Role;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.vo.UserRolesVO;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
+import com.github.loj.validator.GroupValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,12 @@ public class ImageManager {
 
     @Autowired
     private UserRoleEntityService userRoleEntityService;
+
+    @Autowired
+    private GroupValidator groupValidator;
+
+    @Autowired
+    private GroupEntityService groupEntityService;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -106,5 +116,56 @@ public class ImageManager {
                 .put("cfUsername", userRolesVO.getCfUsername())
                 .put("roleList", userRolesVO.getRoles().stream().map(Role::getRole))
                 .map();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Group uploadGroupAvatar(MultipartFile image, Long gid) throws StatusForbiddenException, StatusFailException, StatusSystemErrorException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        if (!isRoot && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        if (image == null) {
+            throw new StatusFailException("上传的头像图片文件不能为空！");
+        }
+        if (image.getSize() > 1024 * 1024 * 2) {
+            throw new StatusFailException("上传的头像图片文件大小不能大于2M！");
+        }
+        // 获取文件后缀
+        String suffix = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf(".") + 1);
+        if(!"jpg,jpeg,gif,png,web".toUpperCase().contains(suffix.toUpperCase())) {
+            throw new StatusFailException("请选择jpg,jpeg,gif,png,webp格式的头像图片！");
+        }
+        //若不存在该目录，则创建目录
+        FileUtil.mkdir(Constants.File.GROUP_AVATAR_FOLDER.getPath());
+
+        String filename = IdUtil.simpleUUID() + "." + suffix;
+        try {
+            image.transferTo(FileUtil.file(Constants.File.GROUP_AVATAR_FOLDER.getPath() + "/" + filename));
+        } catch (Exception e) {
+            log.error("头像文件上传异常-------------->", e);
+            throw new StatusSystemErrorException("服务器异常：头像上传失败！");
+        }
+
+        fileEntityService.updateFileToDeleteByGidAndType(gid,"avatar");
+        UpdateWrapper<Group> groupUpdateWrapper = new UpdateWrapper<>();
+        groupUpdateWrapper.set("avatar", Constants.File.IMG_API.getPath() + filename)
+                .eq("id", gid);
+        groupEntityService.update(groupUpdateWrapper);
+
+        File imgFile = new File();
+        imgFile.setName(filename).setFolderPath(Constants.File.GROUP_AVATAR_FOLDER.getPath())
+                .setFilePath(Constants.File.GROUP_AVATAR_FOLDER.getPath() + "/" + filename)
+                .setSuffix(suffix)
+                .setType("avatar")
+                .setGid(gid);
+
+        fileEntityService.saveOrUpdate(imgFile);
+
+        Group group = groupEntityService.getById(gid);
+
+        return group;
     }
 }
