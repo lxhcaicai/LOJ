@@ -36,7 +36,7 @@ public class ProblemFileController {
      * @param file
      * @return
      */
-    @RequiresRoles("roots")
+    @RequiresRoles("root")
     @RequiresAuthentication
     @ResponseBody
     @PostMapping("/import-problem")
