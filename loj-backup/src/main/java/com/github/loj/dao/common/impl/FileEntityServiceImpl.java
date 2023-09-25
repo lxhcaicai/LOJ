@@ -169,4 +169,9 @@ public class FileEntityServiceImpl extends ServiceImpl<FileMapper, File> impleme
         }
         return allRowDataList;
     }
+
+    @Override
+    public int updateFileToDeleteByUidAndType(String uid, String type) {
+        return fileMapper.updateFileToDeleteByUidAndType(uid,type);
+    }
 }

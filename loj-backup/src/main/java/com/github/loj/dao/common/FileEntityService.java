@@ -25,4 +25,6 @@ public interface FileEntityService extends IService<File> {
     List<List<Object>> changOIContestRankToExcelRowList(List<OIContestRankVO> oiContestRankVOList,
                                                         List<String> contestProblemDisplayIDList,
                                                         String rankShowName);
+
+    int updateFileToDeleteByUidAndType(String uid, String type);
 }
