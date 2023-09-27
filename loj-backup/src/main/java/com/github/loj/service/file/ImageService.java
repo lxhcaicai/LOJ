@@ -10,4 +10,6 @@ public interface ImageService {
     public CommonResult<Map<Object, Object>> uploadAvatar(MultipartFile image);
 
     public CommonResult<Group> uploadGroupAvatar(MultipartFile image, Long gid);
+
+    public CommonResult<Map<Object, Object>> uploadCarouselImg(MultipartFile image);
 }

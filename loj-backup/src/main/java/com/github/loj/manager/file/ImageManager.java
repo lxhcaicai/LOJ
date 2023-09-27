@@ -168,4 +168,45 @@ public class ImageManager {
 
         return group;
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Map<Object, Object> uploadCarouselImg(MultipartFile image) throws StatusFailException, StatusSystemErrorException {
+        if (image == null) {
+            throw new StatusFailException("上传的图片文件不能为空！");
+        }
+
+        //获取文件后缀
+        String suffix = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf(".") + 1);
+        if (!"jpg,jpeg,gif,png,webp,jfif,svg".toUpperCase().contains(suffix.toUpperCase())) {
+            throw new StatusFailException("请选择jpg,jpeg,gif,png,webp,jfif,svg格式的头像图片！");
+        }
+        // 若不存在该目录，则创建目录
+        FileUtil.mkdir(Constants.File.HOME_CAROUSEL_FOLDER.getPath());
+        //通过UUID生成唯一文件名
+        String filename = IdUtil.simpleUUID() + "." + suffix;
+        try {
+            // 将文件保存指定目录
+            image.transferTo(FileUtil.file(Constants.File.HOME_CAROUSEL_FOLDER.getPath() + "/" + filename));
+        } catch (IOException e) {
+            log.error("图片文件上传异常-------------->{}", e.getMessage());
+            throw new StatusSystemErrorException("服务器异常：图片上传失败！");
+        }
+
+        // 获取当前登录用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        // 插入fiel表记录
+        File imgFile = new File();
+        imgFile.setName(filename).setFolderPath(Constants.File.HOME_CAROUSEL_FOLDER.getPath())
+                .setFilePath(Constants.File.HOME_CAROUSEL_FOLDER.getPath() + "/" + filename)
+                .setSuffix(suffix)
+                .setType("carousel")
+                .setUid(userRolesVo.getUid());
+        fileEntityService.saveOrUpdate(imgFile);
+
+        return MapUtil.builder()
+                .put("id",imgFile.getId())
+                .put("url",Constants.File.IMG_API.getPath() + filename)
+                .map();
+    }
 }
