@@ -82,4 +82,37 @@ public class MarkDownFileManager {
                 .put("link", Constants.File.IMG_API.getPath() + filename)
                 .put("fileId", file.getId()).map();
     }
+
+    public void deleteMDImg(Long fileId) throws StatusFailException, StatusForbiddenException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        File file = fileEntityService.getById(fileId);
+
+        if (file == null) {
+            throw new StatusFailException("错误：文件不存在！");
+        }
+
+        if (!file.getType().equals("md")) {
+            throw new StatusForbiddenException("错误：不支持删除！");
+        }
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+
+        Long gid = file.getGid();
+
+        if (!file.getUid().equals(userRolesVo.getUid())
+                && !isRoot
+                && !isProblemAdmin
+                && !(gid != null && groupValidator.isGroupAdmin(userRolesVo.getUid(), gid))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        boolean isOk = FileUtil.del(file.getFilePath());
+        if (isOk) {
+            fileEntityService.removeById(fileId);
+        } else {
+            throw new StatusFailException("删除失败");
+        }
+    }
 }

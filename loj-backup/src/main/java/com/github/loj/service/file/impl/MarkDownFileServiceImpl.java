@@ -30,4 +30,16 @@ public class MarkDownFileServiceImpl implements MarkDownFileService {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteMDImg(Long fileId) {
+        try {
+            markDownFileManager.deleteMDImg(fileId);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

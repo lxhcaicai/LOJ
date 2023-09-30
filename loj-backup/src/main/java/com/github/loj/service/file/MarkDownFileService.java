@@ -7,4 +7,6 @@ import java.util.Map;
 
 public interface MarkDownFileService {
     public CommonResult<Map<Object, Object>> uploadMDImg(MultipartFile image, Long gid);
+
+    public CommonResult<Void> deleteMDImg(Long fileId);
 }
