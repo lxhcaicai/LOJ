@@ -42,4 +42,17 @@ public class MarkDownFileServiceImpl implements MarkDownFileService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Map<Object, Object>> uploadMd(MultipartFile file, Long gid) {
+        try {
+            return CommonResult.successResponse(markDownFileManager.uploadMd(file, gid));
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        } catch (StatusSystemErrorException e) {
+            return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
+        }
+    }
 }

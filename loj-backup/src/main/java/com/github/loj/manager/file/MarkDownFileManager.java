@@ -115,4 +115,50 @@ public class MarkDownFileManager {
             throw new StatusFailException("删除失败");
         }
     }
+
+    public Map<Object, Object> uploadMd(MultipartFile file, Long gid) throws StatusForbiddenException, StatusFailException, StatusSystemErrorException {
+        AccountProfile userRoleVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        if (!isRoot
+                && !isProblemAdmin
+                && !isAdmin
+                && !(gid != null && groupValidator.isGroupRoot(userRoleVo.getUid(), gid))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        if (file == null) {
+            throw new StatusFailException("上传的文件不能为空！");
+        }
+
+        if (file.getSize() >= 1024 * 1024 * 128) {
+            throw new StatusFailException("上传的文件大小不能大于128M！");
+        }
+        //获取文件后缀
+        String suffix = "";
+        String filename = "";
+        if (file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")) {
+            suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+            // 通过UUID 生成唯一的文件名
+            filename = IdUtil.simpleUUID() + "." + suffix;
+        } else {
+            filename = IdUtil.simpleUUID();
+        }
+        //若不存在该目录，则创建目录
+        FileUtil.mkdir(Constants.File.MARKDOWN_FILE_FOLDER.getPath());
+
+        try {
+            //将文件保存指定目录
+            file.transferTo(FileUtil.file(Constants.File.MARKDOWN_FILE_FOLDER.getPath() + "/" + filename));
+        } catch (Exception e) {
+            log.error("文件上传异常-------------->", e);
+            throw new StatusSystemErrorException("服务器异常：文件上传失败！");
+        }
+        return MapUtil.builder()
+                .put("link", Constants.File.FILE_API.getPath() + filename)
+                .map();
+    }
 }

@@ -31,4 +31,12 @@ public class MarkDownFileController {
     public CommonResult<Void> deleteMDImg(@RequestParam("fileId") Long fileId) {
         return markDownFileService.deleteMDImg(fileId);
     }
+
+    @PostMapping("/upload-md-file")
+    @RequiresAuthentication
+    @ResponseBody
+    public CommonResult<Map<Object,Object>> uploadMd(@RequestParam("file") MultipartFile file,
+                                                     @RequestParam(value = "gid", required = false) Long gid) {
+        return markDownFileService.uploadMd(file, gid);
+    }
 }
