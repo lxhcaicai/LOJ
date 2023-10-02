@@ -227,6 +227,41 @@ public class ContestFileManager {
                     }
                 }
             }
+        } else if ("problem".equals(splitType)) {
+            /**
+             * 以比赛题目编号来分割提交的代码
+             */
+            for (ContestProblem contestProblem: contestProblemList) {
+                // 对于每题目生成对应的文件夹
+                String problemDir = tmpFileDir + "/" + contestProblem.getDisplayId();
+                FileUtil.mkdir(problemDir);
+                // 如果是ACM模式，则所有提交代码都要生成，如果同一题多次提交AC，加上提交时间秒后缀 ---> username_(666666).c
+                // 如果是OI模式就生成最近一次提交即可，且带上分数 ---> username_(666666)_100.c
+                List<Judge> problemSubmissionList = judgeList.stream()
+                        .filter(judge -> judge.getPid().equals(contestProblem.getPid()))
+                        .sorted(Comparator.comparing(Judge::getSubmitTime).reversed())
+                        .collect(Collectors.toList());
+
+                for (Judge judge : problemSubmissionList) {
+                    String filePath = problemDir + "/" + judge.getUsername();
+                    if (!isACM) {
+                        String key = judge.getUsername() + "_" + contestProblem.getDisplayId();
+                        // OI模式只取最后一次提交
+                        if (!recordMap.containsKey(key)) {
+                            filePath += "_" + judge.getScore() + "_(" + threadLocalTime.get().format(judge.getSubmitTime()) + ")."
+                                    + languageToFileSuffix(judge.getLanguage().toLowerCase());
+                            FileWriter fileWriter = new FileWriter(filePath);
+                            fileWriter.write(judge.getCode());
+                            recordMap.put(key, true);
+                        }
+                    } else {
+                        filePath += "_(" + threadLocalTime.get().format(judge.getSubmitTime()) + ")."
+                                + languageToFileSuffix(judge.getLanguage().toLowerCase());
+                        FileWriter fileWriter = new FileWriter(filePath);
+                        fileWriter.write(judge.getCode());
+                    }
+                }
+            }
         }
 
         String zipFileName = "contest_" + contest.getId() + "_" + System.currentTimeMillis() + ".zip";
