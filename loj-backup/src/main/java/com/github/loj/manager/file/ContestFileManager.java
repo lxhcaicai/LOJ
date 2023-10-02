@@ -13,11 +13,13 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.result.ResultStatus;
 import com.github.loj.dao.common.FileEntityService;
 import com.github.loj.dao.contest.ContestEntityService;
+import com.github.loj.dao.contest.ContestPrintEntityService;
 import com.github.loj.dao.contest.ContestProblemEntityService;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.manager.oj.ContestCalculateRankManager;
 import com.github.loj.pojo.entity.contest.Contest;
+import com.github.loj.pojo.entity.contest.ContestPrint;
 import com.github.loj.pojo.entity.contest.ContestProblem;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.vo.ACMContestRankVO;
@@ -56,6 +58,9 @@ public class ContestFileManager {
 
     @Autowired
     private ContestProblemEntityService contestProblemEntityService;
+
+    @Autowired
+    private ContestPrintEntityService contestPrintEntityService;
 
     @Autowired
     private ContestCalculateRankManager contestCalculateRankManager;
@@ -277,6 +282,75 @@ public class ContestFileManager {
 
         FileUtil.del(tmpFileDir);
         FileUtil.del(zipPath);
+    }
+
+
+    public void downloadContestPrintText(Long id, HttpServletResponse response) throws StatusForbiddenException {
+        ContestPrint contestPrint = contestPrintEntityService.getById(id);
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Long cid = contestPrint.getCid();
+
+        Contest contest = contestEntityService.getById(cid);
+
+        Long gid = contest.getGid();
+
+        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())
+                && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), gid))) {
+            throw new StatusForbiddenException("错误：您并非该比赛的管理员，无权下载打印代码！");
+        }
+        String filename = contestPrint.getUsername() + "_Contest_Print.txt";
+        String filePath = Constants.File.CONTEST_TEXT_PRINT_FOLDER.getPath() + "/" + id + "/" + filename;
+        if (!FileUtil.exist(filePath)) {
+            FileWriter fileWriter = new FileWriter(filePath);
+            fileWriter.write(contestPrint.getContent());
+        }
+
+        FileReader zipFileReader = new FileReader(filePath);
+        BufferedInputStream bins = new BufferedInputStream(zipFileReader.getInputStream());//放到缓冲流里面
+        OutputStream outs = null;//获取文件输出IO流
+        BufferedOutputStream bouts = null;
+        try {
+            outs = response.getOutputStream();
+            bouts = new BufferedOutputStream(outs);
+            response.setContentType("application/x-download");
+            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+            int bytesRead = 0;
+            byte[] buffer = new byte[1024 * 10];
+            //开始向网络传输文件流
+            while((bytesRead = bins.read(buffer, 0, 1024 * 10)) != -1) {
+                bouts.write(buffer, 0, bytesRead);
+            }
+            // 刷新缓存
+            bouts.flush();
+        } catch (IOException e) {
+            log.error("下载比赛打印文本文件异常------------>", e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            Map<String, Object> map = new HashMap<>();
+            map.put("status", ResultStatus.SYSTEM_ERROR);
+            map.put("msg", "下载文件失败，请重新尝试！");
+            map.put("data", null);
+            try {
+                response.getWriter().println(JSONUtil.toJsonStr(map));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+            try {
+                bins.close();
+                if (outs != null) {
+                    outs.close();
+                }
+                if (bouts != null) {
+                    bouts.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static final ThreadLocal<SimpleDateFormat> threadLocalTime = new ThreadLocal<SimpleDateFormat>() {

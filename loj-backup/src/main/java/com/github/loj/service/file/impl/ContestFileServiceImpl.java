@@ -25,4 +25,9 @@ public class ContestFileServiceImpl implements ContestFileService {
     public void downloadContestACSubmission(Long cid, Boolean excludeAdmin, String splitType, HttpServletResponse response) throws StatusForbiddenException, StatusFailException {
         contestFileManager.downloadContestACSubmission(cid, excludeAdmin, splitType, response);
     }
+
+    @Override
+    public void downloadContestPrintText(Long id, HttpServletResponse response) throws StatusForbiddenException {
+        contestFileManager.downloadContestPrintText(id, response);
+    }
 }
