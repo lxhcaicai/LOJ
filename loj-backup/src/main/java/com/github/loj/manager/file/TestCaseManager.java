@@ -1,15 +1,22 @@
 package com.github.loj.manager.file;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ZipUtil;
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.common.exception.StatusSystemErrorException;
+import com.github.loj.common.result.ResultStatus;
 import com.github.loj.dao.problem.ProblemCaseEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.pojo.entity.problem.Problem;
+import com.github.loj.pojo.entity.problem.ProblemCase;
 import com.github.loj.shiro.AccountProfile;
 import com.github.loj.utils.Constants;
 import com.github.loj.validator.GroupValidator;
@@ -17,10 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -150,5 +159,114 @@ public class TestCaseManager {
                 .put("fileList", fileList)
                 .put("fileListDir", fileDir)
                 .map();
+    }
+
+    public void downloadTestcase(Long pid, HttpServletResponse response) throws StatusForbiddenException, StatusFailException {
+
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+
+        Problem problem = problemEntityService.getById(pid);
+
+        Long gid = problem.getGid();
+
+        if (gid != null) {
+            if (!isRoot && !problem.getAuthor().equals(userRolesVo.getUsername())
+                    && !groupValidator.isGroupMember(userRolesVo.getUid(), gid)) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        } else {
+            if (!isRoot && !isProblemAdmin && !problem.getAuthor().equals(userRolesVo.getUsername())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
+
+        String workDir = Constants.File.TESTCASE_BASE_FOLDER.getPath() + "/" + "problem_" + pid;
+        File file = new File(workDir);
+        if (!file.exists()) { // 本地为空 尝试去数据库查找
+            QueryWrapper<ProblemCase> problemCaseQueryWrapper = new QueryWrapper<>();
+            problemCaseQueryWrapper.eq("pid", pid);
+            List<ProblemCase> problemCaseList = problemCaseEntityService.list(problemCaseQueryWrapper);
+
+            if (CollectionUtils.isEmpty(problemCaseList)) {
+                throw new StatusFailException("对不起，该题目的评测数据为空！");
+            }
+
+            boolean hasTestCase = true;
+            if (problemCaseList.get(0).getInput().endsWith(".in") && (problemCaseList.get(0).getOutput().endsWith(".out") ||
+                    problemCaseList.get(0).getOutput().endsWith(".ans"))) {
+                hasTestCase = false;
+            }
+            if (!hasTestCase) {
+                throw new StatusFailException("对不起，该题目的评测数据为空！");
+            }
+
+            FileUtil.mkdir(workDir);
+            // 写入本地
+            for(int i = 0; i < problemCaseList.size(); i ++) {
+                String filePreName = workDir + "/" + (i + 1);
+                String inputName = filePreName + ".in";
+                String outputName = filePreName + ".out";
+                FileWriter infileWriter = new FileWriter(inputName);
+                infileWriter.write(problemCaseList.get(i).getInput());
+                FileWriter outfileWriter = new FileWriter(outputName);
+                outfileWriter.write(problemCaseList.get(i).getOutput());
+            }
+        }
+
+        String fileName = "problem_" + pid + "_testcase_" + System.currentTimeMillis() + ".zip";
+        // 将对应文件夹压缩成ZIP
+        ZipUtil.zip(workDir, Constants.File.FILE_DOWNLOAD_TMP_FOLDER.getPath() + "/" + fileName);
+        // 将zip变成io流返回给前端
+        FileReader fileReader = new FileReader(Constants.File.FILE_DOWNLOAD_TMP_FOLDER.getPath() + "/" + fileName);
+        BufferedInputStream bins = new BufferedInputStream(fileReader.getInputStream()); // 放到缓冲流里里面
+        OutputStream outs = null; //获取文件输出IO流
+        BufferedOutputStream bouts = null;
+
+        try {
+            outs = response.getOutputStream();
+            bouts = new BufferedOutputStream(outs);
+            response.setContentType("application/x-download");
+            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+            int bytesRead = 0;
+            byte[] buffer = new byte[1024 * 10];
+            //开始向网络传输文件流
+            while((bytesRead = bins.read(buffer, 0, 1024 * 10)) != -1) {
+                bouts.write(buffer, 0, bytesRead);
+            }
+            bouts.flush();
+        } catch (IOException e) {
+            log.error("下载题目测试数据的压缩文件异常------------>{}", e.getMessage());
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            Map<String,Object> map = new HashMap<>();
+            map.put("status", ResultStatus.SYSTEM_ERROR);
+            map.put("msg", "下载文件失败, 请重新尝试!");
+            map.put("data", null);
+            try {
+                response.getWriter().println(JSONUtil.toJsonStr(map));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+             try {
+                 bins.close();
+                 if (outs != null) {
+                     outs.close();
+                 }
+                 if (bouts != null) {
+                     bouts.close();
+                 }
+             } catch (IOException e) {
+                 e.printStackTrace();
+             }
+             // 清空临时文件
+            FileUtil.del(Constants.File.FILE_DOWNLOAD_TMP_FOLDER.getPath() + "/" + fileName);
+            log.info("[{}],[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Test_Case", "Download", pid, userRolesVo.getUid(), userRolesVo.getUsername());
+        }
     }
 }

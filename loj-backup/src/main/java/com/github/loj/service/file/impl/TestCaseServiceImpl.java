@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 @Service
@@ -30,5 +30,10 @@ public class TestCaseServiceImpl implements TestCaseService {
         } catch (StatusSystemErrorException e) {
             return CommonResult.errorResponse(e.getMessage(), ResultStatus.SYSTEM_ERROR);
         }
+    }
+
+    @Override
+    public void downloadTestcase(Long pid, HttpServletResponse response) throws StatusForbiddenException, StatusFailException {
+        testCaseManager.downloadTestcase(pid, response);
     }
 }
