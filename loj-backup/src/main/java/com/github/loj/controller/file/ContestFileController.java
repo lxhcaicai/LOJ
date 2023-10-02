@@ -28,4 +28,14 @@ public class ContestFileController {
                                     HttpServletResponse response) throws StatusForbiddenException, StatusFailException, IOException {
         contestFileService.downloadContestRank(cid, forceRefresh, removeStar, response);
     }
+
+    @GetMapping("/download-contest-ac-submission")
+    @RequiresAuthentication
+    public void downloadContestACSubmission(@RequestParam("cid") Long cid,
+                                            @RequestParam(value = "excludeAdmin", defaultValue = "false") Boolean excludeAdmin,
+                                            @RequestParam(value = "splitType", defaultValue = "user") String splitType,
+                                            HttpServletResponse response) throws StatusForbiddenException, StatusFailException {
+        contestFileService.downloadContestACSubmission(cid, excludeAdmin, splitType, response);
+
+    }
 }
