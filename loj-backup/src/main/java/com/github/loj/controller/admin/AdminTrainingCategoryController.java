@@ -36,4 +36,10 @@ public class AdminTrainingCategoryController {
         return adminTrainingCategoryService.updateTrainingCategory(trainingCategory);
     }
 
+    @DeleteMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root","problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> deleteTrainingCategory(@RequestParam("cid") Long cid) {
+        return adminTrainingCategoryService.deleteTrainingCategory(cid);
+    }
 }

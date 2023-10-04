@@ -7,4 +7,6 @@ public interface AdminTrainingCategoryService {
     public CommonResult<TrainingCategory> addTrainingCategory(TrainingCategory trainingCategory);
 
     public CommonResult<Void> updateTrainingCategory(TrainingCategory trainingCategory);
+
+    public CommonResult<Void> deleteTrainingCategory(Long cid);
 }

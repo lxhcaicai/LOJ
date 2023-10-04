@@ -32,4 +32,14 @@ public class AdminTrainingCategoryServiceImpl implements AdminTrainingCategorySe
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteTrainingCategory(Long cid) {
+        try {
+            adminTrainingCategoryManager.deleteTrainingCategory(cid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
