@@ -22,4 +22,14 @@ public class AdminTrainingCategoryServiceImpl implements AdminTrainingCategorySe
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> updateTrainingCategory(TrainingCategory trainingCategory) {
+        try {
+            adminTrainingCategoryManager.updateTrainingCategory(trainingCategory);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

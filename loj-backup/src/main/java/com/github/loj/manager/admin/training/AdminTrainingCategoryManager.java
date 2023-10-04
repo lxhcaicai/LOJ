@@ -33,4 +33,11 @@ public class AdminTrainingCategoryManager {
         }
         return trainingCategory;
     }
+
+    public void updateTrainingCategory(TrainingCategory trainingCategory) throws StatusFailException {
+        boolean isOk = trainingCategoryEntityService.updateById(trainingCategory);
+        if (!isOk) {
+            throw new StatusFailException("更新失败！");
+        }
+    }
 }

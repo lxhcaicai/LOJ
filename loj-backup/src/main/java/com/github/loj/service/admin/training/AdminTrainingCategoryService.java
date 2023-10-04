@@ -5,4 +5,6 @@ import com.github.loj.pojo.entity.training.TrainingCategory;
 
 public interface AdminTrainingCategoryService {
     public CommonResult<TrainingCategory> addTrainingCategory(TrainingCategory trainingCategory);
+
+    public CommonResult<Void> updateTrainingCategory(TrainingCategory trainingCategory);
 }
