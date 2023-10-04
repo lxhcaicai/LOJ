@@ -44,4 +44,14 @@ public class AdminTrainingServiceImpl implements AdminTrainingService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> addTraining(TrainingDTO trainingDTO) {
+        try {
+            adminTrainingManager.addTraining(trainingDTO);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

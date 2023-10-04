@@ -13,6 +13,7 @@ import com.github.loj.pojo.entity.training.MappingTrainingCategory;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.pojo.entity.training.TrainingCategory;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.validator.TrainingValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,9 @@ public class AdminTrainingManager {
 
     @Resource
     private TrainingCategoryEntityService trainingCategoryEntityService;
+
+    @Resource
+    private TrainingValidator trainingValidator;
 
     public IPage<Training> getTrainingList(Integer limit, Integer currentPage, String keyword) {
         if (currentPage == null || currentPage < 1) {
@@ -100,5 +104,29 @@ public class AdminTrainingManager {
         AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
         log.info("[{}],[{}],tid:[{}],operatorUid:[{}],operatorUsername:[{}]",
                 "Admin_Training", "Delete", tid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
+
+    public void addTraining(TrainingDTO trainingDTO) throws StatusFailException {
+        Training training = trainingDTO.getTraining();
+        trainingValidator.validateTraining(training);
+        trainingEntityService.save(training);
+        TrainingCategory trainingCategory = trainingDTO.getTrainingCategory();
+        if (trainingCategory.getGid() == null) {
+            try {
+                trainingCategoryEntityService.save(trainingCategory);
+            } catch (Exception ignored) {
+                QueryWrapper<TrainingCategory> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("name", trainingCategory.getName());
+                trainingCategory = trainingCategoryEntityService.getOne(queryWrapper,false);
+            }
+        }
+
+        boolean isOk = mappingTrainingCategoryEntityService.save(new MappingTrainingCategory()
+                .setTid(training.getId())
+                .setCid(trainingCategory.getId()));
+
+        if (!isOk) {
+            throw new StatusFailException("添加失败！");
+        }
     }
 }

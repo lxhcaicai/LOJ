@@ -41,4 +41,11 @@ public class AdminTrainingController {
     public CommonResult<Void> deleteTraining(@RequestParam("tid") Long tid) {
         return adminTrainingService.deleteTraining(tid);
     }
+
+    @PostMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> addTraining(@RequestBody TrainingDTO trainingDTO) {
+        return adminTrainingService.addTraining(trainingDTO);
+    }
 }
