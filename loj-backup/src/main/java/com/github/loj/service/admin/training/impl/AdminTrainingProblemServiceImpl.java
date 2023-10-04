@@ -3,6 +3,7 @@ package com.github.loj.service.admin.training.impl;
 import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.manager.admin.training.AdminTrainingProblemManager;
+import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.service.admin.training.AdminTrainingProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,16 @@ public class AdminTrainingProblemServiceImpl implements AdminTrainingProblemServ
     public CommonResult<Void> deleteProblem(Long pid, Long tid) {
         try {
             adminTrainingProblemManager.deleteProblem(pid, tid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public CommonResult<Void> addProblemFromPublic(TrainingProblemDTO trainingProblemDTO) {
+        try {
+            adminTrainingProblemManager.addProblemFromPublic(trainingProblemDTO);
             return CommonResult.successResponse();
         } catch (StatusFailException e) {
             return CommonResult.errorResponse(e.getMessage());

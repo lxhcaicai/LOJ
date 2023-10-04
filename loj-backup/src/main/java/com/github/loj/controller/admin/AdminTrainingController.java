@@ -3,6 +3,7 @@ package com.github.loj.controller.admin;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.TrainingDTO;
+import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.service.admin.training.AdminTrainingProblemService;
@@ -96,5 +97,12 @@ public class AdminTrainingController {
     public CommonResult<Void> deleteProblem(@RequestParam("pid") Long pid,
                                             @RequestParam(value = "tid", required = false) Long tid) {
         return adminTrainingProblemService.deleteProblem(pid, tid);
+    }
+
+    @PostMapping("/add-problem-from-public")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> addProblemFromPublic(@RequestBody TrainingProblemDTO trainingProblemDTO) {
+        return adminTrainingProblemService.addProblemFromPublic(trainingProblemDTO);
     }
 }

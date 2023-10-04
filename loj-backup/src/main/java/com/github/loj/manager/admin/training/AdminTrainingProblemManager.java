@@ -12,6 +12,7 @@ import com.github.loj.dao.training.TrainingEntityService;
 import com.github.loj.dao.training.TrainingProblemEntityService;
 import com.github.loj.dao.training.TrainingRecordEntityService;
 import com.github.loj.dao.training.TrainingRegisterEntityService;
+import com.github.loj.pojo.dto.TrainingProblemDTO;
 import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.training.Training;
@@ -24,6 +25,7 @@ import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -51,6 +53,9 @@ public class AdminTrainingProblemManager {
 
     @Autowired
     private TrainingProblemEntityService trainingProblemEntityService;
+
+    @Autowired
+    private AdminTrainingRecordManager adminTrainingRecordManager;
 
     public HashMap<String, Object> getProblemList(Integer limit, Integer currentPage, String keyword, Boolean queryExisted, Long tid) {
         if(currentPage == null || currentPage < 1) {
@@ -205,6 +210,43 @@ public class AdminTrainingProblemManager {
                 msg = "移除失败！";
             }
             throw new StatusFailException(msg);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addProblemFromPublic(TrainingProblemDTO trainingProblemDTO) throws StatusFailException {
+        Long pid = trainingProblemDTO.getPid();
+        Long tid = trainingProblemDTO.getTid();
+        String displayId = trainingProblemDTO.getDisplayId();
+
+        QueryWrapper<TrainingProblem> trainingProblemQueryWrapper = new QueryWrapper<>();
+        trainingProblemQueryWrapper.eq("tid",tid)
+                .and(wrapper -> wrapper.eq("pid", pid)
+                        .or()
+                        .eq("display_id", displayId));
+        TrainingProblem trainingProblem = trainingProblemEntityService.getOne(trainingProblemQueryWrapper,false);
+        if (trainingProblem != null) {
+            throw new StatusFailException("添加失败，该题目已添加或者题目的训练展示ID已存在！");
+        }
+
+        TrainingProblem newTProblem = new TrainingProblem();
+        boolean isOk = trainingProblemEntityService.saveOrUpdate(newTProblem.setTid(tid).setPid(pid).setDisplayId(displayId));
+        if (isOk) { // 添加成功
+            // 更新训练最近更新时间
+            UpdateWrapper<Training> trainingUpdateWrapper = new UpdateWrapper<>();
+            trainingUpdateWrapper.set("gmt_modified", new Date())
+                    .eq("id",tid);
+            trainingEntityService.update(trainingUpdateWrapper);
+
+            // 获取当前登录的用户
+            AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+            log.info("[{}],[{}],tid:[{}],pid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                    "Admin_Training", "Add_Public_Problem", tid, pid, userRolesVo.getUid(), userRolesVo.getUsername());
+
+            // 异步地同步用户对该题目的提交数据
+            adminTrainingRecordManager.syncAlreadyRegisterUserRecord(tid, pid, newTProblem.getId());
+        } else {
+            throw new StatusFailException("添加失败！");
         }
     }
 }
