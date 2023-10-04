@@ -13,4 +13,6 @@ public interface AdminTrainingService {
     public CommonResult<Void> deleteTraining(Long tid);
 
     public CommonResult<Void> addTraining(TrainingDTO trainingDTO);
+
+    public CommonResult<Void> updateTraining(TrainingDTO trainingDTO);
 }

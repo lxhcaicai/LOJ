@@ -48,4 +48,11 @@ public class AdminTrainingController {
     public CommonResult<Void> addTraining(@RequestBody TrainingDTO trainingDTO) {
         return adminTrainingService.addTraining(trainingDTO);
     }
+
+    @PutMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> updateTraining(@RequestBody TrainingDTO trainingDTO) {
+        return adminTrainingService.updateTraining(trainingDTO);
+    }
 }

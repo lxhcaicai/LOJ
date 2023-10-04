@@ -1,6 +1,7 @@
 package com.github.loj.manager.admin.training;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.loj.common.exception.StatusFailException;
@@ -8,18 +9,23 @@ import com.github.loj.common.exception.StatusForbiddenException;
 import com.github.loj.dao.training.MappingTrainingCategoryEntityService;
 import com.github.loj.dao.training.TrainingCategoryEntityService;
 import com.github.loj.dao.training.TrainingEntityService;
+import com.github.loj.dao.training.TrainingRegisterEntityService;
 import com.github.loj.pojo.dto.TrainingDTO;
 import com.github.loj.pojo.entity.training.MappingTrainingCategory;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.pojo.entity.training.TrainingCategory;
+import com.github.loj.pojo.entity.training.TrainingRegister;
 import com.github.loj.shiro.AccountProfile;
+import com.github.loj.utils.Constants;
 import com.github.loj.validator.TrainingValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 @Component
 @Slf4j(topic = "loj")
@@ -36,6 +42,12 @@ public class AdminTrainingManager {
 
     @Resource
     private TrainingValidator trainingValidator;
+
+    @Resource
+    private TrainingRegisterEntityService trainingRegisterEntityService;
+
+    @Resource
+    private AdminTrainingRecordManager adminTrainingRecordManager;
 
     public IPage<Training> getTrainingList(Integer limit, Integer currentPage, String keyword) {
         if (currentPage == null || currentPage < 1) {
@@ -127,6 +139,63 @@ public class AdminTrainingManager {
 
         if (!isOk) {
             throw new StatusFailException("添加失败！");
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateTraining(TrainingDTO trainingDTO) throws StatusFailException, StatusForbiddenException {
+        Training training = trainingDTO.getTraining();
+        trainingValidator.validateTraining(training);
+
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        // 是否为超级管理员
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        // 只有超级管理员和训练拥有者才能操作
+        if (!isRoot && !userRolesVo.getUsername().equals(trainingDTO.getTraining().getAuthor())) {
+            throw new StatusForbiddenException("对不起，你无权限操作！");
+        }
+        Training oldTraining = trainingEntityService.getById(training.getId());
+        trainingEntityService.updateById(training);
+
+        // 私有训练 修改密码 需要清空之前注册训练的记录
+        if (training.getAuth().equals(Constants.Training.AUTH_PRIVATE.getValue())) {
+            if (!Objects.equals(training.getPrivatePwd(), oldTraining.getPrivatePwd())) {
+                UpdateWrapper<TrainingRegister> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("tid", training.getId());
+                trainingRegisterEntityService.remove(updateWrapper);
+            }
+        }
+
+        TrainingCategory trainingCategory = trainingDTO.getTrainingCategory();
+        if (trainingCategory.getId() == null) {
+            try {
+                trainingCategoryEntityService.save(trainingCategory);
+            } catch (Exception ignored) {
+                QueryWrapper<TrainingCategory> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("name", trainingCategory.getName());
+                trainingCategory = trainingCategoryEntityService.getOne(queryWrapper, false);
+            }
+        }
+
+        MappingTrainingCategory mappingTrainingCategory = mappingTrainingCategoryEntityService
+                .getOne(new QueryWrapper<MappingTrainingCategory>().eq("tid", training.getId()),false);
+
+        if (mappingTrainingCategory == null) {
+            mappingTrainingCategoryEntityService.save(new MappingTrainingCategory()
+                    .setTid(training.getId()).setCid(trainingCategory.getId()));
+            adminTrainingRecordManager.checkSyncRecord(trainingDTO.getTraining());
+        } else {
+            if (!mappingTrainingCategory.getCid().equals(trainingCategory.getId())) {
+                UpdateWrapper<MappingTrainingCategory> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("tid", training.getId()).set("cid", trainingCategory.getId());
+                boolean isOk = mappingTrainingCategoryEntityService.update(null, updateWrapper);
+                if (isOk) {
+                    adminTrainingRecordManager.checkSyncRecord(trainingDTO.getTraining());
+                } else {
+                    throw new StatusFailException("修改失败");
+                }
+            }
         }
     }
 }
