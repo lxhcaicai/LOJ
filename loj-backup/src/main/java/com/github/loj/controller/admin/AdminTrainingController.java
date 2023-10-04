@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.TrainingDTO;
 import com.github.loj.pojo.entity.training.Training;
+import com.github.loj.pojo.entity.training.TrainingProblem;
 import com.github.loj.service.admin.training.AdminTrainingProblemService;
 import com.github.loj.service.admin.training.AdminTrainingService;
 import org.apache.shiro.authz.annotation.Logical;
@@ -80,5 +81,12 @@ public class AdminTrainingController {
                                                                 @RequestParam(value = "queryExisted", defaultValue = "false") Boolean queryExisted,
                                                                 @RequestParam(value = "tid", required = true) Long tid) {
         return adminTrainingProblemService.getProblemList(limit, currentPage, keyword, queryExisted, tid);
+    }
+
+    @PutMapping("/problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> updateProblem(@RequestBody TrainingProblem trainingProblem) {
+        return adminTrainingProblemService.updateProblem(trainingProblem);
     }
 }

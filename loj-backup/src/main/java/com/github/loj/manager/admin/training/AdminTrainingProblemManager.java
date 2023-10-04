@@ -3,6 +3,7 @@ package com.github.loj.manager.admin.training;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
 import com.github.loj.dao.training.TrainingEntityService;
@@ -152,6 +153,14 @@ public class AdminTrainingProblemManager {
                 trainingRecordList.add(trainingRecord);
             }
             trainingRecordEntityService.saveBatch(trainingRecordList);
+        }
+    }
+
+    public void updateProblem(TrainingProblem trainingProblem) throws StatusFailException {
+        boolean isOk = trainingProblemEntityService.save(trainingProblem);
+
+        if (!isOk) {
+            throw new StatusFailException("修改失败！");
         }
     }
 }
