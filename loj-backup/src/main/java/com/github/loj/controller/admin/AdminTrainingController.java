@@ -8,10 +8,7 @@ import com.github.loj.service.admin.training.AdminTrainingService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -36,5 +33,12 @@ public class AdminTrainingController {
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<TrainingDTO> getTraining(@RequestParam("tid") Long tid) {
         return adminTrainingService.getTraining(tid);
+    }
+
+    @DeleteMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = "root") // 只有超级管理员能删除训练
+    public CommonResult<Void> deleteTraining(@RequestParam("tid") Long tid) {
+        return adminTrainingService.deleteTraining(tid);
     }
 }

@@ -87,4 +87,18 @@ public class AdminTrainingManager {
         trainingDTO.setTrainingCategory(trainingCategory);
         return trainingDTO;
     }
+
+    public void deleteTraining(Long tid) throws StatusFailException {
+        boolean isOk = trainingEntityService.removeById(tid);
+        /*
+        Training的id为其他表的外键的表中的对应数据都会被一起删除！
+         */
+        if (!isOk) {
+            throw new StatusFailException("删除失败！");
+        }
+        // 获取当前登录的用户
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        log.info("[{}],[{}],tid:[{}],operatorUid:[{}],operatorUsername:[{}]",
+                "Admin_Training", "Delete", tid, userRolesVo.getUid(), userRolesVo.getUsername());
+    }
 }

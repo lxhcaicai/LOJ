@@ -9,4 +9,6 @@ public interface AdminTrainingService {
     public CommonResult<IPage<Training>> getTrainingList(Integer limit, Integer currentPage, String keyword);
 
     public CommonResult<TrainingDTO> getTraining(Long tid);
+
+    public CommonResult<Void> deleteTraining(Long tid);
 }

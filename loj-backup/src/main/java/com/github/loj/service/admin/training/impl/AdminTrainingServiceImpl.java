@@ -34,4 +34,14 @@ public class AdminTrainingServiceImpl implements AdminTrainingService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteTraining(Long tid) {
+        try {
+            adminTrainingManager.deleteTraining(tid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
