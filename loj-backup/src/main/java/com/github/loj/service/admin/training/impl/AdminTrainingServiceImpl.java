@@ -66,4 +66,16 @@ public class AdminTrainingServiceImpl implements AdminTrainingService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> changeTrainingStatus(Long tid, String author, Boolean status) {
+        try {
+            adminTrainingManager.changeTrainingStatus(tid, author, status);
+            return CommonResult.successResponse();
+        } catch (StatusForbiddenException e) {
+            return CommonResult.errorResponse(e.getMessage(),ResultStatus.FORBIDDEN);
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

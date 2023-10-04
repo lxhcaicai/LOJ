@@ -198,4 +198,19 @@ public class AdminTrainingManager {
             }
         }
     }
+
+    public void changeTrainingStatus(Long tid, String author, Boolean status) throws StatusForbiddenException, StatusFailException {
+        AccountProfile userRolesVo = (AccountProfile) SecurityUtils.getSubject().getPrincipal();
+        // 是否为超级管理员
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        // 只有超级管理员和训练拥有者才能操作
+        if (!isRoot && !userRolesVo.getUsername().equals(author)) {
+            throw new StatusForbiddenException("对不起，你无权限操作！");
+        }
+
+        boolean isOk = trainingEntityService.saveOrUpdate(new Training().setId(tid).setStatus(status));
+        if (!isOk) {
+            throw new StatusFailException("修改失败");
+        }
+    }
 }

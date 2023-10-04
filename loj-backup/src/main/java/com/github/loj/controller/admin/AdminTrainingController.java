@@ -11,6 +11,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/admin/training")
@@ -54,5 +55,15 @@ public class AdminTrainingController {
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<Void> updateTraining(@RequestBody TrainingDTO trainingDTO) {
         return adminTrainingService.updateTraining(trainingDTO);
+    }
+
+
+    @PutMapping("/change-training-status")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> changeTrainingStatus(@RequestParam(value = "tid", required = true) Long tid,
+                                                   @RequestParam(value = "author", required = true) String author,
+                                                   @RequestParam(value = "status", required = true) Boolean status) {
+        return adminTrainingService.changeTrainingStatus(tid, author, status);
     }
 }

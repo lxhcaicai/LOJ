@@ -15,4 +15,6 @@ public interface AdminTrainingService {
     public CommonResult<Void> addTraining(TrainingDTO trainingDTO);
 
     public CommonResult<Void> updateTraining(TrainingDTO trainingDTO);
+
+    public CommonResult<Void> changeTrainingStatus(Long tid, String author, Boolean status);
 }
