@@ -11,6 +11,7 @@ import com.github.loj.service.admin.training.AdminTrainingService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -104,5 +105,15 @@ public class AdminTrainingController {
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<Void> addProblemFromPublic(@RequestBody TrainingProblemDTO trainingProblemDTO) {
         return adminTrainingProblemService.addProblemFromPublic(trainingProblemDTO);
+    }
+
+    @GetMapping("/import-remote-oj-problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult<Void> importTrainingRemoteOJProblem(@RequestParam("name") String name,
+                                                            @RequestParam("problemId") String problemId,
+                                                            @RequestParam("tid") Long tid) {
+        return adminTrainingService.importTrainingRemoteOJProblem(name, problemId, tid);
     }
 }

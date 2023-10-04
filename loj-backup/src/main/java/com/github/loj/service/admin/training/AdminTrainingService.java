@@ -17,4 +17,6 @@ public interface AdminTrainingService {
     public CommonResult<Void> updateTraining(TrainingDTO trainingDTO);
 
     public CommonResult<Void> changeTrainingStatus(Long tid, String author, Boolean status);
+
+    public CommonResult<Void> importTrainingRemoteOJProblem(String name, String problemId, Long tid);
 }

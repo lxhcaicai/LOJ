@@ -78,4 +78,14 @@ public class AdminTrainingServiceImpl implements AdminTrainingService {
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> importTrainingRemoteOJProblem(String name, String problemId, Long tid) {
+        try {
+            adminTrainingManager.importTrainingRemoteOJProblem(name, problemId, tid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }
