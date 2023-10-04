@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
 import com.github.loj.pojo.dto.TrainingDTO;
 import com.github.loj.pojo.entity.training.Training;
+import com.github.loj.service.admin.training.AdminTrainingProblemService;
 import com.github.loj.service.admin.training.AdminTrainingService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -20,12 +21,15 @@ public class AdminTrainingController {
     @Resource
     private AdminTrainingService adminTrainingService;
 
+    @Resource
+    private AdminTrainingProblemService adminTrainingProblemService;
+
     @GetMapping("/get-training-list")
     @RequiresAuthentication
     @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
     public CommonResult<IPage<Training>> getTrainingList(@RequestParam(value = "limit", required = false) Integer limit,
-                                                     @RequestParam(value = "currentPage", required = false) Integer currentPage,
-                                                     @RequestParam(value = "keyword", required = false) String keyword) {
+                                                         @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                         @RequestParam(value = "keyword", required = false) String keyword) {
         return adminTrainingService.getTrainingList(limit, currentPage, keyword);
     }
 
@@ -65,5 +69,16 @@ public class AdminTrainingController {
                                                    @RequestParam(value = "author", required = true) String author,
                                                    @RequestParam(value = "status", required = true) Boolean status) {
         return adminTrainingService.changeTrainingStatus(tid, author, status);
+    }
+
+    @GetMapping("/get-problem-list")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<HashMap<String, Object>> getProblemList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                                @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                                @RequestParam(value = "keyword", required = false) String keyword,
+                                                                @RequestParam(value = "queryExisted", defaultValue = "false") Boolean queryExisted,
+                                                                @RequestParam(value = "tid", required = true) Long tid) {
+        return adminTrainingProblemService.getProblemList(limit, currentPage, keyword, queryExisted, tid);
     }
 }
