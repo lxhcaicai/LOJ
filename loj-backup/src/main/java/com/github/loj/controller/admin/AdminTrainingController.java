@@ -2,6 +2,7 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.TrainingDTO;
 import com.github.loj.pojo.entity.training.Training;
 import com.github.loj.service.admin.training.AdminTrainingService;
 import org.apache.shiro.authz.annotation.Logical;
@@ -28,5 +29,12 @@ public class AdminTrainingController {
                                                      @RequestParam(value = "currentPage", required = false) Integer currentPage,
                                                      @RequestParam(value = "keyword", required = false) String keyword) {
         return adminTrainingService.getTrainingList(limit, currentPage, keyword);
+    }
+
+    @GetMapping("")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "admin", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<TrainingDTO> getTraining(@RequestParam("tid") Long tid) {
+        return adminTrainingService.getTraining(tid);
     }
 }
