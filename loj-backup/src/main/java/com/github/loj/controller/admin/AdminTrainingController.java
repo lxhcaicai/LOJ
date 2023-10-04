@@ -89,4 +89,12 @@ public class AdminTrainingController {
     public CommonResult<Void> updateProblem(@RequestBody TrainingProblem trainingProblem) {
         return adminTrainingProblemService.updateProblem(trainingProblem);
     }
+
+    @DeleteMapping("/problem")
+    @RequiresAuthentication
+    @RequiresRoles(value = {"root", "problem_admin"}, logical = Logical.OR)
+    public CommonResult<Void> deleteProblem(@RequestParam("pid") Long pid,
+                                            @RequestParam(value = "tid", required = false) Long tid) {
+        return adminTrainingProblemService.deleteProblem(pid, tid);
+    }
 }

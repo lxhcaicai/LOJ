@@ -31,4 +31,14 @@ public class AdminTrainingProblemServiceImpl implements AdminTrainingProblemServ
             return CommonResult.errorResponse(e.getMessage());
         }
     }
+
+    @Override
+    public CommonResult<Void> deleteProblem(Long pid, Long tid) {
+        try {
+            adminTrainingProblemManager.deleteProblem(pid, tid);
+            return CommonResult.successResponse();
+        } catch (StatusFailException e) {
+            return CommonResult.errorResponse(e.getMessage());
+        }
+    }
 }

@@ -9,4 +9,6 @@ public interface AdminTrainingProblemService {
     public CommonResult<HashMap<String, Object>> getProblemList(Integer limit, Integer currentPage, String keyword, Boolean queryExisted, Long tid);
 
     public CommonResult<Void> updateProblem(TrainingProblem trainingProblem);
+
+    public CommonResult<Void> deleteProblem(Long pid, Long tid);
 }
