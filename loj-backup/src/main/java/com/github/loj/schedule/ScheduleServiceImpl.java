@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.github.loj.dao.common.FileEntityService;
+import com.github.loj.dao.judge.JudgeEntityService;
 import com.github.loj.dao.msg.AdminSysNoticeEntityService;
 import com.github.loj.dao.msg.UserSysNoticeEntityService;
 import com.github.loj.dao.problem.ProblemEntityService;
@@ -18,12 +19,14 @@ import com.github.loj.dao.user.UserInfoEntityService;
 import com.github.loj.dao.user.UserRecordEntityService;
 import com.github.loj.manager.msg.AdminNoticeManager;
 import com.github.loj.pojo.entity.common.File;
+import com.github.loj.pojo.entity.judge.Judge;
 import com.github.loj.pojo.entity.msg.AdminSysNotice;
 import com.github.loj.pojo.entity.msg.UserSysNotice;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.pojo.entity.user.Session;
 import com.github.loj.pojo.entity.user.UserInfo;
 import com.github.loj.pojo.entity.user.UserRecord;
+import com.github.loj.service.admin.rejudge.RejudgeService;
 import com.github.loj.utils.Constants;
 import com.github.loj.utils.JsoupUtils;
 import com.github.loj.utils.RedisUtils;
@@ -82,6 +85,12 @@ public class ScheduleServiceImpl implements ScheduleService{
 
     @Resource
     private AdminNoticeManager adminNoticeManager;
+
+    @Autowired
+    private JudgeEntityService judgeEntityService;
+
+    @Autowired
+    private RejudgeService rejudgeService;
 
     /**
      * 每天3点定时查询数据库字段并删除未引用的头像
@@ -354,6 +363,25 @@ public class ScheduleServiceImpl implements ScheduleService{
             adminNoticeManager.addSingleNoticeToBatchUser(null, superAdminUidList, title, content, "Sys");
         }
         log.info("定时任务 团队审批完成");
+    }
+
+    @Override
+    @Scheduled(cron = "0 0/20 * * * ?")
+    public void check20MPendingSubmission() {
+        DateTime dateTime = DateUtil.offsetMinute(new Date(), -15);
+        String strTime = DateFormatUtils.format(dateTime, "yyyy-MM-dd HH:mm:ss");
+
+        QueryWrapper<Judge> judgeQueryWrapper = new QueryWrapper<>();
+        judgeQueryWrapper.select("distinct submit_id");
+        judgeQueryWrapper.eq("status", Constants.Judge.STATUS_PENDING.getStatus());
+        judgeQueryWrapper.apply("UNIX_TIMESTAMP('" + strTime + "') > UNIX_TIMESTAMP(gmt_modified)");
+        List<Judge> judgeList = judgeEntityService.list(judgeQueryWrapper);
+        if (!CollectionUtils.isEmpty(judgeList)) {
+            log.info("Half An Hour Check Pending Submission to Rejudge:" + Arrays.toString(judgeList.toArray()));
+            for(Judge judge: judgeList) {
+                rejudgeService.rejudge(judge.getSubmitId());
+            }
+        }
     }
 
     private String getDissolutionGroupContent(int count) {

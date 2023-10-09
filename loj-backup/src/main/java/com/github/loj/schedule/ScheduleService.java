@@ -20,4 +20,6 @@ public interface ScheduleService {
     void syncNoticeToRecentHalfYearUser();
 
     void checkUnHandleGroupProblemApplyProgress();
+
+    void check20MPendingSubmission();
 }
