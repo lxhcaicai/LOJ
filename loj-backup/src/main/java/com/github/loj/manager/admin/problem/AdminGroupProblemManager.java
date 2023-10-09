@@ -3,7 +3,9 @@ package com.github.loj.manager.admin.problem;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.loj.common.exception.StatusFailException;
 import com.github.loj.dao.problem.ProblemEntityService;
+import com.github.loj.pojo.dto.ChangeGroupProblemProgressDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -38,5 +40,35 @@ public class AdminGroupProblemManager {
         }
 
         return problemEntityService.page(iPage,problemQueryWrapper);
+    }
+
+    public void changeProgress(ChangeGroupProblemProgressDTO changeGroupProblemProgressDTO) throws StatusFailException {
+        Long pid = changeGroupProblemProgressDTO.getPid();
+        Integer progress = changeGroupProblemProgressDTO.getProgress();
+        if (pid == null || progress == null) {
+            throw new StatusFailException("请求参数pid或者progress不能为空！");
+        }
+        QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+        problemQueryWrapper.select("id", "is_group", "gid", "apply_public_progress").eq("id", pid);
+        Problem problem = problemEntityService.getOne(problemQueryWrapper);
+        if (problem == null) {
+            throw new StatusFailException("错误：当前题目已不存在！");
+        }
+        problem.setApplyPublicProgress(progress);
+        switch (progress) {
+            case 1:
+            case 3:
+                problem.setIsGroup(true);
+                break;
+            case 2:
+                problem.setIsGroup(false);
+                break;
+            default:
+                throw new StatusFailException("请求参数错误：progress请使用1~3");
+        }
+        boolean isOk = problemEntityService.updateById(problem);
+        if (!isOk) {
+            throw new StatusFailException("修改失败！");
+        }
     }
 }

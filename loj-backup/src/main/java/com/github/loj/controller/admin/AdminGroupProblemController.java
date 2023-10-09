@@ -2,15 +2,13 @@ package com.github.loj.controller.admin;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.loj.common.result.CommonResult;
+import com.github.loj.pojo.dto.ChangeGroupProblemProgressDTO;
 import com.github.loj.pojo.entity.problem.Problem;
 import com.github.loj.service.problem.AdminGroupProblemService;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -28,5 +26,10 @@ public class AdminGroupProblemController {
                                                        @RequestParam(value = "keyword", required = false) String keyword,
                                                        @RequestParam(value = "gid", required = false) Long gid) {
         return adminGroupProblemService.getProblemList(currentPage, limit, keyword, gid);
+    }
+
+    @PutMapping("/change-progress")
+    public CommonResult<Void> changeProgress(@RequestBody ChangeGroupProblemProgressDTO changeGroupProblemProgressDTO) {
+        return adminGroupProblemService.changeProgress(changeGroupProblemProgressDTO);
     }
 }
