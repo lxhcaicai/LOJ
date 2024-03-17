@@ -13,6 +13,9 @@
 
  Date: 18/03/2024 00:05:51
 */
+CREATE DATABASE `nacos` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+use `nacos`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
