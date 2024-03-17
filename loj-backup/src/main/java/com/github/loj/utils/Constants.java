@@ -241,7 +241,7 @@ public class Constants {
 
         TESTCASE_TMP_FOLDER("/loj/file/zip"),
 
-        TESTCASE_BASE_FOLDER("/loj/testcase"),
+        TESTCASE_BASE_FOLDER("/judge/test_case"),
 
         FILE_DOWNLOAD_TMP_FOLDER("/loj/file/zip/download"),
 
