@@ -1,0 +1,99 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: loj-nacos
+  namespace: default
+  labels:
+    app: loj-nacos
+  annotations:
+    deployment.kubernetes.io/revision: '2'
+    kubesphere.io/alias-name: loj-nacos
+    kubesphere.io/creator: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loj-nacos
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: loj-nacos
+      annotations:
+        kubesphere.io/restartedAt: '2024-03-17T10:49:10.098Z'
+    spec:
+      containers:
+        - name: loj-nacos
+          image: 'nacos/nacos-server:1.4.1'
+          ports:
+            - name: tcp-loj-nacos
+              containerPort: 8848
+              protocol: TCP
+          env:
+            - name: MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: MODE
+            - name: MYSQL_SERVICE_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: MYSQL_SERVICE_PASSWORD
+            - name: MYSQL_SERVICE_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: MYSQL_SERVICE_DB_NAME
+            - name: MYSQL_SERVICE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: MYSQL_SERVICE_HOST
+            - name: MYSQL_SERVICE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: MYSQL_SERVICE_PORT
+            - name: MYSQL_SERVICE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: MYSQL_SERVICE_USER
+            - name: NACOS_AUTH_ENABLE
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: NACOS_AUTH_ENABLE
+            - name: SPRING_DATASOURCE_PLATFORM
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-nacos-config
+                  key: SPRING_DATASOURCE_PLATFORM
+          resources: {}
+          startupProbe:
+            httpGet:
+              path: /nacos/index.html
+              port: 8848
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

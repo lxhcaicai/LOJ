@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-mysql-service
+  namespace: default
+  labels:
+    app: loj-mysql-service
+  annotations:
+    kubesphere.io/alias-name: loj-mysql-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: tcp-loj-mysql-port
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+      nodePort: 31372
+  selector:
+    app: loj-mysql
+  clusterIP: 10.233.16.197
+  clusterIPs:
+    - 10.233.16.197
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack

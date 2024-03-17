@@ -1,0 +1,70 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: loj-mysql
+  namespace: default
+  labels:
+    app: loj-mysql
+  annotations:
+    deployment.kubernetes.io/revision: '1'
+    kubesphere.io/alias-name: loj-mysql
+    kubesphere.io/creator: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loj-mysql
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: loj-mysql
+      annotations:
+        kubesphere.io/restartedAt: '2024-03-17T12:53:45.844Z'
+        logging.kubesphere.io/logsidecar-config: '{}'
+    spec:
+      volumes:
+        - name: volume-5zktlb
+          configMap:
+            name: loj-mysql-config
+            defaultMode: 420
+        - name: volume-jgb40p
+          persistentVolumeClaim:
+            claimName: loj-vol
+      containers:
+        - name: loj-mysql
+          image: 'mysql:8'
+          ports:
+            - name: tcp-loj-mysql
+              containerPort: 3306
+              protocol: TCP
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-mysql-config
+                  key: MYSQL_ROOT_PASSWORD
+          resources: {}
+          volumeMounts:
+            - name: volume-5zktlb
+              readOnly: true
+              mountPath: /etc/mysql/conf.d
+            - name: volume-jgb40p
+              mountPath: /var/lib/mysql
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

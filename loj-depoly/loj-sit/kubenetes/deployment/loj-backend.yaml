@@ -1,0 +1,143 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: loj-backend
+  namespace: default
+  labels:
+    app: loj-backend
+  annotations:
+    deployment.kubernetes.io/revision: '15'
+    kubesphere.io/alias-name: loj-backend
+    kubesphere.io/creator: admin
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loj-backend
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: loj-backend
+      annotations:
+        kubesphere.io/restartedAt: '2024-03-17T10:52:42.957Z'
+        logging.kubesphere.io/logsidecar-config: '{}'
+    spec:
+      volumes:
+        - name: volume-hqfaft
+          persistentVolumeClaim:
+            claimName: loj-vol
+      containers:
+        - name: loj-backend
+          image: 'registry.cn-hangzhou.aliyuncs.com/lxhcaicai/loj-backend:1.1'
+          ports:
+            - name: tcp-loj-backend
+              containerPort: 4488
+              protocol: TCP
+          env:
+            - name: BACKEND_SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: BACKEND_SERVER_PORT
+            - name: JUDGE_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: JUDGE_TOKEN
+            - name: JWT_TOKEN_EXPIRE
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: JWT_TOKEN_EXPIRE
+            - name: JWT_TOKEN_FRESH_EXPIRE
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: JWT_TOKEN_FRESH_EXPIRE
+            - name: JWT_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: JWT_TOKEN_SECRET
+            - name: MYSQL_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: MYSQL_DATABASE_NAME
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: MYSQL_HOST
+            - name: MYSQL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: MYSQL_PORT
+            - name: MYSQL_PUBLIC_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: MYSQL_PUBLIC_HOST
+            - name: MYSQL_PUBLIC_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: MYSQL_PUBLIC_PORT
+            - name: MYSQL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: MYSQL_USERNAME
+            - name: NACOS_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: NACOS_PASSWORD
+            - name: NACOS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: NACOS_URL
+            - name: NACOS_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: NACOS_USERNAME
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: REDIS_HOST
+            - name: REDIS_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: REDIS_PASSWORD
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-backend-config
+                  key: REDIS_PORT
+          resources: {}
+          volumeMounts:
+            - name: volume-hqfaft
+              mountPath: /judge
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

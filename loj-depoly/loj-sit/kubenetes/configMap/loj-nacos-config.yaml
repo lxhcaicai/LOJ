@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: loj-nacos-config
+  namespace: default
+  annotations:
+    kubesphere.io/alias-name: loj-nacos-config
+    kubesphere.io/creator: admin
+data:
+  MODE: standalone
+  MYSQL_SERVICE_DB_NAME: nacos
+  MYSQL_SERVICE_HOST: loj-mysql-service
+  MYSQL_SERVICE_PASSWORD: '123456'
+  MYSQL_SERVICE_PORT: '3306'
+  MYSQL_SERVICE_USER: root
+  NACOS_AUTH_ENABLE: 'true'
+  SPRING_DATASOURCE_PLATFORM: mysql

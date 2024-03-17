@@ -1,0 +1,114 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: loj-judgerserver
+  namespace: default
+  labels:
+    app: loj-judgerserver
+  annotations:
+    deployment.kubernetes.io/revision: '17'
+    kubesphere.io/alias-name: loj-judgerserver
+    kubesphere.io/creator: admin
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loj-judgerserver
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: loj-judgerserver
+      annotations:
+        kubesphere.io/restartedAt: '2024-03-17T10:52:47.745Z'
+        logging.kubesphere.io/logsidecar-config: '{}'
+    spec:
+      volumes:
+        - name: volume-2puega
+          persistentVolumeClaim:
+            claimName: loj-vol
+      containers:
+        - name: loj-judgerserver
+          image: 'registry.cn-hangzhou.aliyuncs.com/lxhcaicai/loj-judgeserver:1.0'
+          env:
+            - name: JUDGE_SERVER_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: JUDGE_SERVER_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: JUDGE_SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: JUDGE_SERVER_PORT
+            - name: MAX_TASK_NUM
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: MAX_TASK_NUM
+            - name: NACOS_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: NACOS_PASSWORD
+            - name: NACOS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: NACOS_URL
+            - name: NACOS_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: NACOS_USERNAME
+            - name: REMOTE_JUDGE_MAX_TASK_NUM
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: REMOTE_JUDGE_MAX_TASK_NUM
+            - name: REMOTE_JUDGE_OPEN
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: REMOTE_JUDGE_OPEN
+            - name: REMOTE_JUDGE_MAX_TASK_NUM
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: REMOTE_JUDGE_MAX_TASK_NUM
+            - name: REMOTE_JUDGE_OPEN
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: REMOTE_JUDGE_OPEN
+            - name: SANDBOX_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: loj-judgerserver-config
+                  key: SANDBOX_URL
+          resources: {}
+          volumeMounts:
+            - name: volume-2puega
+              mountPath: /judge
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

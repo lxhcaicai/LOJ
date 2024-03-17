@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-redis-service
+  namespace: default
+  labels:
+    app: loj-redis-service
+  annotations:
+    kubesphere.io/alias-name: loj-redis-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: tcp-loj-redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+      nodePort: 30792
+  selector:
+    app: loj-redis
+  clusterIP: 10.233.48.254
+  clusterIPs:
+    - 10.233.48.254
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack

@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-frontend-service
+  namespace: default
+  labels:
+    app: loj-frontend-service
+  annotations:
+    kubesphere.io/alias-name: loj-frontend-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: http-loj-frontend
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 32274
+  selector:
+    app: loj-frontend
+  clusterIP: 10.233.50.212
+  clusterIPs:
+    - 10.233.50.212
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack

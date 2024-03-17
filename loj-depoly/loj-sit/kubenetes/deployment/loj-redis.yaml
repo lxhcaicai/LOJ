@@ -1,0 +1,73 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: loj-redis
+  namespace: default
+  labels:
+    app: loj-redis
+  annotations:
+    deployment.kubernetes.io/revision: '5'
+    kubesphere.io/alias-name: loj-redis
+    kubesphere.io/creator: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loj-redis
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: loj-redis
+      annotations:
+        logging.kubesphere.io/logsidecar-config: '{}'
+    spec:
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: ''
+        - name: volume-onbvt2
+          secret:
+            secretName: loj-redis-secret
+            defaultMode: 420
+        - name: volume-douqr0
+          persistentVolumeClaim:
+            claimName: loj-vol
+      containers:
+        - name: loj-redis
+          image: 'redis:6.0'
+          command:
+            - redis-server
+            - /usr/local/etc/redis/redis.conf
+          ports:
+            - name: tcp-loj-redis
+              containerPort: 6379
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - name: host-time
+              readOnly: true
+              mountPath: /etc/localtime
+            - name: volume-onbvt2
+              readOnly: true
+              mountPath: /usr/local/etc/redis
+            - name: volume-douqr0
+              mountPath: /data
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

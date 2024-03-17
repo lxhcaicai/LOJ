@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-nacos-service
+  namespace: default
+  labels:
+    app: loj-nacos-service
+  annotations:
+    kubesphere.io/alias-name: loj-nacos-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: tcp-nacos
+      protocol: TCP
+      port: 8848
+      targetPort: 8848
+      nodePort: 32124
+  selector:
+    app: loj-nacos
+  clusterIP: 10.233.60.75
+  clusterIPs:
+    - 10.233.60.75
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack

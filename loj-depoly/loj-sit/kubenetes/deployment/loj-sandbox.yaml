@@ -1,0 +1,59 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: loj-sandbox
+  namespace: default
+  labels:
+    app: loj-sandbox
+  annotations:
+    deployment.kubernetes.io/revision: '5'
+    kubesphere.io/creator: admin
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loj-sandbox
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: loj-sandbox
+      annotations:
+        kubesphere.io/restartedAt: '2024-03-17T06:57:23.450Z'
+        logging.kubesphere.io/logsidecar-config: '{}'
+    spec:
+      volumes:
+        - name: volume-kz9a4u
+          persistentVolumeClaim:
+            claimName: loj-vol
+      containers:
+        - name: loj-sandbox
+          image: 'registry.cn-hangzhou.aliyuncs.com/lxhcaicai/loj-sandbox:1.0'
+          ports:
+            - name: tcp-loj-sandbox
+              containerPort: 6060
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - name: volume-kz9a4u
+              mountPath: /judge
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: default
+      serviceAccount: default
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

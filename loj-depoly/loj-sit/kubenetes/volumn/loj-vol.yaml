@@ -1,0 +1,23 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: loj-vol
+  namespace: default
+  annotations:
+    kubesphere.io/alias-name: loj-vol
+    kubesphere.io/creator: admin
+    pv.kubernetes.io/bind-completed: 'yes'
+    pv.kubernetes.io/bound-by-controller: 'yes'
+    volume.beta.kubernetes.io/storage-provisioner: openebs.io/local
+    volume.kubernetes.io/selected-node: kube-node
+  finalizers:
+    - kubernetes.io/pvc-protection
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: pvc-91e49846-1d04-4630-88c6-c818d85ec77e
+  storageClassName: local
+  volumeMode: Filesystem

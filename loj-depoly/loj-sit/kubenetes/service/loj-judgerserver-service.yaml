@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-judgerserver-service
+  namespace: default
+  labels:
+    app: loj-judgerserver-service
+  annotations:
+    kubesphere.io/alias-name: loj-judgerserver-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: http-judgerserver
+      protocol: TCP
+      port: 5588
+      targetPort: 5588
+      nodePort: 32121
+  selector:
+    app: loj-judgerserver
+  clusterIP: 10.233.56.112
+  clusterIPs:
+    - 10.233.56.112
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack

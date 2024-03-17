@@ -1,0 +1,16 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: loj-mysql-config
+  namespace: default
+  annotations:
+    kubesphere.io/alias-name: loj-mysql-config
+    kubesphere.io/creator: admin
+data:
+  MYSQL_ROOT_PASSWORD: '123456'
+  NACOS_PASSWORD: nacos
+  NACOS_USERNAME: nacos
+  TZ: Asia/Shanghai
+  my.cnf: |-
+    [mysqld]
+    max_connections = 200

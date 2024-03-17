@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-sandbox-service
+  namespace: default
+  labels:
+    app: loj-sandbox-service
+  annotations:
+    kubesphere.io/alias-name: loj-sandbox-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: tcp-loj-sandbox
+      protocol: TCP
+      port: 6060
+      targetPort: 6060
+      nodePort: 32183
+  selector:
+    app: loj-sandbox
+  clusterIP: 10.233.5.14
+  clusterIPs:
+    - 10.233.5.14
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack

@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: loj-backend-service
+  namespace: default
+  labels:
+    app: loj-backend-service
+  annotations:
+    kubesphere.io/alias-name: loj-backend-service
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: http-loj-backend
+      protocol: TCP
+      port: 4488
+      targetPort: 4488
+      nodePort: 31303
+  selector:
+    app: loj-backend
+  clusterIP: 10.233.36.100
+  clusterIPs:
+    - 10.233.36.100
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
